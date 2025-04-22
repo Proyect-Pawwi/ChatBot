@@ -342,7 +342,7 @@ const m1 = addKeyword('write_cc')
         buttons: [
           { body: 'Flash (15 min)' },
           { body: 'Chill (30 min)' },
-          { body: 'Jumbo (1 Hora)' }
+          { body: 'Adventure (1H)' }
         ]
       }
     ]);
@@ -359,7 +359,7 @@ const m1 = addKeyword('write_cc')
         conversations[ctx.from].tiempoServicio = "30 minutos"
         conversations[ctx.from].precio = 10000
         return gotoFlow(q1);}
-    if (choice === 'Jumbo (1 Hora)') {
+    if (choice === 'Adventure (1H)') {
         conversations[ctx.from].tiempoServicio = "60 minutos"
         conversations[ctx.from].precio = 17000
         return gotoFlow(q1);}
