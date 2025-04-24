@@ -157,7 +157,7 @@ const start = addKeyword(EVENTS.WELCOME)
 
         if (choice === 'Buscar cuidador') return gotoFlow(c2);
         if (choice === 'Ser cuidador') {
-            await flowDynamic('Para ser un Pawwier, por favor rellena el siguiente formulario: https://form.jotform.com/250937943404057');
+            await flowDynamic('Perfecto, para ser un Pawwier, por favor rellena el siguiente formulario: https://form.jotform.com/250937943404057');
             return;
         }
 
