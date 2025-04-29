@@ -1,35 +1,37 @@
 export class conversation {
-    id: string
-    cc: number
-    name: string
-
-    // Lista de todos los perros que tiene guardados este usuario
+    lastInteraction: number = Date.now();
+    
+    id: string = '';
+    cc: number = 0;
+    name: string = '';
     dogs: {
-        nombre: string
-        raza: string
-        edad: string
-        peso:string
-        descripcion: string
-    }[]
+        nombre: string;
+        raza: string;
+        edad: string;
+        peso: string;
+        descripcion: string;
+    }[] = [];
 
-    // Perro actualmente seleccionado
     selectedDog?: {
-        nombre: string
-        raza: string
-        edad: string
-        peso:string
-        descripcion: string
+        nombre: string;
+        raza: string;
+        edad: string;
+        peso: string;
+        descripcion: string;
+    };
+
+    address: string = '';
+    tipoServicio: string = '';
+    fechaServicio: string = '';
+    inicioServicio: string = '';
+    tiempoServicio: string = '';
+    ciudad: string = '';
+    localidad: string = '';
+    barrio: string = '';
+
+    precio: number = 0;
+
+    constructor() {
+      this.lastInteraction = Date.now();
     }
-
-    // Datos del servicio solicitado
-    address: string
-    tipoServicio: string
-    fechaServicio: string
-    inicioServicio: string
-    tiempoServicio: string
-    ciudad: String
-    localidad: string
-    barrio: string
-
-    precio: number
 }
