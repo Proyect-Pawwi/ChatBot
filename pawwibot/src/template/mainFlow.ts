@@ -614,7 +614,7 @@ Estoy buscando al cuidador ideal para tu peludito 🐾…
 Si en 20 minutos no vuelvo a escribirte, porfa llámame al +57 3201234567 📞…`);
   })
   .addAnswer('', { capture: true })
-  .addAction(async (ctx, { gotoFlow }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
+  .addAction(async (ctx, { gotoFlow }) => {
       const raza = ctx.body.trim();
       const userId = ctx.from;
       if (conversations[userId].selectedDog) {

@@ -19,3 +19,8 @@ export function handleConversationTimeout(userId: string) {
   conversations[userId].lastInteraction = now;
   return false; // <- No cerró sesión
 }
+
+export function handleConversationEnd(userId: string) {
+  delete conversations[userId];
+    return true; // <- Cerró sesión
+}
