@@ -21,6 +21,6 @@ export function handleConversationTimeout(userId: string) {
 }
 
 export function handleConversationEnd(userId: string) {
-  delete conversations[userId];
-    return true; // <- Cerró sesión
+  conversations[userId].lastInteraction + (99 * 60 * 1000)
+  return true; // <- Cerró sesión
 }

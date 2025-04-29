@@ -4,7 +4,7 @@ import { sendNewLeadEmail } from "~/services/emailService";
 import { findCelInSheet, insertClientBasicInfo, insertLeadRow, updateDogsForClient } from "~/services/googleSheetsService";
 import { getCiudadDesdeDireccion, getLocalidadDesdeDireccion } from "~/services/openStreetMap";
 import { conversations } from "~/services/memoryStore";
-import { handleConversationTimeout } from "~/services/conversationManager"; // nueva
+import { handleConversationEnd, handleConversationTimeout } from "~/services/conversationManager"; // nueva
 
 
 const init = addKeyword(EVENTS.WELCOME)
@@ -608,7 +608,7 @@ Total: $${conversations[ctx.from].precio}
   });
 
 const end = addKeyword('write_pet_description')
-  .addAction(async (ctx, { flowDynamic, gotoFlow }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
+  .addAction(async (ctx, { flowDynamic, gotoFlow }) => { handleConversationEnd(ctx.from)
       await flowDynamic(`📍 Un momento…
 Estoy buscando al cuidador ideal para tu peludito 🐾…
 Si en 20 minutos no vuelvo a escribirte, porfa llámame al +57 3201234567 📞…`);
@@ -620,6 +620,7 @@ Si en 20 minutos no vuelvo a escribirte, porfa llámame al +57 3201234567 📞�
       if (conversations[userId].selectedDog) {
           conversations[userId].selectedDog.raza = raza;
       }
+      return gotoFlow(init);
   });
 
 // 🆕 Flujo para registro nuevo
