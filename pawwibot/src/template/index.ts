@@ -24,6 +24,7 @@ import {
     q1,
     q1_hora,
     s1,
+    s1_barrio,
     u1,
     c2,
     end
@@ -51,6 +52,7 @@ export default createFlow([
     q1,
     q1_hora,
     s1,
+    s1_barrio,
     u1,
     c2,
     end

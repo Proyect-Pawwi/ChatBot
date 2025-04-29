@@ -3,17 +3,31 @@ import path from 'path';
 import { JWT } from 'google-auth-library';
 import { conversation } from '~/model/models';
 
-const sheets = google.sheets("v4");
+const sheets = google.sheets('v4');
 
 async function getSheetClient() {
-    const auth = new google.auth.GoogleAuth({
-        keyFile: path.join(process.cwd(), "src/credentials", "credentials.json"),
+    const credentialsString = process.env.GOOGLE_CREDENTIALS_JSON;
+
+    if (!credentialsString) {
+        throw new Error("❌ GOOGLE_CREDENTIALS_JSON no está definida en las variables de entorno");
+    }
+
+    let credentials;
+    try {
+        credentials = JSON.parse(credentialsString);
+    } catch (error) {
+        throw new Error("❌ Error al parsear GOOGLE_CREDENTIALS_JSON. Asegúrate de que sea un JSON válido.");
+    }
+
+    const auth = new google.auth.JWT({
+        email: credentials.client_email,
+        key: credentials.private_key,
         scopes: ["https://www.googleapis.com/auth/spreadsheets"]
     });
 
-    const authClient = await auth.getClient() as JWT;
-    return { sheets, authClient };
+    return { sheets, authClient: auth };
 }
+
 
 export async function insertClientBasicInfo(client: conversation) {
     try {
@@ -22,18 +36,22 @@ export async function insertClientBasicInfo(client: conversation) {
 
         const dogsAsJson = JSON.stringify(client.dogs || []);
 
-        // Orden correcto: Cel | CC | Name | Address | Pets
+        // ✅ Generar un código promocional sencillo
+        const promoCode = `PAWWI-${Math.floor(10000 + Math.random() * 90000)}`;
+
+        // Orden correcto: Cel | CC | Name | Address | Pets | PromoCode
         const values = [[
             client.id,
             client.cc,
             client.name,
             client.address,
-            dogsAsJson
+            dogsAsJson,
+            promoCode  // código promocional
         ]];
 
         const appendResponse = await sheets.spreadsheets.values.append({
             spreadsheetId,
-            range: "usersDB!A2",  // 👈 Empieza desde columna A (segunda fila, bajo encabezados)
+            range: "usersDB!A2",  
             valueInputOption: "RAW",
             insertDataOption: "INSERT_ROWS",
             requestBody: { values },
@@ -42,15 +60,16 @@ export async function insertClientBasicInfo(client: conversation) {
 
         const updatedRange = appendResponse.data?.updates?.updatedRange;
         if (updatedRange) {
-            console.log(`✅ Cliente insertado en rango: ${updatedRange}`);
+            console.log(`✅ Cliente insertado en rango: ${updatedRange} con promo code: ${promoCode}`);
         }
 
-        return { added: true };
+        return { added: true, promoCode };
     } catch (error) {
         console.error("❌ Error al insertar cliente:", error);
         return { added: false, error };
     }
 }
+
 
 export async function findCelInSheet(cedula: string): Promise<{
     id?: string;
