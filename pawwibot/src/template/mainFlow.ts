@@ -299,10 +299,10 @@ const k1_register = addKeyword('write_pet_description')
             // Insertar nueva fila
             const result = await insertClientBasicInfo(conversations[userId]);
             if (result.added) {
-                await flowDynamic(`🐾 ¡Tu peludito *${selectedDog.nombre}* fue registrado exitosamente!`);
+                //await flowDynamic(`🐾 ¡Tu peludito *${selectedDog.nombre}* fue registrado exitosamente!`);
 
                 //Saturday
-                //await flowDynamic(`🐾 ¡Tu peludito *${selectedDog.nombre}* fue registrado exitosamente!. Utiliza el código ${result.promoCode} para tener tu primer paseo gratis 🥳`);
+                await flowDynamic(`🐾 ¡Tu peludito *${selectedDog.nombre}* fue registrado exitosamente!. Utiliza el código ${result.promoCode} para tener tu primer paseo gratis 🥳`);
             } else {
                 await flowDynamic(`⚠️ Ocurrió un error al registrar a *${selectedDog.nombre}*. Intenta más tarde.`);
             }
@@ -312,7 +312,9 @@ const k1_register = addKeyword('write_pet_description')
         //Temporal: Deberia ir a l1 pero como solo van a ser paseos en un inicio, salta directamente a paseo
         //return gotoFlow(l1);
 
-        return gotoFlow(m1);
+        //return gotoFlow(m1);
+        //Temporal
+        return gotoFlow(init);
     });
 
 const l1 = addKeyword('write_cc')
