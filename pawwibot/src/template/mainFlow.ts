@@ -65,8 +65,8 @@ const userRegistered = addKeyword(EVENTS.WELCOME)
 
         //Temporal
         await flowDynamic('Gracias por registrarte en PAwwi, te informaremos cuando podamos pasear a tu peludito 🐶');
-        return gotoFlow(init);
-
+        
+        /*
         if (conversations[userId].dogs.length < 3) {
             buttons.push({ body: 'Agregar perro' });
         }
@@ -75,8 +75,9 @@ const userRegistered = addKeyword(EVENTS.WELCOME)
             body: `Guauuu, bienvenido/a de nuevo a Pawwi, soy Bimba 🐶. ¿A quién quieres que cuidemos?`,
             buttons
         }]);
-
+        */
     })
+    /*
     .addAnswer('', { capture: true }) // Para capturar la opción seleccionada
     .addAction(async (ctx, { gotoFlow, flowDynamic }) => { if (handleConversationTimeout(ctx.from)) return gotoFlow(init); //Required for restarting conversation
         const userId = ctx.from;
@@ -93,7 +94,7 @@ const userRegistered = addKeyword(EVENTS.WELCOME)
         await flowDynamic('⚠️ No encontré ese nombre. Intenta de nuevo.');
         return gotoFlow(userRegistered);
 });
-
+*/
 const userRegistered_repeat = addKeyword(EVENTS.WELCOME)
     .addAction(async (ctx, { gotoFlow, flowDynamic }) => { if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
         const userId = ctx.from;
