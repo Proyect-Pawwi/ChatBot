@@ -63,6 +63,10 @@ const userRegistered = addKeyword(EVENTS.WELCOME)
         // Construir botones actualizados
         const buttons = conversations[userId].dogs.map(dog => ({ body: dog.nombre }));
 
+        //Temporal
+        await flowDynamic('Gracias por registrarte en PAwwi, te informaremos cuando podamos pasear a tu peludito 🐶');
+        return gotoFlow(init);
+
         if (conversations[userId].dogs.length < 3) {
             buttons.push({ body: 'Agregar perro' });
         }
