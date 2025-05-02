@@ -64,7 +64,7 @@ const userRegistered = addKeyword(EVENTS.WELCOME)
         const buttons = conversations[userId].dogs.map(dog => ({ body: dog.nombre }));
 
         //Temporal
-        await flowDynamic('Gracias por registrarte en PAwwi, te informaremos cuando podamos pasear a tu peludito 🐶');
+        await flowDynamic('Gracias por registrarte en Pawwi, te informaremos cuando podamos pasear a tu peludito 🐶');
         
         /*
         if (conversations[userId].dogs.length < 3) {
