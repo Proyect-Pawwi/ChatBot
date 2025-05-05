@@ -604,7 +604,8 @@ Total: $${conversations[ctx.from].precio}
     💰 Precio: $${conv.precio}
     `;
     
-        await sendNewLeadEmail(process.env.EMAIL_ADMIN!, '📬 ¡Nuevo Lead en Pawwi!', emailText);
+        //A futuro se revisará que formas hay de enviar un correo sion ser baneado
+        //await sendNewLeadEmail(process.env.EMAIL_ADMIN!, '📬 ¡Nuevo Lead en Pawwi!', emailText);
         
         return gotoFlow(end);
     }
