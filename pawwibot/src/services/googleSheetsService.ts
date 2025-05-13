@@ -37,7 +37,7 @@ export async function insertClientBasicInfo(client: conversation) {
         const dogsAsJson = JSON.stringify(client.dogs || []);
 
         // ✅ Generar un código promocional sencillo
-        const promoCode = `PAWWI-${Math.floor(10000 + Math.random() * 90000)}`;
+        //const promoCode = `PAWWI-${Math.floor(10000 + Math.random() * 90000)}`;
 
         // Orden correcto: Cel | CC | Name | Address | Pets | PromoCode
         const values = [[
@@ -46,7 +46,7 @@ export async function insertClientBasicInfo(client: conversation) {
             client.name,
             client.address,
             dogsAsJson,
-            promoCode  // código promocional
+            //promoCode  // código promocional
         ]];
 
         const appendResponse = await sheets.spreadsheets.values.append({
@@ -60,10 +60,10 @@ export async function insertClientBasicInfo(client: conversation) {
 
         const updatedRange = appendResponse.data?.updates?.updatedRange;
         if (updatedRange) {
-            console.log(`✅ Cliente insertado en rango: ${updatedRange} con promo code: ${promoCode}`);
+            console.log(`✅ Cliente insertado en rango: ${updatedRange}`);
         }
 
-        return { added: true, promoCode };
+        return { added: true };
     } catch (error) {
         console.error("❌ Error al insertar cliente:", error);
         return { added: false, error };

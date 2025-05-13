@@ -64,9 +64,9 @@ const userRegistered = addKeyword(EVENTS.WELCOME)
         const buttons = conversations[userId].dogs.map(dog => ({ body: dog.nombre }));
 
         //Temporal
-        await flowDynamic('Gracias por registrarte en Pawwi, te informaremos cuando podamos pasear a tu peludito 🐶');
+        //await flowDynamic('Gracias por registrarte en Pawwi, te informaremos cuando podamos pasear a tu peludito 🐶');
         
-        /*
+        
         if (conversations[userId].dogs.length < 3) {
             buttons.push({ body: 'Agregar perro' });
         }
@@ -75,9 +75,9 @@ const userRegistered = addKeyword(EVENTS.WELCOME)
             body: `Guauuu, bienvenido/a de nuevo a Pawwi, soy Bimba 🐶. ¿A quién quieres que cuidemos?`,
             buttons
         }]);
-        */
+        
     })
-    /*
+    
     .addAnswer('', { capture: true }) // Para capturar la opción seleccionada
     .addAction(async (ctx, { gotoFlow, flowDynamic }) => { if (handleConversationTimeout(ctx.from)) return gotoFlow(init); //Required for restarting conversation
         const userId = ctx.from;
@@ -94,7 +94,7 @@ const userRegistered = addKeyword(EVENTS.WELCOME)
         await flowDynamic('⚠️ No encontré ese nombre. Intenta de nuevo.');
         return gotoFlow(userRegistered);
 });
-*/
+
 const userRegistered_repeat = addKeyword(EVENTS.WELCOME)
     .addAction(async (ctx, { gotoFlow, flowDynamic }) => { if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
         const userId = ctx.from;
@@ -304,10 +304,10 @@ const k1_register = addKeyword('write_pet_description')
             // Insertar nueva fila
             const result = await insertClientBasicInfo(conversations[userId]);
             if (result.added) {
-                //await flowDynamic(`🐾 ¡Tu peludito *${selectedDog.nombre}* fue registrado exitosamente!`);
+                await flowDynamic(`🐾 ¡Tu peludito *${selectedDog.nombre}* fue registrado exitosamente!`);
 
                 //Saturday
-                await flowDynamic(`🐾 ¡Tu peludito *${selectedDog.nombre}* fue registrado exitosamente!. Utiliza el código ${result.promoCode} para tener tu primer paseo gratis 🥳`);
+                //await flowDynamic(`🐾 ¡Tu peludito *${selectedDog.nombre}* fue registrado exitosamente!. Utiliza el código ${result.promoCode} para tener tu primer paseo gratis 🥳`);
             } else {
                 await flowDynamic(`⚠️ Ocurrió un error al registrar a *${selectedDog.nombre}*. Intenta más tarde.`);
             }
