@@ -167,7 +167,7 @@ Nos encargamos de buscar cuidadores súper confiables en tu zona…\n
 
         if (choice === 'Buscar cuidador') return gotoFlow(name);
         if (choice === 'Ser cuidador') {
-            await flowDynamic('Perfecto, para ser un Pawwer, completa el siguiente formulario: https://form.jotform.com/250937943404057');
+            await flowDynamic('Perfecto, para ser un Pawwer, completa el siguiente formulario: https://tally.so/r/wMyVRE');
             return;
         }
 
@@ -616,10 +616,20 @@ Total: $${conversations[ctx.from].precio}
   });
 
 const end = addKeyword('write_pet_description')
-  .addAction(async (ctx, { flowDynamic, gotoFlow }) => { handleConversationEnd(ctx.from)
+  .addAction(async (ctx, { flowDynamic, gotoFlow, provider }) => {
+      handleConversationEnd(ctx.from);
+
+      // Mensaje al usuario actual
       await flowDynamic(`📍 Un momento…
-Estoy buscando al cuidador ideal para tu peludito 🐾…
-Si en 20 minutos no vuelvo a escribirte, porfa llámame al +57 3201234567 📞…`);
+Estamos buscando al cuidador ideal para tu peludito 🐾…
+En unos instantes un paseador se estará comunicando contigo.
+
+Si tienes alguna duda del servicio o quieres comentar una novedad, escríbenos al +57 3201234567 📞…`);
+
+      // Mensaje de prueba a +57 333 2885462
+      await provider.sendMessage('573332885462@c.us', {
+          text: 'Hola mundo'
+      });
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { gotoFlow }) => {
@@ -630,6 +640,7 @@ Si en 20 minutos no vuelvo a escribirte, porfa llámame al +57 3201234567 📞�
       }
       return gotoFlow(init);
   });
+
 
 // 🆕 Flujo para registro nuevo
 const c2 = addKeyword('write_cc_new')
