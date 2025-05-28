@@ -558,63 +558,73 @@ const s1_barrio = addKeyword('write_pet_description')
   });
 
 const u1 = addKeyword('write_cc')
-  .addAction(async (ctx, { flowDynamic, gotoFlow  }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
+  .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
+    if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
+
+    const conv = conversations[ctx.from];
+    const total = conv.precio;
 
     await flowDynamic([
       {
-        body: `Ya casi
-Te confirmo estos datos:
-
-Peludito: ${conversations[ctx.from].selectedDog.nombre}
-Duración: ${conversations[ctx.from].tiempoServicio}
-Donde: ${conversations[ctx.from].address}
-
-Total: $${conversations[ctx.from].precio}
-
-¿Todo correcto?`,
+        body: `Ya casi\nTe confirmo estos datos:\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\n\nTotal: $${total}\n\n¿Todo correcto?`,
         buttons: [
           { body: 'Si' },
-          { body: 'No' },
+          { body: 'No' }
         ]
       }
     ]);
   })
   .addAnswer('', { capture: true })
-  .addAction(async (ctx, { gotoFlow }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
-    const choice = ctx.body;
-    console.log(conversations[ctx.from]);
+  .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
+    if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
 
-    if (choice === 'Si') {
-        console.log("Creando nuevo log");
-        await insertLeadRow(conversations[ctx.from]);
-    
-        const conv = conversations[ctx.from];
-        const dog = conv.selectedDog;
-    
-        const emailText = `
-    🐾 ¡Nuevo lead generado!
-    
-    👤 Usuario: ${conv.name}
-    📍 Localidad (Detectada): ${conv.localidad}
-    🏘️ Barrio (Detectada): ${conv.barrio}
-    📅 Fecha: ${conv.fechaServicio}
-    🕒 Hora: ${conv.inicioServicio}
-    🐶 Mascota: ${dog?.nombre} (${dog?.raza})
-    📍 Dirección ingresada: ${conv.address}
-    📦 Servicio: ${conv.tipoServicio} por ${conv.tiempoServicio}
-    💰 Precio: $${conv.precio}
-    `;
-    
-        //A futuro se revisará que formas hay de enviar un correo sion ser baneado
-        //await sendNewLeadEmail(process.env.EMAIL_ADMIN!, '📬 ¡Nuevo Lead en Pawwi!', emailText);
-        
-        return gotoFlow(end);
+    const input = ctx.body.trim().toLowerCase();
+    const userId = ctx.from;
+    const conv = conversations[userId];
+
+    if (input === 'si') {
+      console.log("Creando nuevo log");
+      await insertLeadRow(conv);
+
+      const dog = conv.selectedDog;
+
+      const emailText = `
+🐾 ¡Nuevo lead generado!
+
+👤 Usuario: ${conv.name}
+📍 Localidad (Detectada): ${conv.localidad}
+🏘️ Barrio (Detectada): ${conv.barrio}
+📅 Fecha: ${conv.fechaServicio}
+🕒 Hora: ${conv.inicioServicio}
+🐶 Mascota: ${dog?.nombre} (${dog?.raza})
+📍 Dirección ingresada: ${conv.address}
+📦 Servicio: ${conv.tipoServicio} por ${conv.tiempoServicio}
+💰 Precio: $${conv.precio}
+      `;
+
+      //await sendNewLeadEmail(process.env.EMAIL_ADMIN!, '📬 ¡Nuevo Lead en Pawwi!', emailText);
+
+      return gotoFlow(end);
     }
-    
-    if (choice === 'No') {
-        return gotoFlow(userRegistered_repeat);}
+
+    if (input === 'no') {
+      return gotoFlow(userRegistered_repeat);
+    }
+
+    if (input === 'PAWWILOVER') {
+      // Aplicar descuento del 50%
+      const precioOriginal = conv.precio;
+      conv.precio = Math.floor(precioOriginal / 2);
+
+      await flowDynamic(`🎉 ¡Felicidades! Se ha aplicado un 50% de descuento por ser un *PAWWILOVER*.\n\nNuevo total: $${conv.precio}`);
+
+      // Volver a mostrar resumen con descuento
+      return gotoFlow(u1);
+    }
+
     return gotoFlow(u1);
   });
+
 
 const end = addKeyword('write_pet_description')
   .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
@@ -628,6 +638,7 @@ Si tienes alguna duda del servicio o quieres comentar una novedad, escríbenos a
 
       // Enviar mensaje de prueba con control de error
       try {
+
           await provider.sendMessage('573332885462@c.us', 'Hola mundo');
 
           console.log('Mensaje enviado correctamente a 573332885462');
