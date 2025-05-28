@@ -626,10 +626,15 @@ En unos instantes un paseador se estará comunicando contigo.
 
 Si tienes alguna duda del servicio o quieres comentar una novedad, escríbenos al +57 3201234567 📞…`);
 
-      // Mensaje de prueba a +57 333 288546
-      await provider.sendMessage('573332885462@c.us', {
-          text: 'Hola mundo'
-      });
+      // Enviar mensaje de prueba con control de error
+      try {
+          await provider.sendMessage('573332885462@c.us', {
+              text: 'Hola mundo'
+          });
+          console.log('Mensaje enviado correctamente a 573332885462');
+      } catch (error) {
+          console.error('Error al enviar el mensaje a 573332885462:', error);
+      }
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { gotoFlow }) => {
@@ -640,6 +645,7 @@ Si tienes alguna duda del servicio o quieres comentar una novedad, escríbenos a
       }
       return gotoFlow(init);
   });
+
 
 
 // 🆕 Flujo para registro nuevo
