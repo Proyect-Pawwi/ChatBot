@@ -626,7 +626,7 @@ En unos instantes un paseador se estará comunicando contigo.
 
 Si tienes alguna duda del servicio o quieres comentar una novedad, escríbenos al +57 3201234567 📞…`);
 
-      // Mensaje de prueba a +57 333 2885462
+      // Mensaje de prueba a +57 333 288546
       await provider.sendMessage('573332885462@c.us', {
           text: 'Hola mundo'
       });
