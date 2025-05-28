@@ -5,6 +5,7 @@ import { findCelInSheet, insertClientBasicInfo, insertLeadRow, updateDogsForClie
 import { getCiudadDesdeDireccion, getLocalidadDesdeDireccion } from "~/services/openStreetMap";
 import { conversations } from "~/services/memoryStore";
 import { handleConversationEnd, handleConversationTimeout } from "~/services/conversationManager"; // nueva
+import { provider } from "~/provider";
 
 
 const init = addKeyword(EVENTS.WELCOME)
@@ -616,10 +617,9 @@ Total: $${conversations[ctx.from].precio}
   });
 
 const end = addKeyword('write_pet_description')
-  .addAction(async (ctx, { flowDynamic, gotoFlow, provider }) => {
+  .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
       handleConversationEnd(ctx.from);
 
-      // Mensaje al usuario actual
       await flowDynamic(`📍 Un momento…
 Estamos buscando al cuidador ideal para tu peludito 🐾…
 En unos instantes un paseador se estará comunicando contigo.
@@ -628,9 +628,8 @@ Si tienes alguna duda del servicio o quieres comentar una novedad, escríbenos a
 
       // Enviar mensaje de prueba con control de error
       try {
-          await provider.sendMessage('573332885462@c.us', {
-              text: 'Hola mundo'
-          });
+          await provider.sendMessage('573332885462@c.us', 'Hola mundo');
+
           console.log('Mensaje enviado correctamente a 573332885462');
       } catch (error) {
           console.error('Error al enviar el mensaje a 573332885462:', error);
