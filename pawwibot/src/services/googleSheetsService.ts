@@ -227,12 +227,7 @@ export async function applyPawwiloverDiscount(cedula: string) {
                     return { updated: false, message: "Ya se ha aplicado ese descuento" };
                 }
 
-                const precio = parseFloat(precioStr);
-                if (isNaN(precio)) {
-                    throw new Error("Precio inválido");
-                }
-
-                const nuevoPrecio = Math.floor(precio / 2);
+                const nuevoPrecio = 0;
 
                 const updateRange = `usersDB!F${i + 1}:G${i + 1}`;
                 await sheets.spreadsheets.values.update({

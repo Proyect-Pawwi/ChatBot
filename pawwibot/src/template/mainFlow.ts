@@ -592,7 +592,7 @@ const u1 = addKeyword('write_cc')
       const discountResult = await applyPawwiloverDiscount(conv.id);
 
       if (discountResult.updated) {
-        conv.precio = discountResult.nuevoPrecio;
+        conv.precio = Math.floor(conv.precio / 2);
 
         await flowDynamic(`🎉 ¡Felicidades! Se ha aplicado un 50% de descuento por ser un *PAWWILOVER*.\n\nNuevo total: $${conv.precio}`);
       } else {
