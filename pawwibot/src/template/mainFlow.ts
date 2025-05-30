@@ -607,6 +607,9 @@ const u1 = addKeyword('write_cc')
       return gotoFlow(end);
     }
 
+    console.log(input);
+    
+
     if (input === 'no') {
       return gotoFlow(userRegistered_repeat);
     }
@@ -630,11 +633,11 @@ const end = addKeyword('write_pet_description')
   .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
       handleConversationEnd(ctx.from);
 
-      await flowDynamic(`📍 Un momento…
-Estamos buscando al cuidador ideal para tu peludito 🐾…
-En unos instantes un paseador se estará comunicando contigo.
+      await flowDynamic(`✅ ¡Solicitud enviada exitosamente!
 
-Si tienes alguna duda del servicio o quieres comentar una novedad, escríbenos al +57 3201234567 📞…`);
+En unos instantes nuestro Equipo de Pawwi se estará comunicando contigo para confirmar el paseo de {nombre perro}
+
+Si tienes dudas con tu servicio, o quieres comentar una novedad, contáctate con  Pawwer de soporte +57 3023835152`);
 
       // Enviar mensaje de prueba con control de error
       try {

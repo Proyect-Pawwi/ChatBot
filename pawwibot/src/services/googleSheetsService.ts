@@ -153,8 +153,19 @@ export async function insertLeadRow(conv: conversation) {
         const spreadsheetId = "1blH9C1I4CSf2yJ_8AlM9a0U2wBFh7RSiDYO8-XfKxLQ";
 
         const selectedDog = conv.selectedDog!;
+        
+        const dateInColombia = new Date().toLocaleString("es-CO", {
+            timeZone: "America/Bogota",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        }).replace(',', '');
+
         const values = [[
-            new Date().toISOString().slice(0, 16).replace('T', ' '),
+            dateInColombia,
             conv.id,
             conv.cc,
             conv.name,
@@ -181,7 +192,7 @@ export async function insertLeadRow(conv: conversation) {
             insertDataOption: "INSERT_ROWS",
             requestBody: { values },
             auth: authClient
-        });        
+        });
 
         return { inserted: true };
     } catch (error) {
@@ -189,3 +200,4 @@ export async function insertLeadRow(conv: conversation) {
         return { inserted: false, error };
     }
 }
+
