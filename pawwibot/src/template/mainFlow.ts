@@ -569,7 +569,7 @@ const u1 = addKeyword('write_cc')
 
     await flowDynamic([
       {
-        body: `Ya casi\nTe confirmo estos datos:\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\n\nTotal: $${total}\n\n¿Todo correcto? Si tienes un código promocional, escríbelo abajo 👇`,
+        body: `Ya casi\nTe confirmo estos datos:\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\n\nTotal: $${total}\n\n¿Todo correcto?\n\n(Si tienes un código promocional, escríbe el código, de lo contrario, selecciona una de las opciones)`,
         buttons: [
           { body: 'Si' },
           { body: 'No' }
