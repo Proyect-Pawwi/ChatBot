@@ -62,9 +62,7 @@ const userRegistered = addKeyword(EVENTS.WELCOME)
             }
         }
 
-        console.log("TEST BIMAAAAA");
-
-        await sendAdminNotification('3023835142', '📥 Nuevo usuario llegó a Pawwi!');
+        
 
         // Construir botones actualizados
         const buttons = conversations[userId].dogs.map(dog => ({ body: dog.nombre }));
@@ -590,6 +588,7 @@ const u1 = addKeyword('write_cc')
     if (input === 'si') {
       console.log("Creando nuevo log");
       await insertLeadRow(conv);
+      await sendAdminNotification('3332885462', '📥 Este es un mensaje de prueba de que los leads ahora llegan a Pawwer soporte!\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\n\nTotal: $${total}');
       return gotoFlow(end);
     }
 
