@@ -606,24 +606,22 @@ const u1 = addKeyword('write_cc')
 
       return gotoFlow(end);
     }
-
-    console.log(input);
-    
-
-    if (input === 'no') {
-      return gotoFlow(userRegistered_repeat);
-    }
-
-    if (input === 'PAWWILOVER') {
+    else if (input === 'pawwilover') {
       // Aplicar descuento del 50%
       const precioOriginal = conv.precio;
       conv.precio = Math.floor(precioOriginal / 2);
 
       await flowDynamic(`🎉 ¡Felicidades! Se ha aplicado un 50% de descuento por ser un *PAWWILOVER*.\n\nNuevo total: $${conv.precio}`);
+      await insertLeadRow(conv);
 
       // Volver a mostrar resumen con descuento
       return gotoFlow(u1);
     }
+    else if (input === 'no') {
+      return gotoFlow(userRegistered_repeat);
+    }
+
+    
 
     return gotoFlow(u1);
   });
@@ -632,12 +630,16 @@ const u1 = addKeyword('write_cc')
 const end = addKeyword('write_pet_description')
   .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
       handleConversationEnd(ctx.from);
+      const input = ctx.body.trim().toLowerCase();
+        const userId = ctx.from;
+        const conv = conversations[userId];
+        const dog = conv.selectedDog;
 
       await flowDynamic(`✅ ¡Solicitud enviada exitosamente!
 
-En unos instantes nuestro Equipo de Pawwi se estará comunicando contigo para confirmar el paseo de {nombre perro}
+En unos instantes nuestro *Equipo de Pawwi* se estará comunicando contigo para confirmar el paseo de ${dog?.nombre}
 
-Si tienes dudas con tu servicio, o quieres comentar una novedad, contáctate con  Pawwer de soporte +57 3023835152`);
+Si tienes dudas con tu servicio, o quieres comentar una novedad, contáctate con  *Pawwer de soporte* +57 3023835152`);
 
       // Enviar mensaje de prueba con control de error
       try {
