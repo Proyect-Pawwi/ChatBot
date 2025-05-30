@@ -205,7 +205,7 @@ export async function applyPawwiloverDiscount(cedula: string) {
     try {
         const { sheets, authClient } = await getSheetClient();
         const spreadsheetId = "1blH9C1I4CSf2yJ_8AlM9a0U2wBFh7RSiDYO8-XfKxLQ";
-        const range = "usersDB!A1:G1000"; // Incluye columna G
+        const range = "usersDB!A1:G1000";
 
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
@@ -218,8 +218,7 @@ export async function applyPawwiloverDiscount(cedula: string) {
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
             const rowCedula = row[0];
-            const discountFlag = row[6]; // Columna G (índice 6)
-            const precioStr = row[5]; // Columna F (índice 5)
+            const discountFlag = row[6]; // Columna G
 
             if (rowCedula === cedula) {
                 if (discountFlag && discountFlag.toLowerCase() === "pawwilover") {
@@ -227,21 +226,19 @@ export async function applyPawwiloverDiscount(cedula: string) {
                     return { updated: false, message: "Ya se ha aplicado ese descuento" };
                 }
 
-                const nuevoPrecio = 0;
-
-                const updateRange = `usersDB!F${i + 1}:G${i + 1}`;
+                const updateRange = `usersDB!G${i + 1}`;
                 await sheets.spreadsheets.values.update({
                     spreadsheetId,
                     range: updateRange,
                     valueInputOption: "RAW",
                     requestBody: {
-                        values: [[nuevoPrecio.toString(), "pawwilover"]]
+                        values: [["pawwilover"]]
                     },
                     auth: authClient
                 });
 
-                console.log("✅ Descuento del 50% aplicado y marcado como pawwilover");
-                return { updated: true, nuevoPrecio };
+                console.log("✅ Descuento marcado como pawwilover");
+                return { updated: true };
             }
         }
 
