@@ -1,7 +1,7 @@
 import { addKeyword, EVENTS } from "@builderbot/bot";
 import { conversation } from "~/model/models";
 import { sendNewLeadEmail } from "~/services/emailService";
-import { findCelInSheet, insertClientBasicInfo, insertLeadRow, updateDogsForClient } from "~/services/googleSheetsService";
+import { applyPawwiloverDiscount, findCelInSheet, insertClientBasicInfo, insertLeadRow, updateDogsForClient } from "~/services/googleSheetsService";
 import { getCiudadDesdeDireccion, getLocalidadDesdeDireccion } from "~/services/openStreetMap";
 import { conversations } from "~/services/memoryStore";
 import { handleConversationEnd, handleConversationTimeout } from "~/services/conversationManager"; // nueva
@@ -585,46 +585,30 @@ const u1 = addKeyword('write_cc')
     if (input === 'si') {
       console.log("Creando nuevo log");
       await insertLeadRow(conv);
-
-      const dog = conv.selectedDog;
-
-      const emailText = `
-🐾 ¡Nuevo lead generado!
-
-👤 Usuario: ${conv.name}
-📍 Localidad (Detectada): ${conv.localidad}
-🏘️ Barrio (Detectada): ${conv.barrio}
-📅 Fecha: ${conv.fechaServicio}
-🕒 Hora: ${conv.inicioServicio}
-🐶 Mascota: ${dog?.nombre} (${dog?.raza})
-📍 Dirección ingresada: ${conv.address}
-📦 Servicio: ${conv.tipoServicio} por ${conv.tiempoServicio}
-💰 Precio: $${conv.precio}
-      `;
-
-      //await sendNewLeadEmail(process.env.EMAIL_ADMIN!, '📬 ¡Nuevo Lead en Pawwi!', emailText);
-
       return gotoFlow(end);
     }
-    else if (input === 'pawwilover') {
-      // Aplicar descuento del 50%
-      const precioOriginal = conv.precio;
-      conv.precio = Math.floor(precioOriginal / 2);
 
-      await flowDynamic(`🎉 ¡Felicidades! Se ha aplicado un 50% de descuento por ser un *PAWWILOVER*.\n\nNuevo total: $${conv.precio}`);
-      await insertLeadRow(conv);
+    if (input === 'pawwilover') {
+      const discountResult = await applyPawwiloverDiscount(conv.id);
 
-      // Volver a mostrar resumen con descuento
-      return gotoFlow(u1);
+      if (discountResult.updated) {
+        conv.precio = discountResult.nuevoPrecio;
+
+        await flowDynamic(`🎉 ¡Felicidades! Se ha aplicado un 50% de descuento por ser un *PAWWILOVER*.\n\nNuevo total: $${conv.precio}`);
+      } else {
+        await flowDynamic(`⚠️ ${discountResult.message || 'No se pudo aplicar el descuento.'}`);
+      }
+
+      return gotoFlow(u1); // Mostrar resumen actualizado
     }
-    else if (input === 'no') {
+
+    if (input === 'no') {
       return gotoFlow(userRegistered_repeat);
     }
 
-    
-
     return gotoFlow(u1);
   });
+
 
 
 const end = addKeyword('write_pet_description')

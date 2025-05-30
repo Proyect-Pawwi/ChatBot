@@ -201,3 +201,59 @@ export async function insertLeadRow(conv: conversation) {
     }
 }
 
+export async function applyPawwiloverDiscount(cedula: string) {
+    try {
+        const { sheets, authClient } = await getSheetClient();
+        const spreadsheetId = "1blH9C1I4CSf2yJ_8AlM9a0U2wBFh7RSiDYO8-XfKxLQ";
+        const range = "usersDB!A1:G1000"; // Incluye columna G
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range,
+            auth: authClient
+        });
+
+        const rows = response.data.values || [];
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            const rowCedula = row[0];
+            const discountFlag = row[6]; // Columna G (índice 6)
+            const precioStr = row[5]; // Columna F (índice 5)
+
+            if (rowCedula === cedula) {
+                if (discountFlag && discountFlag.toLowerCase() === "pawwilover") {
+                    console.log("Ya se ha aplicado ese descuento");
+                    return { updated: false, message: "Ya se ha aplicado ese descuento" };
+                }
+
+                const precio = parseFloat(precioStr);
+                if (isNaN(precio)) {
+                    throw new Error("Precio inválido");
+                }
+
+                const nuevoPrecio = Math.floor(precio / 2);
+
+                const updateRange = `usersDB!F${i + 1}:G${i + 1}`;
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId,
+                    range: updateRange,
+                    valueInputOption: "RAW",
+                    requestBody: {
+                        values: [[nuevoPrecio.toString(), "pawwilover"]]
+                    },
+                    auth: authClient
+                });
+
+                console.log("✅ Descuento del 50% aplicado y marcado como pawwilover");
+                return { updated: true, nuevoPrecio };
+            }
+        }
+
+        console.log("❌ Usuario no encontrado");
+        return { updated: false, message: "Usuario no encontrado" };
+    } catch (error) {
+        console.error("❌ Error al aplicar descuento:", error);
+        return { updated: false, error };
+    }
+}
