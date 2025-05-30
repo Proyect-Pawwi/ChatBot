@@ -6,6 +6,7 @@ import { getCiudadDesdeDireccion, getLocalidadDesdeDireccion } from "~/services/
 import { conversations } from "~/services/memoryStore";
 import { handleConversationEnd, handleConversationTimeout } from "~/services/conversationManager"; // nueva
 import { provider } from "~/provider";
+import { sendAdminNotification } from "~/services/messageService";
 
 
 const init = addKeyword(EVENTS.WELCOME)
@@ -60,6 +61,12 @@ const userRegistered = addKeyword(EVENTS.WELCOME)
                 conversations[userId].dogs = [];
             }
         }
+
+        console.log("TEST BIMAAAAA");
+
+        await sendAdminNotification('3023835142', `📥 Nuevo usuario en Pawwi: ${userId}`);
+
+        
 
         // Construir botones actualizados
         const buttons = conversations[userId].dogs.map(dog => ({ body: dog.nombre }));
@@ -566,7 +573,7 @@ const u1 = addKeyword('write_cc')
 
     await flowDynamic([
       {
-        body: `Ya casi\nTe confirmo estos datos:\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\n\nTotal: $${total}\n\n¿Todo correcto?`,
+        body: `Ya casi\nTe confirmo estos datos:\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\n\nTotal: $${total}\n\n¿Todo correcto? Si tienes un código promocional, escríbelo abajo 👇`,
         buttons: [
           { body: 'Si' },
           { body: 'No' }
