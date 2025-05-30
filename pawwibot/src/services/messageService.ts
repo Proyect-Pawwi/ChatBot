@@ -2,9 +2,9 @@ import { provider } from '../provider';
 
 export async function sendAdminNotification(phone: string, message: string) {
   try {
-    const formattedPhone = `57${phone}`; // Asegúrate de incluir código de país
+    const formattedPhone = `57${phone}`;
 
-    await provider.sendMessage(formattedPhone, message); // Solo string aquí
+    await provider.sendText(formattedPhone, message); // ✅ ESTA ES LA CORRECTA
 
     console.log(`📨 Mensaje enviado al admin: ${formattedPhone}`);
   } catch (error) {
