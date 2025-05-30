@@ -64,9 +64,7 @@ const userRegistered = addKeyword(EVENTS.WELCOME)
 
         console.log("TEST BIMAAAAA");
 
-        await sendAdminNotification('3023835142', `📥 Nuevo usuario en Pawwi: ${userId}`);
-
-        
+        await sendAdminNotification('3023835142', '📥 Nuevo usuario llegó a Pawwi!');
 
         // Construir botones actualizados
         const buttons = conversations[userId].dogs.map(dog => ({ body: dog.nombre }));
