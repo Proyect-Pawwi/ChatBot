@@ -549,7 +549,7 @@ const s1_barrio = addKeyword('write_pet_description')
         conversations[userId].barrio = barrioUsuario;
     }
 
-    conversations[userId].barrio = barrio;
+    //conversations[userId].barrio = barrio;
     conversations[userId].localidad = localidad;
     conversations[userId].ciudad = ciudad;
 
