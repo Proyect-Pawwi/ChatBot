@@ -543,9 +543,12 @@ const s1_barrio = addKeyword('write_pet_description')
     const { barrio, localidad } = await getLocalidadDesdeDireccion(fullAddress);
     const ciudad = await getCiudadDesdeDireccion(fullAddress);
 
-    if (!barrio) {
-        conversations[userId].barrio = barrioUsuario
+    if (barrio) {
+    conversations[userId].barrio = barrio;
+    } else {
+        conversations[userId].barrio = barrioUsuario;
     }
+
     conversations[userId].barrio = barrio;
     conversations[userId].localidad = localidad;
     conversations[userId].ciudad = ciudad;
