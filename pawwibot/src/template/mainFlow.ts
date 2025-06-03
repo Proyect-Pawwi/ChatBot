@@ -194,7 +194,7 @@ const start_repeat = addKeyword('main_repeat')
 
         if (choice === 'Buscar cuidador') return gotoFlow(name);
         if (choice === 'Ser cuidador') {
-            await flowDynamic('Para ser un Pawwier, por favor rellena el siguiente formulario 🚀: {Link de formulario}');
+            await flowDynamic('Para ser un Pawwier, por favor rellena el siguiente formulario 🚀: https://tally.so/r/wMyVRE');
             return;
         }
 
@@ -537,6 +537,7 @@ const s1_barrio = addKeyword('write_pet_description')
     const fullAddress = `${conversations[userId].address}, ${barrioUsuario}`;
 
     conversations[userId].address = fullAddress;
+    conversation[userId].barrio = barrioUsuario;
 
     // Consultar APIs
     const { barrio, localidad } = await getLocalidadDesdeDireccion(fullAddress);
@@ -588,7 +589,7 @@ const u1 = addKeyword('write_cc')
     if (input === 'si') {
       console.log("Creando nuevo log");
       await insertLeadRow(conv);
-      await sendAdminNotification('3332885462', `Nuevo lead\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nBarrio:${conv.barrio}\nPrecio del servicio: $${conv.precio}`);
+      await sendAdminNotification('3332885462', `Nuevo lead\n\nNumeroCliente: ${conv.id}\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nBarrio:${conv.barrio}\nPrecio del servicio: $${conv.precio}`);
       return gotoFlow(end);
     }
 
