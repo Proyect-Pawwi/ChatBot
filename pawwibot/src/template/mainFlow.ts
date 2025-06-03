@@ -537,7 +537,7 @@ const s1_barrio = addKeyword('write_pet_description')
     const fullAddress = `${conversations[userId].address}, ${barrioUsuario}`;
 
     conversations[userId].address = fullAddress;
-    conversation[userId].barrio = barrioUsuario;
+    conversations[userId].barrio = barrioUsuario;
 
     // Consultar APIs
     const { barrio, localidad } = await getLocalidadDesdeDireccion(fullAddress);
