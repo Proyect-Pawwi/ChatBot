@@ -158,8 +158,7 @@ const start = addKeyword(EVENTS.WELCOME)
 Soy Bimba, tu amiga de Pawwi…\n
 Aquí estamos para que tú y tu peludito estén siempre tranquilos 🏡❤️\n
 Nos encargamos de buscar cuidadores súper confiables en tu zona…\n
-¿Qué te gustaría hacer hoy? 👇\n\n
-Si quieres que nos encargemos de tu peludito, podrás agendar con nosotros a partir del lunes`,
+¿Qué te gustaría hacer hoy? 👇`,
             buttons: [
                 { body: 'Buscar cuidador' },
                 { body: 'Ser cuidador' }
