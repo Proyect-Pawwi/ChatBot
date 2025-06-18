@@ -584,7 +584,7 @@ const u1 = addKeyword('write_cc')
     if (input === 'si') {
       console.log("Creando nuevo log");
       await insertLeadRow(conv);
-      await sendAdminNotification('3332885462', `Nuevo lead\n\nNumeroCliente: ${conv.id}\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nBarrio:${conv.barrio}\nPrecio del servicio: $Gratis`);
+      await sendAdminNotification('3332885462', `Nuevo lead\n\nNumero Cliente: ${conv.id}\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nHora:${conv.fechaServicio}\nPrecio del servicio: $Gratis`);
       return gotoFlow(end);
     }
 
