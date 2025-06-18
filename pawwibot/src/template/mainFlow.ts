@@ -169,7 +169,7 @@ Nos encargamos de buscar cuidadores súper confiables en tu zona…\n
     .addAction(async (ctx, { flowDynamic, gotoFlow }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
         const choice = ctx.body;
 
-        if (choice === 'Buscar cuidador') return gotoFlow(name);
+        if (choice === 'Buscar cuidador') return gotoFlow(i1);
         if (choice === 'Ser cuidador') {
             await flowDynamic('Perfecto, para ser un Pawwer, completa el siguiente formulario: https://tally.so/r/wMyVRE');
             return;
@@ -219,7 +219,7 @@ const start_repeat = addKeyword('main_repeat')
             descripcion: ''
         };
 
-        return gotoFlow(k1_raza);
+        return gotoFlow(k1_consideraciones);
     });
 
 const k1_raza = addKeyword('write_pet_description')
@@ -460,23 +460,15 @@ const q1 = addKeyword('write_pet_description')
   .addAction(async (ctx, { flowDynamic, gotoFlow  }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
       const petName = conversations[ctx.from].selectedDog?.nombre || '[vacio]';
 
-      await flowDynamic(`Para cuando quieres el paseo para ${petName}? Escribe la fecha como *dd/mm* (ejemplo: 25/04)`);
+      await flowDynamic(`Indica la fecha y hora en la que quieres que paseemos a ${petName}`);
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { flowDynamic, gotoFlow }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
       const cita = ctx.body.trim();
 
-      // Validar formato dd/mm
-      const regexFecha = /^(0?[1-9]|[12][0-9]|3[01])\/(0?[1-9]|1[012])$/;
-
-      if (!regexFecha.test(cita)) {
-          await flowDynamic("❌ Formato inválido. Por favor, escribe la fecha como *dd/mm* (ejemplo: 25/04)");
-          return gotoFlow(q1);
-      }
-
       conversations[ctx.from].fechaServicio = cita;
 
-      return gotoFlow(q1_hora);
+      return gotoFlow(s1);
   });
 
 const q1_hora = addKeyword('write_pet_description')
@@ -517,7 +509,7 @@ const q1_hora = addKeyword('write_pet_description')
     }
 
     conversations[ctx.from].address = direccion;
-    return gotoFlow(s1_barrio);
+    return gotoFlow(u1);
   });
 
 const s1_barrio = addKeyword('write_pet_description')
@@ -573,7 +565,7 @@ const u1 = addKeyword('write_cc')
 
     await flowDynamic([
       {
-        body: `Ya casi\nTe confirmo estos datos:\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\n\nTotal: $${total}\n\n¿Todo correcto?\n\n(Si tienes un código promocional, escríbe el código, de lo contrario, selecciona una de las opciones)`,
+        body: `Ya casi\nTe confirmo estos datos:\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\n\nTotal: Tu primer paseo con nosotros es gratis\n\n¿Todo correcto?`,
         buttons: [
           { body: 'Si' },
           { body: 'No' }
@@ -592,7 +584,7 @@ const u1 = addKeyword('write_cc')
     if (input === 'si') {
       console.log("Creando nuevo log");
       await insertLeadRow(conv);
-      await sendAdminNotification('3332885462', `Nuevo lead\n\nNumeroCliente: ${conv.id}\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nBarrio:${conv.barrio}\nPrecio del servicio: $${conv.precio}`);
+      await sendAdminNotification('3332885462', `Nuevo lead\n\nNumeroCliente: ${conv.id}\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nBarrio:${conv.barrio}\nPrecio del servicio: $Gratis`);
       return gotoFlow(end);
     }
 
