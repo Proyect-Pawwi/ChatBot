@@ -269,7 +269,7 @@ const k1_edad = addKeyword('write_pet_description')
 
 
 const k1_consideraciones = addKeyword('write_pet_description')
-    .addAnswer(`¿Tiene alguna consideración especial que debamos saber ❤️‍🩹? (Medicamentos, enfermedades, tratos especiales)`, { capture: true })
+    .addAnswer(`Describenos a tu perro, que raza es, cuantos años tiene, si es sociable, y consideraciones adicionales que tenga tu perro`, { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
         const consideraciones = ctx.body.trim();
         const userId = ctx.from;
