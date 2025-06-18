@@ -249,3 +249,66 @@ export async function applyPawwiloverDiscount(cedula: string) {
         return { updated: false, error };
     }
 }
+
+export async function getWalksCountForClient(id: string): Promise<number> {
+    const { sheets, authClient } = await getSheetClient();
+    const spreadsheetId = "1blH9C1I4CSf2yJ_8AlM9a0U2wBFh7RSiDYO8-XfKxLQ";
+
+    const leadsRange = "leads!B2:B1000"; // Solo columna B (ID del cliente)
+    const response = await sheets.spreadsheets.values.get({
+        spreadsheetId,
+        range: leadsRange,
+        auth: authClient
+    });
+
+    const rows = response.data.values || [];
+
+    let count = 0;
+    for (const row of rows) {
+        if (row[0] === id) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+export async function updateWalksCounterForClient(id: string): Promise<{
+    updated: boolean;
+    error?: any;
+}> {
+    try {
+        const { sheets, authClient } = await getSheetClient();
+        const spreadsheetId = "1blH9C1I4CSf2yJ_8AlM9a0U2wBFh7RSiDYO8-XfKxLQ";
+
+        const usersRange = "usersDB!A2:H1000";
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range: usersRange,
+            auth: authClient
+        });
+
+        const rows = response.data.values || [];
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            if (row[0] === id) {
+                const count = await getWalksCountForClient(id);
+                const updateRange = `usersDB!H${i + 2}`; // +2 porque empieza en A2
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId,
+                    range: updateRange,
+                    valueInputOption: "RAW",
+                    requestBody: { values: [[count.toString()]] },
+                    auth: authClient
+                });
+                return { updated: true };
+            }
+        }
+
+        return { updated: false, error: "Cliente no encontrado en usersDB" };
+    } catch (error) {
+        console.error("❌ Error al actualizar contador individual:", error);
+        return { updated: false, error };
+    }
+}

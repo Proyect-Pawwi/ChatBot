@@ -1,7 +1,7 @@
 import { addKeyword, EVENTS } from "@builderbot/bot";
 import { conversation } from "~/model/models";
 import { sendNewLeadEmail } from "~/services/emailService";
-import { applyPawwiloverDiscount, findCelInSheet, insertClientBasicInfo, insertLeadRow, updateDogsForClient } from "~/services/googleSheetsService";
+import { applyPawwiloverDiscount, findCelInSheet, insertClientBasicInfo, insertLeadRow, updateDogsForClient, getWalksCountForClient , updateWalksCounterForClient  } from "~/services/googleSheetsService";
 import { getCiudadDesdeDireccion, getLocalidadDesdeDireccion } from "~/services/openStreetMap";
 import { conversations } from "~/services/memoryStore";
 import { handleConversationEnd, handleConversationTimeout } from "~/services/conversationManager"; // nueva
@@ -561,11 +561,17 @@ const u1 = addKeyword('write_cc')
     if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
 
     const conv = conversations[ctx.from];
-    const total = conv.precio;
+    
+    // Verifica si es primer paseo
+    const userWalks = await getWalksCountForClient(conv.id);
+
+    if (userWalks === 0) {
+      conv.precio = 0;
+    }
 
     await flowDynamic([
       {
-        body: `Ya casi\nTe confirmo estos datos:\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\n\nTotal: Tu primer paseo con nosotros es gratis\n\n¿Todo correcto?`,
+        body: `Ya casi\nTe confirmo estos datos:\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\n\nTotal: ${conv.precio}\n\n¿Todo correcto?`,
         buttons: [
           { body: 'Si' },
           { body: 'No' }
@@ -583,8 +589,10 @@ const u1 = addKeyword('write_cc')
 
     if (input === 'si') {
       console.log("Creando nuevo log");
+
       await insertLeadRow(conv);
-      await sendAdminNotification('3332885462', `Nuevo lead\n\nNumero Cliente: ${conv.id}\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nHora:${conv.fechaServicio}\nPrecio del servicio: $Gratis`);
+      await updateWalksCounterForClient(conv.id);
+      await sendAdminNotification('3332885462', `Nuevo lead\n\nNumero Cliente: ${conv.id}\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nHora:${conv.fechaServicio}\nPrecio del servicio: $${conv.precio}`);
       return gotoFlow(end);
     }
 
