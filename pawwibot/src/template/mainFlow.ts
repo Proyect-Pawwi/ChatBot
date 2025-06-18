@@ -565,6 +565,8 @@ const u1 = addKeyword('write_cc')
     // Verifica si es primer paseo
     const userWalks = await getWalksCountForClient(conv.id);
 
+    console.log(userWalks);
+    
     if (userWalks === 0) {
       conv.precio = 0;
     }
