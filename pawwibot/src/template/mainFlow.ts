@@ -572,9 +572,13 @@ const s1 = addKeyword('write_pet_description')
       conversations[ctx.from].address = previousAddress;
       return gotoFlow(u1);
     } else if (direccion.toLowerCase() === 'Ingresar nueva') {
-      await flowDynamic('Por favor, ingresa la nueva dirección exacta donde recogeremos a tu peludito 🏠');
-      ctx._step = 'ask_and_save_address';
-      return;
+      try {
+        const { updateUserCellById } = await import("~/services/googleSheetsService");
+        await updateUserCellById(ctx.from, 9, '');
+      } catch (e) {
+        console.error('Error actualizando dirección en la hoja:', e);
+      }
+      return gotoFlow(s1);
     }
 
     // Si el usuario responde con una dirección nueva después de rechazar la anterior
