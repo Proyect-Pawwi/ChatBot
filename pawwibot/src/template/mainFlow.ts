@@ -498,7 +498,7 @@ const s1 = addKeyword('write_pet_description')
     try {
       const resultado = await findCelInSheet(ctx.from);
       if (resultado.exists && resultado.userData) {
-        previousAddress = resultado.userData[9] || null;
+        previousAddress = resultado.userData[8] || null;
       }
     } catch (e) {
       console.error('Error buscando dirección previa:', e);
@@ -531,7 +531,7 @@ const s1 = addKeyword('write_pet_description')
     try {
       const resultado = await findCelInSheet(ctx.from);
       if (resultado.exists && resultado.userData) {
-        previousAddress = resultado.userData[9] || null;
+        previousAddress = resultado.userData[8] || null;
       }
     } catch (e) {
       console.error('Error buscando dirección previa:', e);
@@ -548,7 +548,7 @@ const s1 = addKeyword('write_pet_description')
       conversations[ctx.from].address = direccion;
       try {
         const { updateUserCellById } = await import("~/services/googleSheetsService");
-        await updateUserCellById(ctx.from, 9, direccion);
+        await updateUserCellById(ctx.from, 8, direccion);
       } catch (e) {
         console.error('Error actualizando dirección en la hoja:', e);
       }
@@ -561,15 +561,12 @@ const s1 = addKeyword('write_pet_description')
         conversations[ctx.from].address = previousAddress;
         return gotoFlow(u1);
       } else if (direccion.toLowerCase() === 'ingresar nueva') {
-        // Borra la dirección en la hoja y en memoria, luego repite s1
-        conversations[ctx.from].address = '';
         try {
-          const { updateUserCellById } = await import("~/services/googleSheetsService");
-          await updateUserCellById(ctx.from, 9, '');
+        const { updateUserCellById } = await import("~/services/googleSheetsService");
+        await updateUserCellById(ctx.from, 8, '');
         } catch (e) {
-          console.error('Error borrando dirección en la hoja:', e);
+          console.error('Error actualizando dirección en la hoja:', e);
         }
-        return gotoFlow(s1);
       }
     }
 
