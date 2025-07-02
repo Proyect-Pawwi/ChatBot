@@ -569,8 +569,10 @@ const s1 = addKeyword('write_pet_description')
     // Si hay dirección previa, preguntar si la usa o quiere ingresar nueva
     let direccion = ctx.body.trim();
     // Normalizar para comparar opciones de botón
+    console.log(direccion);
+    
     const lowerDireccion = direccion.toLowerCase();
-    if (ctx._step === 'confirm_address' && (lowerDireccion === 'sí, usar esa' || lowerDireccion === 'si, usar esa')) {
+    if (lowerDireccion === 'sí, usar esa' || lowerDireccion === 'si, usar esa') {
       conversations[ctx.from].address = previousAddress;
       return gotoFlow(u1);
     } else if (ctx._step === 'confirm_address' && (lowerDireccion === 'ingresar nueva')) {
