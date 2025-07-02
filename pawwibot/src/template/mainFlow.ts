@@ -537,9 +537,11 @@ const s1 = addKeyword('write_pet_description')
       console.error('Error buscando dirección previa:', e);
     }
 
+    const direccion = ctx.body.trim();
+    const lowerDireccion = direccion.toLowerCase();
+
     // Si no hay dirección previa, lo que el usuario responde es la dirección y se debe guardar
     if (!previousAddress || previousAddress.trim() === "") {
-      let direccion = ctx.body.trim();
       if (!direccion) {
         await flowDynamic('❌ Dirección vacía. Por favor, intenta nuevamente.');
         return gotoFlow(s1);
@@ -552,25 +554,63 @@ const s1 = addKeyword('write_pet_description')
       } catch (e) {
         console.error('Error actualizando dirección en la hoja:', e);
       }
-
-    
-      const lowerDireccion = direccion.toLowerCase();
-      if (lowerDireccion === 'sí, usar esa' || lowerDireccion === 'si, usar esa') {
-        conversations[ctx.from].address = previousAddress;
-        return gotoFlow(u1);
-      } else if (ctx._step === 'confirm_address' && (lowerDireccion === 'ingresar nueva')) {
-        try {
-          const { updateUserCellById } = await import("~/services/googleSheetsService");
-          await updateUserCellById(ctx.from, 9, '');
-        } catch (e) {
-          console.error('Error actualizando dirección en la hoja:', e);
+      // Después de guardar, preguntar si quiere usar esa dirección
+      await flowDynamic([
+        {
+          body: `¿Quieres usar la dirección registrada?\n\n*${direccion}*`,
+          buttons: [
+            { body: 'Sí, usar esa' },
+            { body: 'Ingresar nueva' }
+          ]
         }
+      ]);
+      ctx._step = 'confirm_address';
+      return;
+    }
+
+    // Si hay dirección previa, manejar las opciones
+    if (lowerDireccion === 'sí, usar esa' || lowerDireccion === 'si, usar esa') {
+      conversations[ctx.from].address = previousAddress;
+      return gotoFlow(u1);
+    } else if (lowerDireccion === 'ingresar nueva') {
+      // El usuario quiere ingresar una nueva dirección, limpiar y reiniciar
+      try {
+        const { updateUserCellById } = await import("~/services/googleSheetsService");
+        await updateUserCellById(ctx.from, 9, '');
+      } catch (e) {
+        console.error('Error actualizando dirección en la hoja:', e);
+      }
+      return gotoFlow(s1);
+    } else if (ctx._step === 'confirm_address') {
+      // Si el usuario escribe una dirección directamente después de rechazar la anterior
+      if (!direccion) {
+        await flowDynamic('❌ Dirección vacía. Por favor, intenta nuevamente.');
         return gotoFlow(s1);
       }
-      // Si el usuario responde con algo inesperado, repetir
-      await flowDynamic('Por favor, selecciona una opción válida o ingresa una dirección.');
-      return gotoFlow(s1);
+      conversations[ctx.from].address = direccion;
+      try {
+        const { updateUserCellById } = await import("~/services/googleSheetsService");
+        await updateUserCellById(ctx.from, 9, direccion);
+      } catch (e) {
+        console.error('Error actualizando dirección en la hoja:', e);
+      }
+      // Confirmar si quiere usar esa dirección
+      await flowDynamic([
+        {
+          body: `¿Quieres usar la dirección registrada?\n\n*${direccion}*`,
+          buttons: [
+            { body: 'Sí, usar esa' },
+            { body: 'Ingresar nueva' }
+          ]
+        }
+      ]);
+      ctx._step = 'confirm_address';
+      return;
     }
+
+    // Si el usuario responde con algo inesperado, repetir
+    await flowDynamic('Por favor, selecciona una opción válida o ingresa una dirección.');
+    return gotoFlow(s1);
   });
 
 const s1_barrio = addKeyword('write_pet_description')
