@@ -561,9 +561,15 @@ const s1 = addKeyword('write_pet_description')
         conversations[ctx.from].address = previousAddress;
         return gotoFlow(u1);
       } else if (direccion.toLowerCase() === 'ingresar nueva') {
-        await flowDynamic('Por favor, ingresa la nueva dirección exacta donde recogeremos a tu peludito 🏠');
-        ctx._step = 'new_address';
-        return;
+        // Borra la dirección en la hoja y en memoria, luego repite s1
+        conversations[ctx.from].address = '';
+        try {
+          const { updateUserCellById } = await import("~/services/googleSheetsService");
+          await updateUserCellById(ctx.from, 9, '');
+        } catch (e) {
+          console.error('Error borrando dirección en la hoja:', e);
+        }
+        return gotoFlow(s1);
       }
     }
 
