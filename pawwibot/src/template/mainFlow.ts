@@ -488,107 +488,22 @@ const q1_hora = addKeyword('write_pet_description')
       return gotoFlow(s1);
   });
 
-const s1 = addKeyword('write_pet_description')
-  .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
-    countAndLog('s1');
-    if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
-
-    // Buscar dirección previa en la hoja de cálculo
-    let previousAddress = null;
-    try {
-      const resultado = await findCelInSheet(ctx.from);
-      if (resultado.exists && resultado.userData) {
-        previousAddress = resultado.userData[9] || null;
-      }
-    } catch (e) {
-      console.error('Error buscando dirección previa:', e);
-    }
-
-    if (!previousAddress || previousAddress.trim() === "") {
-      // No hay dirección previa, preguntar y guardar
-      await flowDynamic('¿Cuál es la dirección exacta donde recogeremos a tu peludito? 🏠');
-      ctx._step = 'no_address';
-      return;
-    } else {
-      // Ya hay dirección previa, preguntar si quiere usarla
-      await flowDynamic([
-        {
-          body: `¿Quieres usar la dirección registrada anteriormente?\n\n*${previousAddress}*`,
-          buttons: [
-            { body: 'Sí, usar esa' },
-            { body: 'Ingresar nueva' }
-          ]
-        }
-      ]);
-      ctx._step = 'has_address';
-      return;
-    }
+  const s1 = addKeyword('write_pet_description')
+  .addAction(async (ctx, { flowDynamic, gotoFlow  }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
+    await flowDynamic(`¿Cuál es la dirección exacta donde recogeremos a tu peludito? 🏠`);
   })
   .addAnswer('', { capture: true })
-  .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
-    if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
-
-    let previousAddress = null;
-    try {
-      const resultado = await findCelInSheet(ctx.from);
-      if (resultado.exists && resultado.userData) {
-        previousAddress = resultado.userData[9] || null;
-      }
-    } catch (e) {
-      console.error('Error buscando dirección previa:', e);
-    }
-
+  .addAction(async (ctx, { flowDynamic, gotoFlow }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
     const direccion = ctx.body.trim();
-    const lowerDireccion = direccion.toLowerCase();
 
-    // Si no hay dirección previa, guardar la nueva y seguir a u1
-    if (!previousAddress || previousAddress.trim() === "") {
-      if (!direccion) {
-        await flowDynamic('❌ Dirección vacía. Por favor, intenta nuevamente.');
-        return gotoFlow(s1);
-      }
-      conversations[ctx.from].address = direccion;
-      try {
-        const { updateUserCellById } = await import("~/services/googleSheetsService");
-        await updateUserCellById(ctx.from, 9, direccion);
-      } catch (e) {
-        console.error('Error actualizando dirección en la hoja:', e);
-      }
-      return gotoFlow(u1);
+
+    if (!direccion) {
+      await flowDynamic('❌ Dirección vacía. Por favor, intenta nuevamente.');
+      return gotoFlow(s1);
     }
 
-    // Si hay dirección previa y elige usarla
-    if (lowerDireccion === 'sí, usar esa' || lowerDireccion === 'si, usar esa') {
-      conversations[ctx.from].address = previousAddress;
-      return gotoFlow(u1);
-    }
-
-    // Si hay dirección previa y elige ingresar nueva
-    if (lowerDireccion === 'ingresar nueva') {
-      await flowDynamic('Por favor, ingresa la nueva dirección donde recogeremos a tu peludito.');
-      ctx._step = 'force_new_address';
-      return;
-    }
-
-    // Si está esperando la nueva dirección después de "Ingresar nueva"
-    if (ctx._step === 'force_new_address') {
-      if (!direccion) {
-        await flowDynamic('❌ Dirección vacía. Por favor, intenta nuevamente.');
-        return gotoFlow(s1);
-      }
-      conversations[ctx.from].address = direccion;
-      try {
-        const { updateUserCellById } = await import("~/services/googleSheetsService");
-        await updateUserCellById(ctx.from, 9, direccion);
-      } catch (e) {
-        console.error('Error actualizando dirección en la hoja:', e);
-      }
-      return gotoFlow(u1);
-    }
-
-    // Si el usuario responde con algo inesperado, repetir
-    await flowDynamic('Por favor, selecciona una opción válida o ingresa una dirección.');
-    return gotoFlow(s1);
+    conversations[ctx.from].address = direccion;
+    return gotoFlow(u1);
   });
 
 const s1_barrio = addKeyword('write_pet_description')
