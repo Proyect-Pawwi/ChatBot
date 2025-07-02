@@ -608,7 +608,10 @@ const s1 = addKeyword('write_pet_description')
       return;
     }
 
-    if (direccion.toLowerCase() === 'Ingresar nueva' || direccion.toLowerCase() === 'ingresar nueva') {
+    if (direccion.toLowerCase() === 'sí, usar esa' || direccion.toLowerCase() === 'si, usar esa') {
+      conversations[ctx.from].address = previousAddress;
+      return gotoFlow(u1);
+    } else if (direccion.toLowerCase() === 'Ingresar nueva' || direccion.toLowerCase() === 'ingresar nueva') {
       // El usuario quiere ingresar una nueva dirección, reiniciar el flujo
       try {
         const { updateUserCellById } = await import("~/services/googleSheetsService");
