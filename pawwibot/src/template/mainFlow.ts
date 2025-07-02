@@ -562,11 +562,13 @@ const s1 = addKeyword('write_pet_description')
         return gotoFlow(u1);
       } else if (direccion.toLowerCase() === 'ingresar nueva') {
         try {
-        const { updateUserCellById } = await import("~/services/googleSheetsService");
-        await updateUserCellById(ctx.from, 8, '');
+          const { updateUserCellById } = await import("~/services/googleSheetsService");
+          await updateUserCellById(ctx.from, 8, '');
         } catch (e) {
           console.error('Error actualizando dirección en la hoja:', e);
         }
+        ctx._step = 'new_address';
+        return;
       }
     }
 
@@ -579,7 +581,7 @@ const s1 = addKeyword('write_pet_description')
       conversations[ctx.from].address = direccion;
       try {
         const { updateUserCellById } = await import("~/services/googleSheetsService");
-        await updateUserCellById(ctx.from, 9, direccion);
+        await updateUserCellById(ctx.from, 8, direccion);
       } catch (e) {
         console.error('Error actualizando dirección en la hoja:', e);
       }
