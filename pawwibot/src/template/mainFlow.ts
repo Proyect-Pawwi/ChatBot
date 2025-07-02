@@ -555,7 +555,7 @@ const s1 = addKeyword('write_pet_description')
       // Ahora preguntar si quiere usar esa dirección
       await flowDynamic([
         {
-          body: `¿Quieres usar la dirección registrada?\n\n*${direccion}*`,
+          body: `¿Quieres usar la dirección registradaa?\n\n*${direccion}*`,
           buttons: [
             { body: 'Sí, usar esa' },
             { body: 'Ingresar nueva' }
@@ -597,7 +597,7 @@ const s1 = addKeyword('write_pet_description')
       // Confirmar si quiere usar esa dirección
       await flowDynamic([
         {
-          body: `¿Quieres usar la dirección registrada?\n\n*${direccion}*`,
+          body: `¿Quieres usar la dirección registradas?\n\n*${direccion}*`,
           buttons: [
             { body: 'Sí, usar esa' },
             { body: 'Ingresar nueva' }
