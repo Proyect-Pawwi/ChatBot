@@ -608,6 +608,17 @@ const s1 = addKeyword('write_pet_description')
       return;
     }
 
+    if (direccion.toLowerCase() === 'Ingresar nueva' || direccion.toLowerCase() === 'ingresar nueva') {
+      // El usuario quiere ingresar una nueva dirección, reiniciar el flujo
+      try {
+        const { updateUserCellById } = await import("~/services/googleSheetsService");
+        await updateUserCellById(ctx.from, 9, '');
+      } catch (e) {
+        console.error('Error actualizando dirección en la hoja:', e);
+      }
+      return gotoFlow(s1);
+    }
+
     // Si el usuario responde con algo inesperado, repetir
     await flowDynamic('Por favor, selecciona una opción válida o ingresa una dirección.');
     return gotoFlow(s1);
