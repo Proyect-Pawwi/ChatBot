@@ -568,10 +568,12 @@ const s1 = addKeyword('write_pet_description')
 
     // Si hay dirección previa, preguntar si la usa o quiere ingresar nueva
     let direccion = ctx.body.trim();
-    if (direccion.toLowerCase() === 'sí, usar esa' || direccion.toLowerCase() === 'si, usar esa') {
+    // Normalizar para comparar opciones de botón
+    const lowerDireccion = direccion.toLowerCase();
+    if (ctx._step === 'confirm_address' && (lowerDireccion === 'sí, usar esa' || lowerDireccion === 'si, usar esa')) {
       conversations[ctx.from].address = previousAddress;
       return gotoFlow(u1);
-    } else if (direccion.toLowerCase() === 'Ingresar nueva') {
+    } else if (ctx._step === 'confirm_address' && (lowerDireccion === 'ingresar nueva')) {
       try {
         const { updateUserCellById } = await import("~/services/googleSheetsService");
         await updateUserCellById(ctx.from, 9, '');
@@ -597,7 +599,7 @@ const s1 = addKeyword('write_pet_description')
       // Confirmar si quiere usar esa dirección
       await flowDynamic([
         {
-          body: `¿Quieres usar la dirección registradas?\n\n*${direccion}*`,
+          body: `¿Quieres usar la dirección registrada?\n\n*${direccion}*`,
           buttons: [
             { body: 'Sí, usar esa' },
             { body: 'Ingresar nueva' }
@@ -611,7 +613,7 @@ const s1 = addKeyword('write_pet_description')
     if (direccion.toLowerCase() === 'sí, usar esa' || direccion.toLowerCase() === 'si, usar esa') {
       conversations[ctx.from].address = previousAddress;
       return gotoFlow(u1);
-    } else if (direccion.toLowerCase() === 'Ingresar nueva' || direccion.toLowerCase() === 'ingresar nueva') {
+    } else if (direccion.toLowerCase() === 'ingresar nueva') {
       // El usuario quiere ingresar una nueva dirección, reiniciar el flujo
       try {
         const { updateUserCellById } = await import("~/services/googleSheetsService");
