@@ -506,8 +506,9 @@ const s1 = addKeyword('write_pet_description')
 
     if (!previousAddress || previousAddress.trim() === "") {
       // No hay dirección previa, preguntar y guardar
-      await flowDynamic(`¿Cuál es la dirección exacta donde recogeremos a tu peludito? 🏠`);
-      ctx._step = 'ask_and_save_address';
+      await flowDynamic('¿Cuál es la dirección exacta donde recogeremos a tu peludito? 🏠');
+      ctx._step = 'no_address';
+      return;
     } else {
       // Ya hay dirección previa, preguntar si quiere usarla
       await flowDynamic([
@@ -519,14 +520,14 @@ const s1 = addKeyword('write_pet_description')
           ]
         }
       ]);
-      ctx._step = 'confirm_address';
+      ctx._step = 'has_address';
+      return;
     }
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
     if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
 
-    // Buscar dirección previa en la hoja de cálculo
     let previousAddress = null;
     try {
       const resultado = await findCelInSheet(ctx.from);
@@ -540,49 +541,37 @@ const s1 = addKeyword('write_pet_description')
     const direccion = ctx.body.trim();
     const lowerDireccion = direccion.toLowerCase();
 
-    // Si no hay dirección previa, lo que el usuario responde es la dirección y se debe guardar
+    // Si no hay dirección previa, guardar la nueva y seguir a u1
     if (!previousAddress || previousAddress.trim() === "") {
       if (!direccion) {
         await flowDynamic('❌ Dirección vacía. Por favor, intenta nuevamente.');
         return gotoFlow(s1);
       }
       conversations[ctx.from].address = direccion;
-      // Guardar en la hoja
       try {
         const { updateUserCellById } = await import("~/services/googleSheetsService");
         await updateUserCellById(ctx.from, 9, direccion);
       } catch (e) {
         console.error('Error actualizando dirección en la hoja:', e);
       }
-      // Después de guardar, preguntar si quiere usar esa dirección
-      await flowDynamic([
-        {
-          body: `¿Quieres usar la dirección registrada?\n\n*${direccion}*`,
-          buttons: [
-            { body: 'Sí, usar esa' },
-            { body: 'Ingresar nueva' }
-          ]
-        }
-      ]);
-      ctx._step = 'confirm_address';
-      return;
+      return gotoFlow(u1);
     }
 
-    // Si hay dirección previa, manejar las opciones
+    // Si hay dirección previa y elige usarla
     if (lowerDireccion === 'sí, usar esa' || lowerDireccion === 'si, usar esa') {
       conversations[ctx.from].address = previousAddress;
       return gotoFlow(u1);
-    } else if (lowerDireccion === 'ingresar nueva') {
-      // El usuario quiere ingresar una nueva dirección, limpiar y reiniciar
-      try {
-        const { updateUserCellById } = await import("~/services/googleSheetsService");
-        await updateUserCellById(ctx.from, 9, '');
-      } catch (e) {
-        console.error('Error actualizando dirección en la hoja:', e);
-      }
-      return gotoFlow(s1);
-    } else if (ctx._step === 'confirm_address') {
-      // Si el usuario escribe una dirección directamente después de rechazar la anterior
+    }
+
+    // Si hay dirección previa y elige ingresar nueva
+    if (lowerDireccion === 'ingresar nueva') {
+      await flowDynamic('Por favor, ingresa la nueva dirección donde recogeremos a tu peludito.');
+      ctx._step = 'force_new_address';
+      return;
+    }
+
+    // Si está esperando la nueva dirección después de "Ingresar nueva"
+    if (ctx._step === 'force_new_address') {
       if (!direccion) {
         await flowDynamic('❌ Dirección vacía. Por favor, intenta nuevamente.');
         return gotoFlow(s1);
@@ -594,18 +583,7 @@ const s1 = addKeyword('write_pet_description')
       } catch (e) {
         console.error('Error actualizando dirección en la hoja:', e);
       }
-      // Confirmar si quiere usar esa dirección
-      await flowDynamic([
-        {
-          body: `¿Quieres usar la dirección registrada?\n\n*${direccion}*`,
-          buttons: [
-            { body: 'Sí, usar esa' },
-            { body: 'Ingresar nueva' }
-          ]
-        }
-      ]);
-      ctx._step = 'confirm_address';
-      return;
+      return gotoFlow(u1);
     }
 
     // Si el usuario responde con algo inesperado, repetir
