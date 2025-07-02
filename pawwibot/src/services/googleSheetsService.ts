@@ -1,3 +1,50 @@
+/**
+ * Actualiza una celda específica en la fila del usuario identificado por su ID (cédula).
+ * @param {string} id - ID o cédula del usuario
+ * @param {number} colIndex - Índice de columna (0 = A, 1 = B, ...)
+ * @param {string} value - Valor a escribir en la celda
+ * @returns {Promise<{updated: boolean, error?: any}>}
+ */
+export async function updateUserCellById(id: string, colIndex: number, value: string): Promise<{ updated: boolean, error?: any }> {
+    try {
+        const { sheets, authClient } = await getSheetClient();
+        const spreadsheetId = "1blH9C1I4CSf2yJ_8AlM9a0U2wBFh7RSiDYO8-XfKxLQ";
+        const range = "usersDB!A1:AA1000";
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range,
+            auth: authClient
+        });
+
+        const rows = response.data.values || [];
+
+        for (let i = 1; i < rows.length; i++) {
+            if (rows[i][0] === id) {
+                // Convertir índice de columna a letra (A=0, B=1, ...)
+                const colLetter = String.fromCharCode(65 + colIndex);
+                const updateRange = `usersDB!${colLetter}${i + 1}`;
+
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId,
+                    range: updateRange,
+                    valueInputOption: "RAW",
+                    requestBody: {
+                        values: [[value]]
+                    },
+                    auth: authClient
+                });
+
+                return { updated: true };
+            }
+        }
+
+        return { updated: false, error: "Usuario no encontrado" };
+    } catch (error) {
+        console.error("❌ Error actualizando celda de usuario:", error);
+        return { updated: false, error };
+    }
+}
 import { google } from 'googleapis';
 import path from 'path';
 import { JWT } from 'google-auth-library';

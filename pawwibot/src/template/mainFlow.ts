@@ -462,7 +462,7 @@ const q1 = addKeyword('write_pet_description')
   .addAction(async (ctx, { flowDynamic, gotoFlow  }) => {countAndLog('q1');if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
       const petName = conversations[ctx.from].selectedDog?.nombre || '[vacio]';
 
-      await flowDynamic(`Indica la fecha y hora en la que quieres que paseemos a ${petName}`);
+      await flowDynamic(`Indica la fecha en la que quieres que paseemos a ${petName}`);
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { flowDynamic, gotoFlow }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
@@ -470,48 +470,143 @@ const q1 = addKeyword('write_pet_description')
 
       conversations[ctx.from].fechaServicio = cita;
 
-      return gotoFlow(s1);
+      return gotoFlow(q1_hora);
   });
 
 const q1_hora = addKeyword('write_pet_description')
   .addAction(async (ctx, { flowDynamic, gotoFlow  }) => {countAndLog('q1_hora');if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
-    const petName = conversations[ctx.from]?.selectedDog?.nombre || '[vacio]';
-    await flowDynamic(`¿A qué hora quisieras que recogamos a *${petName}*? Indica la hora como *hh:mm* y si es *am* ó *pm* (por ejemplo: 2:30 pm)`);
+      const petName = conversations[ctx.from].selectedDog?.nombre || '[vacio]';
+
+      await flowDynamic(`Indica la hora en la que quieres que paseemos a ${petName}`);
+  })
+  .addAnswer('', { capture: true })
+  .addAction(async (ctx, { flowDynamic, gotoFlow }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
+      const cita = ctx.body.trim();
+
+      conversations[ctx.from].inicioServicio = cita;
+
+      return gotoFlow(s1);
+  });
+
+const s1 = addKeyword('write_pet_description')
+  .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
+    countAndLog('s1');
+    if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
+
+    // Buscar dirección previa en la hoja de cálculo
+    let previousAddress = null;
+    try {
+      const resultado = await findCelInSheet(ctx.from);
+      if (resultado.exists && resultado.userData) {
+        previousAddress = resultado.userData[9] || null;
+      }
+    } catch (e) {
+      console.error('Error buscando dirección previa:', e);
+    }
+
+    if (!previousAddress || previousAddress.trim() === "") {
+      // No hay dirección previa, preguntar y guardar
+      await flowDynamic(`¿Cuál es la dirección exacta donde recogeremos a tu peludito? 🏠`);
+      ctx._step = 'ask_and_save_address';
+    } else {
+      // Ya hay dirección previa, preguntar si quiere usarla
+      await flowDynamic([
+        {
+          body: `¿Quieres usar la dirección registrada anteriormente?\n\n*${previousAddress}*`,
+          buttons: [
+            { body: 'Sí, usar esa' },
+            { body: 'No, ingresar nueva' }
+          ]
+        }
+      ]);
+      ctx._step = 'confirm_address';
+    }
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { flowDynamic, gotoFlow }) => {
     if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
 
-    const hora = ctx.body.trim();
-
-    // ✅ Nuevo regex: formato 12 horas + am/pm
-    const regexHora = /^(0?[1-9]|1[0-2]):([0-5][0-9])\s?(am|pm)$/i;
-
-    if (!regexHora.test(hora)) {
-      await flowDynamic("❌ Upps no te entendí bien. Por favor, escribe la hora como *hh:mm am/pm*, no olvides indicar si es am o pm (ejemplo: 2:30 pm)");
-      return gotoFlow(q1_hora);
+    // Buscar dirección previa en la hoja de cálculo
+    let previousAddress = null;
+    try {
+      const resultado = await findCelInSheet(ctx.from);
+      if (resultado.exists && resultado.userData) {
+        previousAddress = resultado.userData[9] || null;
+      }
+    } catch (e) {
+      console.error('Error buscando dirección previa:', e);
     }
 
-    conversations[ctx.from].inicioServicio = hora;
+    // Si no hay dirección previa, lo que el usuario responde es la dirección y se debe guardar
+    if (!previousAddress || previousAddress.trim() === "") {
+      let direccion = ctx.body.trim();
+      if (!direccion) {
+        await flowDynamic('❌ Dirección vacía. Por favor, intenta nuevamente.');
+        return gotoFlow(s1);
+      }
+      conversations[ctx.from].address = direccion;
+      // Guardar en la hoja
+      try {
+        const { updateUserCellById } = await import("~/services/googleSheetsService");
+        await updateUserCellById(ctx.from, 9, direccion);
+      } catch (e) {
+        console.error('Error actualizando dirección en la hoja:', e);
+      }
+      // Ahora preguntar si quiere usar esa dirección
+      await flowDynamic([
+        {
+          body: `¿Quieres usar la dirección registrada?\n\n*${direccion}*`,
+          buttons: [
+            { body: 'Sí, usar esa' },
+            { body: 'No, ingresar nueva' }
+          ]
+        }
+      ]);
+      ctx._step = 'confirm_address';
+      return;
+    }
 
+    // Si hay dirección previa, preguntar si la usa o quiere ingresar nueva
+    let direccion = ctx.body.trim();
+    if (direccion.toLowerCase() === 'sí, usar esa' || direccion.toLowerCase() === 'si, usar esa') {
+      conversations[ctx.from].address = previousAddress;
+      return gotoFlow(u1);
+    } else if (direccion.toLowerCase() === 'no, ingresar nueva') {
+      await flowDynamic('Por favor, ingresa la nueva dirección exacta donde recogeremos a tu peludito 🏠');
+      ctx._step = 'ask_and_save_address';
+      return;
+    }
+
+    // Si el usuario responde con una dirección nueva después de rechazar la anterior
+    if (ctx._step === 'ask_and_save_address') {
+      if (!direccion) {
+        await flowDynamic('❌ Dirección vacía. Por favor, intenta nuevamente.');
+        return gotoFlow(s1);
+      }
+      conversations[ctx.from].address = direccion;
+      try {
+        const { updateUserCellById } = await import("~/services/googleSheetsService");
+        await updateUserCellById(ctx.from, 9, direccion);
+      } catch (e) {
+        console.error('Error actualizando dirección en la hoja:', e);
+      }
+      // Confirmar si quiere usar esa dirección
+      await flowDynamic([
+        {
+          body: `¿Quieres usar la dirección registrada?\n\n*${direccion}*`,
+          buttons: [
+            { body: 'Sí, usar esa' },
+            { body: 'No, ingresar nueva' }
+          ]
+        }
+      ]);
+      ctx._step = 'confirm_address';
+      return;
+    }
+
+    // Si el usuario responde con algo inesperado, repetir
+    await flowDynamic('Por favor, selecciona una opción válida o ingresa una dirección.');
     return gotoFlow(s1);
-  });
-
-  const s1 = addKeyword('write_pet_description')
-  .addAction(async (ctx, { flowDynamic, gotoFlow  }) => {countAndLog('s1');if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
-    await flowDynamic(`¿Cuál es la dirección exacta donde recogeremos a tu peludito? 🏠`);
-  })
-  .addAnswer('', { capture: true })
-  .addAction(async (ctx, { flowDynamic, gotoFlow }) => {if (handleConversationTimeout(ctx.from)) return gotoFlow(init);
-    const direccion = ctx.body.trim();
-
-    if (!direccion) {
-      await flowDynamic('❌ Dirección vacía. Por favor, intenta nuevamente.');
-      return gotoFlow(s1);
-    }
-
-    conversations[ctx.from].address = direccion;
-    return gotoFlow(u1);
   });
 
 const s1_barrio = addKeyword('write_pet_description')
@@ -601,7 +696,8 @@ const u1 = addKeyword('write_cc')
 
       await insertLeadRow(conv);
       await updateWalksCounterForClient(conv.id);
-      await sendAdminNotification('3332885462', `Nuevo lead\n\nNumero Cliente: ${conv.id}\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nHora:${conv.fechaServicio}\nPrecio del servicio: $${conv.precio}`);
+      await sendAdminNotification('3332885462', `Nuevo lead\nNumero Cliente: ${conv.id}\n\nCopia el siguiente mensaje`);
+      await sendAdminNotification('3332885462', `Nuevo paseo\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nHora:${conv.fechaServicio}\nPrecio del servicio: $${conv.precio}`);
       return gotoFlow(end);
     }
 
