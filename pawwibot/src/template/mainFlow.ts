@@ -19,7 +19,7 @@ function countAndLog(flowName: string) {
     import('~/services/googleSheetsService').then(async (mod) => {
         if (typeof mod.updateFirstConfirmedLeadAndGetT === 'function') {
             const result = await mod.updateFirstConfirmedLeadAndGetT();
-            console.log('Resultado updateFirstConfirmedLeadAndGetT:', result);
+            console.log('Resultado updateFirstConfirmedLeadAndGetT: ', result);
             if (result) {
                 await sendAdminNotification('3332885462', `Lead confirmado actualizado. Valor de la celda T: ${result}`);
             } else {
