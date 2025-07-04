@@ -593,7 +593,7 @@ const u1 = addKeyword('write_cc')
 
       await insertLeadRow(conv);
       await updateWalksCounterForClient(conv.id);
-      await sendAdminNotification('3332885462', `Nuevo lead\nNumero Cliente: ${conv.id}\n\nCopia el siguiente mensaje`);
+      await sendAdminNotification('3332885462', `Nuevo lead\nNumero Cliente: ${conv.id}\n\nCopia el siguiente mensaje y envialo al grupo, cuando un pawwer confirme actualiza en el drive: https://docs.google.com/spreadsheets/d/1blH9C1I4CSf2yJ_8AlM9a0U2wBFh7RSiDYO8-XfKxLQ/edit?gid=856505057#gid=856505057`);
       await sendAdminNotification('3332885462', `Nuevo paseo\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nHora:${conv.fechaServicio}\nPrecio del servicio: $${conv.precio}`);
       return gotoFlow(end);
     }
