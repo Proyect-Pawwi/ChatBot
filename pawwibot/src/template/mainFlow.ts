@@ -14,6 +14,8 @@ function countAndLog(flowName: string) {
     console.log(`📊 [${flowName}] activado ${flowCounters[flowName]} vez(veces)`);
     console.log('📋 Historial de activaciones:', JSON.stringify(flowCounters, null, 2));
 }
+
+/*
 // Ejecutar updateFirstConfirmedLeadAndGetT cada 5 minutos automáticamente
 setInterval(async () => {
   console.log('🕒 Ejecutando updateFirstConfirmedLeadAndGetT y notifyUpcomingWalks cada minuto...');
@@ -30,6 +32,7 @@ setInterval(async () => {
     console.error('Error llamando a updateFirstConfirmedLeadAndGetT o notifyUpcomingWalks (interval):', e);
   }
 }, 1 * 60 * 1000);
+*/
 
 const init = addKeyword(EVENTS.WELCOME)
     .addAction(async (ctx, { gotoFlow, flowDynamic }) => {countAndLog('init'); if (handleConversationTimeout(ctx.from)) return gotoFlow(init); //Required for restarting conversation
