@@ -65,6 +65,28 @@ export async function notifyUpcomingWalks() {
                             msg = `Paseo marcado como próximo a realizarse\nCliente: ${cliente}\nNombre: ${nombre}\nPerro: ${perro}\nDirección: ${direccion}\nFecha: ${dateStr}\nHora: ${hourStr}`;
                         }
                         await sendAdminNotification('3023835142', msg);
+
+                        // Enviar recordatorio al cliente
+                        const phone = row[1] ? row[1].toString().trim() : '';
+                        let clientPhone = phone.length > 2 ? phone.substring(2) : phone;
+                        // Formatear fecha y hora para el mensaje
+                        let fechaHoraMsg = '';
+                        if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+                            // DD/MM/YYYY
+                            fechaHoraMsg = `${dateStr} a las ${hourStr}`;
+                        } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                            // YYYY-MM-DD
+                            const [y, m, d] = dateStr.split('-');
+                            fechaHoraMsg = `${d}/${m}/${y} a las ${hourStr}`;
+                        } else {
+                            fechaHoraMsg = `${dateStr} a las ${hourStr}`;
+                        }
+                        const reminderMsg = `¡Hola! 💜 Pawwi te recuerda tu paseo programado para hoy 🐶\n\n⏰ Hora: ${fechaHoraMsg}\n📍 Dirección: ${direccion}\n🐾 Peludito: ${perro}\n\nEl Pawwer asignado ya está listo para consentir a tu peludito como se merece 💪🐶\n\nSi hay algún cambio, no dudes en avisarnos. Estamos aquí para ti y tu peludo 💜✨\n\n¡Gracias por confiar en Pawwi, tu parche de confianza para paseos con amor y seguridad! 🐾`;
+                        try {
+                            await sendAdminNotification(clientPhone, reminderMsg);
+                        } catch (e) {
+                            console.error(`❌ Error enviando recordatorio al cliente ${clientPhone}:`, e);
+                        }
                     }
                 }
             }
@@ -156,12 +178,13 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
                     auth: authClient
                 });
 
-                // Enviar mensaje al cliente
+                // Enviar mensaje al cliente (quitando los dos primeros dígitos del teléfono)
+                let clientPhone = phone.length > 2 ? phone.substring(2) : phone;
                 const message = `¡Hola! 💜\nConfirmamos el paseo de ${dogName} 🐶🎉\n\nAquí te dejamos los detalles:\n📍 Dirección: ${address}\n🕒 Hora: ${date} a las ${hour}\n⏱️ Duración: ${duration}\n💰 Precio: ${price}\n\n👤 Pawwer asignado: ${pawwer}\n🪪 Cédula: ${cedula}\n\nNuestro Pawwer ya está listo para consentir a ${dogName} como se merece 💜\nSi tienes cualquier duda, aquí estamos para ayudarte siempre 🐾`;
                 try {
-                    await sendAdminNotification(phone, message);
+                    await sendAdminNotification(clientPhone, message);
                 } catch (e) {
-                    console.error(`❌ Error enviando mensaje al cliente ${phone}:`, e);
+                    console.error(`❌ Error enviando mensaje al cliente ${clientPhone}:`, e);
                 }
 
                 return row[19] || null;
