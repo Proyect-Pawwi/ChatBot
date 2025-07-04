@@ -16,16 +16,19 @@ function countAndLog(flowName: string) {
 }
 // Ejecutar updateFirstConfirmedLeadAndGetT cada 5 minutos automáticamente
 setInterval(async () => {
-  console.log('🕒 Ejecutando updateFirstConfirmedLeadAndGetT cada minuto...');
-    try {
-        const mod = await import('~/services/googleSheetsService');
-        if (typeof mod.updateFirstConfirmedLeadAndGetT === 'function') {
-            const result = await mod.updateFirstConfirmedLeadAndGetT();
-            console.log('Resultado updateFirstConfirmedLeadAndGetT (interval): ', result);
-        }
-    } catch (e) {
-        console.error('Error llamando a updateFirstConfirmedLeadAndGetT (interval):', e);
+  console.log('🕒 Ejecutando updateFirstConfirmedLeadAndGetT y notifyUpcomingWalks cada minuto...');
+  try {
+    const mod = await import('~/services/googleSheetsService');
+    if (typeof mod.updateFirstConfirmedLeadAndGetT === 'function') {
+      const result = await mod.updateFirstConfirmedLeadAndGetT();
+      console.log('Resultado updateFirstConfirmedLeadAndGetT (interval): ', result);
     }
+    if (typeof mod.notifyUpcomingWalks === 'function') {
+      await mod.notifyUpcomingWalks();
+    }
+  } catch (e) {
+    console.error('Error llamando a updateFirstConfirmedLeadAndGetT o notifyUpcomingWalks (interval):', e);
+  }
 }, 1 * 60 * 1000);
 
 const init = addKeyword(EVENTS.WELCOME)

@@ -40,8 +40,9 @@ export async function notifyUpcomingWalks() {
                     dateTime = new Date(dateTimeStr);
                     // Diferencia en minutos
                     const diffMs = dateTime.getTime() - nowColombia.getTime();
-                    const diffMin = diffMs / 60000;
-                    if (diffMin > 0 && diffMin <= 60) {
+                    const diffHrs = diffMs / 3600000;
+                    console.log(`Fila ${i + 2}: Faltan ${diffHrs.toFixed(2)} horas para el paseo (Fecha: ${dateStr}, Hora: ${hourStr})`);
+                    if (diffHrs > 0 && diffHrs <= 1) {
                         // Notificar admin
                         const cliente = row[2] || '-';
                         const nombre = row[3] || '-';
