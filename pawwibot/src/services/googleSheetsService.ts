@@ -4,7 +4,7 @@
  * Si no encuentra ninguna, retorna null.
  * @returns {Promise<string|null>} El valor de la celda T si se hizo el cambio, o null si no se encontró.
  */
-export async function updateFirstConfirmedLeadAndGetT() : Promise<string|null> {
+export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> {
     try {
         const { sheets, authClient } = await getSheetClient();
         const spreadsheetId = "1blH9C1I4CSf2yJ_8AlM9a0U2wBFh7RSiDYO8-XfKxLQ";
@@ -18,21 +18,41 @@ export async function updateFirstConfirmedLeadAndGetT() : Promise<string|null> {
 
         const rows = response.data.values || [];
 
+        // Funciones de validación
+        function isValidPhone(phone: string) {
+            // Acepta números de 10 dígitos, puede empezar por 3 (Colombia)
+            return /^3\d{9}$/.test(phone);
+        }
+        function isValidDate(date: string) {
+            // Acepta fechas en formato DD/MM/YYYY o YYYY-MM-DD
+            return /^(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})$/.test(date);
+        }
+        function isValidHour(hour: string) {
+            // Acepta horas en formato HH:MM (24h)
+            return /^([01]?\d|2[0-3]):[0-5]\d$/.test(hour);
+        }
+
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
             // Columna S es índice 18 (A=0)
             if (row[18] && row[18].toLowerCase() === 'confirmado') {
-                // Cambiar a 'Por realizar'
-                const updateRange = `leads!S${i + 2}`; // +2 porque empieza en A2
-                await sheets.spreadsheets.values.update({
-                    spreadsheetId,
-                    range: updateRange,
-                    valueInputOption: "RAW",
-                    requestBody: { values: [["Por realizar"]] },
-                    auth: authClient
-                });
-                // Retornar el valor de la celda T (índice 19)
-                return row[19] || null;
+                const phone = row[19] ? row[19].toString().trim() : '';
+                const date = row[20] ? row[20].toString().trim() : '';
+                const hour = row[21] ? row[21].toString().trim() : '';
+
+                if (isValidPhone(phone) && isValidDate(date) && isValidHour(hour)) {
+                    // Cambiar a 'Por realizar'
+                    const updateRange = `leads!S${i + 2}`; // +2 porque empieza en A2
+                    await sheets.spreadsheets.values.update({
+                        spreadsheetId,
+                        range: updateRange,
+                        valueInputOption: "RAW",
+                        requestBody: { values: [["Por realizar"]] },
+                        auth: authClient
+                    });
+                    // Retornar el valor de la celda T (índice 19)
+                    return row[19] || null;
+                }
             }
         }
         return null;

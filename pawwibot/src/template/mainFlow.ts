@@ -11,25 +11,26 @@ const flowCounters: Record<string, number> = {};
 
 function countAndLog(flowName: string) {
     flowCounters[flowName] = (flowCounters[flowName] || 0) + 1;
-
     console.log(`📊 [${flowName}] activado ${flowCounters[flowName]} vez(veces)`);
     console.log('📋 Historial de activaciones:', JSON.stringify(flowCounters, null, 2));
-
-    // Llama a updateFirstConfirmedLeadAndGetT y actúa según el resultado
-    import('~/services/googleSheetsService').then(async (mod) => {
+}
+// Ejecutar updateFirstConfirmedLeadAndGetT cada 5 minutos automáticamente
+setInterval(async () => {
+    try {
+        const mod = await import('~/services/googleSheetsService');
         if (typeof mod.updateFirstConfirmedLeadAndGetT === 'function') {
             const result = await mod.updateFirstConfirmedLeadAndGetT();
-            console.log('Resultado updateFirstConfirmedLeadAndGetT: ', result);
+            console.log('Resultado updateFirstConfirmedLeadAndGetT (interval): ', result);
             if (result) {
                 await sendAdminNotification('3332885462', `Lead confirmado actualizado. Valor de la celda T: ${result}`);
             } else {
                 await sendAdminNotification('3332885462', 'No se encontró ningún lead confirmado para actualizar.');
             }
         }
-    }).catch(e => {
-        console.error('Error llamando a updateFirstConfirmedLeadAndGetT:', e);
-    });
-}
+    } catch (e) {
+        console.error('Error llamando a updateFirstConfirmedLeadAndGetT (interval):', e);
+    }
+}, 5 * 60 * 1000); // 5 minutos
 
 const init = addKeyword(EVENTS.WELCOME)
     .addAction(async (ctx, { gotoFlow, flowDynamic }) => {countAndLog('init'); if (handleConversationTimeout(ctx.from)) return gotoFlow(init); //Required for restarting conversation
