@@ -43,12 +43,21 @@ export async function notifyUpcomingWalks() {
                     const diffHrs = diffMs / 3600000;
                     console.log(`Fila ${i + 2}: Faltan ${diffHrs.toFixed(2)} horas para el paseo (Fecha: ${dateStr}, Hora: ${hourStr})`);
                     if (diffHrs > 0 && diffHrs <= 1) {
+                        // Cambiar estado a "proximo a realizar"
+                        const updateRange = `leads!S${i + 2}`;
+                        await sheets.spreadsheets.values.update({
+                            spreadsheetId,
+                            range: updateRange,
+                            valueInputOption: "RAW",
+                            requestBody: { values: [["proximo a realizar"]] },
+                            auth: authClient
+                        });
                         // Notificar admin
                         const cliente = row[2] || '-';
                         const nombre = row[3] || '-';
                         const perro = row[4] || '-';
                         const direccion = row[12] || '-';
-                        const msg = `ALERTA: Paseo en menos de 1 hora\nCliente: ${cliente}\nNombre: ${nombre}\nPerro: ${perro}\nDirección: ${direccion}\nFecha: ${dateStr}\nHora: ${hourStr}`;
+                        const msg = `ALERTA: Paseo próximo a realizarse\nCliente: ${cliente}\nNombre: ${nombre}\nPerro: ${perro}\nDirección: ${direccion}\nFecha: ${dateStr}\nHora: ${hourStr}`;
                         await sendAdminNotification('3023835142', msg);
                     }
                 }
@@ -82,7 +91,6 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
 
         // Imprimir todos los valores de la columna S (índice 18)
         const colS = rows.map((row, idx) => `Fila ${idx + 2}: ${row[18]}`);
-        console.log('Valores de la columna S (estado lead):', colS);
 
         // Funciones de validación
         function isValidPhone(phone: string) {
@@ -97,7 +105,7 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
-            console.log(`Fila ${i + 2}: Estado = ${row[18]}`);
+            
             // Verificar si la fila tiene 'Confirmado' en la columna S (índice
             if (row[18] && row[18].toLowerCase() == 'confirmado') {
                 const phone = row[19] ? row[19].toString().trim() : '';
@@ -106,11 +114,11 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
 
                 let reason = '';
                 if (!isValidPhone(phone)) {
-                    reason = `No se actualizó lead fila ${i + 2}: Teléfono inválido (${phone})`;
+                    reason = `Pendiente lead fila ${i + 2}: Teléfono inválido (${phone})`;
                 } else if (!isValidDate(date)) {
-                    reason = `No se actualizó lead fila ${i + 2}: Fecha inválida (${date})`;
+                    reason = `Pendiente lead fila ${i + 2}: Fecha inválida (${date})`;
                 } else if (!isValidHour(hour)) {
-                    reason = `No se actualizó lead fila ${i + 2}: Hora inválida (${hour})`;
+                    reason = `Pendiente lead fila ${i + 2}: Hora inválida (${hour})`;
                 }
 
                 if (reason) {
