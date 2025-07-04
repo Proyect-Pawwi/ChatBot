@@ -21,11 +21,6 @@ setInterval(async () => {
         if (typeof mod.updateFirstConfirmedLeadAndGetT === 'function') {
             const result = await mod.updateFirstConfirmedLeadAndGetT();
             console.log('Resultado updateFirstConfirmedLeadAndGetT (interval): ', result);
-            if (result) {
-                await sendAdminNotification('3332885462', `Lead confirmado actualizado. Valor de la celda T: ${result}`);
-            } else {
-                await sendAdminNotification('3332885462', 'No se encontró ningún lead confirmado para actualizar.');
-            }
         }
     } catch (e) {
         console.error('Error llamando a updateFirstConfirmedLeadAndGetT (interval):', e);

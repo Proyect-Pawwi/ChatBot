@@ -1,9 +1,70 @@
 /**
+ * Busca en la hoja de leads si hay alguna fila en la columna S (índice 18) con el valor 'Por realizar'.
+ * Si la fecha (columna U, índice 20) y la hora (columna V, índice 21) indican que falta menos de una hora para el paseo (hora Colombia),
+ * manda un mensaje de alerta con sendAdminNotification.
+ */
+export async function notifyUpcomingWalks() {
+    try {
+        const { sheets, authClient } = await getSheetClient();
+        const spreadsheetId = "1blH9C1I4CSf2yJ_8AlM9a0U2wBFh7RSiDYO8-XfKxLQ";
+        const range = "leads!A2:Z1000";
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range,
+            auth: authClient
+        });
+
+        const rows = response.data.values || [];
+        const now = new Date();
+        // Hora Colombia
+        const nowColombia = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            if (row[18] && row[18].toLowerCase() === 'por realizar') {
+                const dateStr = row[20] ? row[20].toString().trim() : '';
+                const hourStr = row[21] ? row[21].toString().trim() : '';
+                // Unir fecha y hora
+                let dateTimeStr = '';
+                let dateTime;
+                if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+                    // DD/MM/YYYY
+                    const [d, m, y] = dateStr.split('/');
+                    dateTimeStr = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${hourStr}:00-05:00`;
+                } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+                    // YYYY-MM-DD
+                    dateTimeStr = `${dateStr}T${hourStr}:00-05:00`;
+                }
+                if (dateTimeStr) {
+                    dateTime = new Date(dateTimeStr);
+                    // Diferencia en minutos
+                    const diffMs = dateTime.getTime() - nowColombia.getTime();
+                    const diffMin = diffMs / 60000;
+                    if (diffMin > 0 && diffMin <= 60) {
+                        // Notificar admin
+                        const cliente = row[2] || '-';
+                        const nombre = row[3] || '-';
+                        const perro = row[4] || '-';
+                        const direccion = row[12] || '-';
+                        const msg = `ALERTA: Paseo en menos de 1 hora\nCliente: ${cliente}\nNombre: ${nombre}\nPerro: ${perro}\nDirección: ${direccion}\nFecha: ${dateStr}\nHora: ${hourStr}`;
+                        await sendAdminNotification('573023835142', msg);
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error("❌ Error en notifyUpcomingWalks:", error);
+    }
+}
+/**
  * Busca en la hoja de leads si hay alguna fila en la columna S (índice 18) con el valor 'Confirmado'.
  * Si la encuentra, cambia ese valor a 'Por realizar' y retorna el valor de la celda T (índice 19) de esa fila.
  * Si no encuentra ninguna, retorna null.
  * @returns {Promise<string|null>} El valor de la celda T si se hizo el cambio, o null si no se encontró.
  */
+import { sendAdminNotification } from "~/services/messageService";
+
 export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> {
     try {
         const { sheets, authClient } = await getSheetClient();
@@ -20,39 +81,46 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
 
         // Funciones de validación
         function isValidPhone(phone: string) {
-            // Acepta números de 10 dígitos, puede empezar por 3 (Colombia)
             return /^3\d{9}$/.test(phone);
         }
         function isValidDate(date: string) {
-            // Acepta fechas en formato DD/MM/YYYY o YYYY-MM-DD
             return /^(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})$/.test(date);
         }
         function isValidHour(hour: string) {
-            // Acepta horas en formato HH:MM (24h)
             return /^([01]?\d|2[0-3]):[0-5]\d$/.test(hour);
         }
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
-            // Columna S es índice 18 (A=0)
             if (row[18] && row[18].toLowerCase() === 'confirmado') {
                 const phone = row[19] ? row[19].toString().trim() : '';
                 const date = row[20] ? row[20].toString().trim() : '';
                 const hour = row[21] ? row[21].toString().trim() : '';
 
-                if (isValidPhone(phone) && isValidDate(date) && isValidHour(hour)) {
-                    // Cambiar a 'Por realizar'
-                    const updateRange = `leads!S${i + 2}`; // +2 porque empieza en A2
-                    await sheets.spreadsheets.values.update({
-                        spreadsheetId,
-                        range: updateRange,
-                        valueInputOption: "RAW",
-                        requestBody: { values: [["Por realizar"]] },
-                        auth: authClient
-                    });
-                    // Retornar el valor de la celda T (índice 19)
-                    return row[19] || null;
+                let reason = '';
+                if (!isValidPhone(phone)) {
+                    reason = `No se actualizó lead fila ${i + 2}: Teléfono inválido (${phone})`;
+                } else if (!isValidDate(date)) {
+                    reason = `No se actualizó lead fila ${i + 2}: Fecha inválida (${date})`;
+                } else if (!isValidHour(hour)) {
+                    reason = `No se actualizó lead fila ${i + 2}: Hora inválida (${hour})`;
                 }
+
+                if (reason) {
+                    await sendAdminNotification('573023835142', reason);
+                    continue;
+                }
+
+                // Cambiar a 'Por realizar'
+                const updateRange = `leads!S${i + 2}`;
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId,
+                    range: updateRange,
+                    valueInputOption: "RAW",
+                    requestBody: { values: [["Por realizar"]] },
+                    auth: authClient
+                });
+                return row[19] || null;
             }
         }
         return null;
