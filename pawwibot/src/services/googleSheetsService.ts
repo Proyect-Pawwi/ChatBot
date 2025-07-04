@@ -1,4 +1,47 @@
 /**
+ * Busca en la hoja de leads si hay alguna fila en la columna S (índice 18) con el valor 'Confirmado'.
+ * Si la encuentra, cambia ese valor a 'Por realizar' y retorna el valor de la celda T (índice 19) de esa fila.
+ * Si no encuentra ninguna, retorna null.
+ * @returns {Promise<string|null>} El valor de la celda T si se hizo el cambio, o null si no se encontró.
+ */
+export async function updateFirstConfirmedLeadAndGetT() : Promise<string|null> {
+    try {
+        const { sheets, authClient } = await getSheetClient();
+        const spreadsheetId = "1blH9C1I4CSf2yJ_8AlM9a0U2wBFh7RSiDYO8-XfKxLQ";
+        const range = "leads!A2:Z1000";
+
+        const response = await sheets.spreadsheets.values.get({
+            spreadsheetId,
+            range,
+            auth: authClient
+        });
+
+        const rows = response.data.values || [];
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            // Columna S es índice 18 (A=0)
+            if (row[18] && row[18].toLowerCase() === 'confirmado') {
+                // Cambiar a 'Por realizar'
+                const updateRange = `leads!S${i + 2}`; // +2 porque empieza en A2
+                await sheets.spreadsheets.values.update({
+                    spreadsheetId,
+                    range: updateRange,
+                    valueInputOption: "RAW",
+                    requestBody: { values: [["Por realizar"]] },
+                    auth: authClient
+                });
+                // Retornar el valor de la celda T (índice 19)
+                return row[19] || null;
+            }
+        }
+        return null;
+    } catch (error) {
+        console.error("❌ Error en updateFirstConfirmedLeadAndGetT:", error);
+        return null;
+    }
+}
+/**
  * Actualiza una celda específica en la fila del usuario identificado por su ID (cédula).
  * @param {string} id - ID o cédula del usuario
  * @param {number} colIndex - Índice de columna (0 = A, 1 = B, ...)
@@ -229,7 +272,15 @@ export async function insertLeadRow(conv: conversation) {
             conv.tiempoServicio,
             conv.fechaServicio,
             conv.inicioServicio,
-            conv.precio
+            conv.precio,
+            'Por confirmar',
+            'Pendiente',
+            'Pendiente',
+            'Pendiente',
+            'Pendiente',
+            '-',
+            '-',
+            '-',
         ]];
 
         const response = await sheets.spreadsheets.values.append({

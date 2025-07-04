@@ -14,6 +14,21 @@ function countAndLog(flowName: string) {
 
     console.log(`📊 [${flowName}] activado ${flowCounters[flowName]} vez(veces)`);
     console.log('📋 Historial de activaciones:', JSON.stringify(flowCounters, null, 2));
+
+    // Llama a updateFirstConfirmedLeadAndGetT y actúa según el resultado
+    import('~/services/googleSheetsService').then(async (mod) => {
+        if (typeof mod.updateFirstConfirmedLeadAndGetT === 'function') {
+            const result = await mod.updateFirstConfirmedLeadAndGetT();
+            console.log('Resultado updateFirstConfirmedLeadAndGetT:', result);
+            if (result) {
+                await sendAdminNotification('3332885462', `Lead confirmado actualizado. Valor de la celda T: ${result}`);
+            } else {
+                await sendAdminNotification('3332885462', 'No se encontró ningún lead confirmado para actualizar.');
+            }
+        }
+    }).catch(e => {
+        console.error('Error llamando a updateFirstConfirmedLeadAndGetT:', e);
+    });
 }
 
 const init = addKeyword(EVENTS.WELCOME)
@@ -594,7 +609,7 @@ const u1 = addKeyword('write_cc')
       await insertLeadRow(conv);
       await updateWalksCounterForClient(conv.id);
       await sendAdminNotification('3332885462', `Nuevo lead\nNumero Cliente: ${conv.id}\n\nCopia el siguiente mensaje y envialo al grupo, cuando un pawwer confirme actualiza en el drive: https://docs.google.com/spreadsheets/d/1blH9C1I4CSf2yJ_8AlM9a0U2wBFh7RSiDYO8-XfKxLQ/edit?gid=856505057#gid=856505057`);
-      await sendAdminNotification('3332885462', `Nuevo paseo\n\nPeludito: ${conv.selectedDog.nombre}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nHora:${conv.fechaServicio}\nPrecio del servicio: $${conv.precio}`);
+      await sendAdminNotification('3332885462', `Nuevo paseo\n\nPeludito: ${conv.selectedDog.nombre}\nDescripcion:${conv.selectedDog.descripcion}\nDuración: ${conv.tiempoServicio}\nDonde: ${conv.address}\nHora:${conv.fechaServicio}\nPrecio del servicio: $${conv.precio}`);
       return gotoFlow(end);
     }
 
