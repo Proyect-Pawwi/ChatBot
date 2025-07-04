@@ -48,7 +48,7 @@ export async function notifyUpcomingWalks() {
                         const perro = row[4] || '-';
                         const direccion = row[12] || '-';
                         const msg = `ALERTA: Paseo en menos de 1 hora\nCliente: ${cliente}\nNombre: ${nombre}\nPerro: ${perro}\nDirección: ${direccion}\nFecha: ${dateStr}\nHora: ${hourStr}`;
-                        await sendAdminNotification('573023835142', msg);
+                        await sendAdminNotification('3023835142', msg);
                     }
                 }
             }
@@ -113,7 +113,7 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
                 }
 
                 if (reason) {
-                    await sendAdminNotification('573023835142', reason);
+                    await sendAdminNotification('3023835142', reason);
                     continue;
                 }
 

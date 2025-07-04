@@ -16,7 +16,7 @@ function countAndLog(flowName: string) {
 }
 // Ejecutar updateFirstConfirmedLeadAndGetT cada 5 minutos automáticamente
 setInterval(async () => {
-  console.log('🕒 Ejecutando updateFirstConfirmedLeadAndGetT cada 5 minutos...');
+  console.log('🕒 Ejecutando updateFirstConfirmedLeadAndGetT cada minuto...');
     try {
         const mod = await import('~/services/googleSheetsService');
         if (typeof mod.updateFirstConfirmedLeadAndGetT === 'function') {
@@ -26,7 +26,7 @@ setInterval(async () => {
     } catch (e) {
         console.error('Error llamando a updateFirstConfirmedLeadAndGetT (interval):', e);
     }
-}, 1 * 60 * 1000); // 5 minutos
+}, 1 * 60 * 1000);
 
 const init = addKeyword(EVENTS.WELCOME)
     .addAction(async (ctx, { gotoFlow, flowDynamic }) => {countAndLog('init'); if (handleConversationTimeout(ctx.from)) return gotoFlow(init); //Required for restarting conversation
