@@ -62,9 +62,7 @@ export async function notifyUpcomingWalks() {
                         const direccion = row[12] || '-';
                         let msg;
                         if (isNaNdiff) {
-                            msg = `ALERTA: Paseo marcado como próximo a realizarse por error de fecha/hora\nCliente: ${cliente}\nNombre: ${nombre}\nPerro: ${perro}\nDirección: ${direccion}\nFecha: ${dateStr}\nHora: ${hourStr}`;
-                        } else {
-                            msg = `ALERTA: Paseo próximo a realizarse\nCliente: ${cliente}\nNombre: ${nombre}\nPerro: ${perro}\nDirección: ${direccion}\nFecha: ${dateStr}\nHora: ${hourStr}`;
+                            msg = `Paseo marcado como próximo a realizarse\nCliente: ${cliente}\nNombre: ${nombre}\nPerro: ${perro}\nDirección: ${direccion}\nFecha: ${dateStr}\nHora: ${hourStr}`;
                         }
                         await sendAdminNotification('3023835142', msg);
                     }
@@ -113,14 +111,28 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
-            
-            // Verificar si la fila tiene 'Confirmado' en la columna S (índice
+            // Verificar si la fila tiene 'Confirmado' en la columna S (índice 18)
             if (row[18] && row[18].toLowerCase() == 'confirmado') {
-                const phone = row[19] ? row[19].toString().trim() : '';
+                const phone = row[1] ? row[1].toString().trim() : '';
+                const dogName = row[4] || '-';
+                const address = row[12] || '-';
                 const date = row[20] ? row[20].toString().trim() : '';
                 const hour = row[21] ? row[21].toString().trim() : '';
+                const duration = row[14] || '-';
+                const price = row[17] || '-';
+                const pawwer = row[22] || '-';
+                const cedula = row[23] || '-';
 
                 let reason = '';
+                function isValidPhone(phone: string) {
+                    return /^3\d{9}$/.test(phone);
+                }
+                function isValidDate(date: string) {
+                    return /^(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})$/.test(date);
+                }
+                function isValidHour(hour: string) {
+                    return /^([01]?\d|2[0-3]):[0-5]\d$/.test(hour);
+                }
                 if (!isValidPhone(phone)) {
                     reason = `Pendiente lead fila ${i + 2}: Teléfono inválido (${phone})`;
                 } else if (!isValidDate(date)) {
@@ -143,6 +155,15 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
                     requestBody: { values: [["Por realizar"]] },
                     auth: authClient
                 });
+
+                // Enviar mensaje al cliente
+                const message = `¡Hola! 💜\nConfirmamos el paseo de ${dogName} 🐶🎉\n\nAquí te dejamos los detalles:\n📍 Dirección: ${address}\n🕒 Hora: ${date} a las ${hour}\n⏱️ Duración: ${duration}\n💰 Precio: ${price}\n\n👤 Pawwer asignado: ${pawwer}\n🪪 Cédula: ${cedula}\n\nNuestro Pawwer ya está listo para consentir a ${dogName} como se merece 💜\nSi tienes cualquier duda, aquí estamos para ayudarte siempre 🐾`;
+                try {
+                    await sendAdminNotification(phone, message);
+                } catch (e) {
+                    console.error(`❌ Error enviando mensaje al cliente ${phone}:`, e);
+                }
+
                 return row[19] || null;
             }
         }
