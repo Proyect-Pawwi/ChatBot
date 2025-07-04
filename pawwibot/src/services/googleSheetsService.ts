@@ -41,8 +41,11 @@ export async function notifyUpcomingWalks() {
                     // Diferencia en minutos
                     const diffMs = dateTime.getTime() - nowColombia.getTime();
                     const diffHrs = diffMs / 3600000;
-                    console.log(`Fila ${i + 2}: Faltan ${diffHrs.toFixed(2)} horas para el paseo (Fecha: ${dateStr}, Hora: ${hourStr})`);
-                    if (diffHrs > 0 && diffHrs <= 1) {
+                    console.log(`Fila ${i + 2}: Fecha lead: ${dateStr}, Hora lead: ${hourStr}`);
+                    console.log(`Hora Colombia actual: ${nowColombia.toISOString()}`);
+                    console.log(`Diferencia en horas para el paseo: ${diffHrs.toFixed(2)}`);
+                    const isNaNdiff = isNaN(diffHrs);
+                    if ((diffHrs > 0 && diffHrs <= 1) || isNaNdiff) {
                         // Cambiar estado a "proximo a realizar"
                         const updateRange = `leads!S${i + 2}`;
                         await sheets.spreadsheets.values.update({
@@ -57,7 +60,12 @@ export async function notifyUpcomingWalks() {
                         const nombre = row[3] || '-';
                         const perro = row[4] || '-';
                         const direccion = row[12] || '-';
-                        const msg = `ALERTA: Paseo próximo a realizarse\nCliente: ${cliente}\nNombre: ${nombre}\nPerro: ${perro}\nDirección: ${direccion}\nFecha: ${dateStr}\nHora: ${hourStr}`;
+                        let msg;
+                        if (isNaNdiff) {
+                            msg = `ALERTA: Paseo marcado como próximo a realizarse por error de fecha/hora\nCliente: ${cliente}\nNombre: ${nombre}\nPerro: ${perro}\nDirección: ${direccion}\nFecha: ${dateStr}\nHora: ${hourStr}`;
+                        } else {
+                            msg = `ALERTA: Paseo próximo a realizarse\nCliente: ${cliente}\nNombre: ${nombre}\nPerro: ${perro}\nDirección: ${direccion}\nFecha: ${dateStr}\nHora: ${hourStr}`;
+                        }
                         await sendAdminNotification('3023835142', msg);
                     }
                 }
