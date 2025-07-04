@@ -96,7 +96,9 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
-            if (row[18] && row[18].toLowerCase() === 'confirmado') {
+            console.log(`Fila ${i + 2}: Estado = ${row[18]}`);
+            // Verificar si la fila tiene 'Confirmado' en la columna S (índice
+            if (row[18] && row[18].toLowerCase() == 'confirmado') {
                 const phone = row[19] ? row[19].toString().trim() : '';
                 const date = row[20] ? row[20].toString().trim() : '';
                 const hour = row[21] ? row[21].toString().trim() : '';
