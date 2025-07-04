@@ -79,6 +79,10 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
 
         const rows = response.data.values || [];
 
+        // Imprimir todos los valores de la columna S (índice 18)
+        const colS = rows.map((row, idx) => `Fila ${idx + 2}: ${row[18]}`);
+        console.log('Valores de la columna S (estado lead):', colS);
+
         // Funciones de validación
         function isValidPhone(phone: string) {
             return /^3\d{9}$/.test(phone);
