@@ -68,7 +68,7 @@ export async function notifyUpcomingWalks() {
 
                         // Enviar recordatorio al cliente
                         const phone = row[1] ? row[1].toString().trim() : '';
-                        let clientPhone = phone.length > 2 ? phone.substring(2) : phone;
+                        const clientPhone = phone.length > 2 ? phone.substring(2) : phone;
                         // Formatear fecha y hora para el mensaje
                         let fechaHoraMsg = '';
                         if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
@@ -120,17 +120,7 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
         // Imprimir todos los valores de la columna S (índice 18)
         const colS = rows.map((row, idx) => `Fila ${idx + 2}: ${row[18]}`);
 
-        // Funciones de validación
-        function isValidPhone(phone: string) {
-            return /^3\d{9}$/.test(phone);
-        }
-        function isValidDate(date: string) {
-            return /^(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})$/.test(date);
-        }
-        function isValidHour(hour: string) {
-            return /^([01]?\d|2[0-3]):[0-5]\d$/.test(hour);
-        }
-
+        // ---resto del código sin cambios---
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
             // Verificar si la fila tiene 'Confirmado' en la columna S (índice 18)
@@ -146,15 +136,6 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
                 const cedula = row[23] || '-';
 
                 let reason = '';
-                function isValidPhone(phone: string) {
-                    return /^3\d{9}$/.test(phone);
-                }
-                function isValidDate(date: string) {
-                    return /^(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})$/.test(date);
-                }
-                function isValidHour(hour: string) {
-                    return /^([01]?\d|2[0-3]):[0-5]\d$/.test(hour);
-                }
                 if (!isValidPhone(phone)) {
                     reason = `Pendiente lead fila ${i + 2}: Teléfono inválido (${phone})`;
                 } else if (!isValidDate(date)) {
@@ -179,7 +160,7 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
                 });
 
                 // Enviar mensaje al cliente (quitando los dos primeros dígitos del teléfono)
-                let clientPhone = phone.length > 2 ? phone.substring(2) : phone;
+                const clientPhone = phone.length > 2 ? phone.substring(2) : phone;
                 const message = `¡Hola! 💜\nConfirmamos el paseo de ${dogName} 🐶🎉\n\nAquí te dejamos los detalles:\n📍 Dirección: ${address}\n🕒 Hora: ${date} a las ${hour}\n⏱️ Duración: ${duration}\n💰 Precio: ${price}\n\n👤 Pawwer asignado: ${pawwer}\n🪪 Cédula: ${cedula}\n\nNuestro Pawwer ya está listo para consentir a ${dogName} como se merece 💜\nSi tienes cualquier duda, aquí estamos para ayudarte siempre 🐾`;
                 try {
                     await sendAdminNotification(clientPhone, message);
@@ -195,6 +176,17 @@ export async function updateFirstConfirmedLeadAndGetT(): Promise<string | null> 
         console.error("❌ Error en updateFirstConfirmedLeadAndGetT:", error);
         return null;
     }
+}
+
+// Funciones de validación fuera de la función principal
+function isValidPhone(phone: string) {
+    return /^3\d{9}$/.test(phone);
+}
+function isValidDate(date: string) {
+    return /^(\d{2}\/\d{2}\/\d{4}|\d{4}-\d{2}-\d{2})$/.test(date);
+}
+function isValidHour(hour: string) {
+    return /^([01]?\d|2[0-3]):[0-5]\d$/.test(hour);
 }
 /**
  * Actualiza una celda específica en la fila del usuario identificado por su ID (cédula).
