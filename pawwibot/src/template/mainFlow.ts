@@ -18,7 +18,7 @@ const usuarioData = {};
 const init = addKeyword(EVENTS.WELCOME)
   .addAction(async (ctx) => {
     const nombre = ctx.pushName || "Usuario";
-    console.log(`[INIT] Usuario ${nombre} ha iniciado el flujo.`);
+    console.log(`[INIT] Usuario ${nombre} ha iniciado el flujo. Número: ${ctx.from}`);
     
     // Recuperar usuario y perros asociados
     try {
@@ -203,7 +203,12 @@ const RegistrarPerro = addKeyword('RegistrarPerro')
       console.log(`[INTERACTION] Botón oprimido: ${textoBoton}, Payload: ${payloadBoton}`);
       if (payloadBoton === "AGENDAR_PASEO_SI") {
         perritoData[ctx.from].vacunas = true;
-        usuarioData[ctx.from].perroSeleccionado = perritoData[ctx.from].nombre;
+        
+        usuarioData[ctx.from].perroSeleccionado.Nombre = perritoData[ctx.from].nombre;
+        usuarioData[ctx.from].perroSeleccionado.Raza = perritoData[ctx.from].raza;
+        usuarioData[ctx.from].perroSeleccionado.Edad = perritoData[ctx.from].edad;
+        usuarioData[ctx.from].perroSeleccionado.Consideraciones = perritoData[ctx.from].consideraciones;
+        usuarioData[ctx.from].perroSeleccionado.Vacunas = perritoData[ctx.from].vacunas;
         return gotoFlow(agendarTiempoPaseo);
       } 
       else if (payloadBoton === "No, no registrar") {
@@ -242,7 +247,7 @@ const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
         perroSeleccionado = perritoData[id];
         // Guardar el nombre del perro seleccionado en usuarioData
         if (!usuarioData[ctx.from]) usuarioData[ctx.from] = {};
-        usuarioData[ctx.from].perroSeleccionado = perroSeleccionado.Nombre;
+        usuarioData[ctx.from].perroSeleccionado = perroSeleccionado;
         break;
       }
     }
@@ -304,7 +309,7 @@ const agendarTiempoPaseo = addKeyword('agendarTiempoPaseo')
 
 const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
   .addAction(async (ctx) => {
-      await sendText(ctx.from, `Indica el dia en la que quieres que paseemos a ${usuarioData[ctx.from].perroSeleccionado}.`);
+      await sendText(ctx.from, `Indica el dia en la que quieres que paseemos a ${usuarioData[ctx.from].perroSeleccionado.Nombre}.`);
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { gotoFlow }) => {
@@ -316,7 +321,7 @@ const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
 
 const agendarHoraPaseo = addKeyword('agendarHoraPaseo')
   .addAction(async (ctx) => {
-      await sendText(ctx.from, `Indica la hora en la que quieres que paseemos a ${usuarioData[ctx.from].perroSeleccionado}.`);
+      await sendText(ctx.from, `Indica la hora en la que quieres que paseemos a ${usuarioData[ctx.from].perroSeleccionado.Nombre}.`);
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { gotoFlow }) => {
@@ -353,7 +358,7 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
 Ya casi
 Te confirmo estos datos:
 
-Peludito ${usuarioData[ctx.from].perroSeleccionado}
+Peludito ${usuarioData[ctx.from].perroSeleccionado.Nombre}
 Duración:${usuarioData[ctx.from].agendamientoSeleccionado}
 Fecha: ${usuarioData[ctx.from].diaSeleccionado}
 Donde: ${usuarioData[ctx.from].direccion}
@@ -376,8 +381,8 @@ Total: $${usuarioData[ctx.from].valor}
         await createLead({
           FechaCreacion: new Date().toISOString(),
           Celular: ctx.from,
-          Perro: usuarioData[ctx.from].perroSeleccionado,
-          Anotaciones: '', // o pon algún dato real aquí si quieres
+          Perro: usuarioData[ctx.from].perroSeleccionado.Nombre,
+          Anotaciones: `\nRaza: ${usuarioData[ctx.from].perroSeleccionado.Raza}\n Edad: ${usuarioData[ctx.from].perroSeleccionado.Edad}\n Consideraciones: ${usuarioData[ctx.from].perroSeleccionado.Consideraciones}\n Vacunas: ${usuarioData[ctx.from].perroSeleccionado.Vacunas ? 'Si' : 'No'}`,
           Direccion: usuarioData[ctx.from].direccion,
           TipoServicio: 'paseo',
           TiempoServicio: usuarioData[ctx.from].agendamientoSeleccionado,
@@ -388,7 +393,24 @@ Total: $${usuarioData[ctx.from].valor}
           Pawwer: 'No asignado'
         });
 
-        await sendText(ctx.from, `¡Paseo agendado exitosamente! 🐾`);
+        await sendText(ctx.from, `✅ ¡Solicitud enviada exitosamente!
+
+En unos instantes nuestro Equipo de Pawwi se estará comunicando contigo para confirmar el paseo de Nina
+
+Si tienes dudas con tu servicio, o quieres comentar una novedad, contáctate con  Pawwer de soporte +57 3023835152`);
+        await sendText('573332885462', `🔔 Lead nuevo registrado desde el bot.`);
+        await sendText('573332885462', `Nuevo paseo
+
+Peludito: ${usuarioData[ctx.from].perroSeleccionado.Nombre}
+Descripcion:
+  Raza: ${usuarioData[ctx.from].perroSeleccionado.Raza}
+  Edad: ${usuarioData[ctx.from].perroSeleccionado.Edad}
+  Consideraciones: ${usuarioData[ctx.from].perroSeleccionado.Consideraciones}
+  Vacunas: ${usuarioData[ctx.from].perroSeleccionado.Vacunas ? 'Si' : 'No'}
+Duración: ${usuarioData[ctx.from].agendamientoSeleccionado}
+Donde: ${usuarioData[ctx.from].direccion}
+Hora: ${usuarioData[ctx.from].horaSeleccionada || 'No especificada'}
+Precio del servicio: $${usuarioData[ctx.from].valor}`);
       } catch (e) {
         await sendText(ctx.from, `Ocurrió un error al guardar el agendamiento. Intenta de nuevo más tarde.`);
         console.error("Error al crear el lead:", e?.message || e);
@@ -404,36 +426,6 @@ Total: $${usuarioData[ctx.from].valor}
       return gotoFlow(agendarResumenPaseo);
     }
   });
-
-//TODO:Registrar lead
-/*
-const registrarLead = addKeyword('registrarLead')
-  .addAction(async (ctx) => {
-    try {
-      await createLead({
-        FechaCreacion: new Date().toISOString(),
-        Celular: ctx.from,
-        Perro: usuarioData[ctx.from]?.perroSeleccionado || '',
-        Anotaciones: '',
-        Direccion: usuarioData[ctx.from]?.direccion || '',
-        TipoServicio: 'paseo',
-        TiempoServicio: usuarioData[ctx.from]?.agendamientoSeleccionado || '',
-        Fecha: usuarioData[ctx.from]?.diaSeleccionado || '',
-        Hora: usuarioData[ctx.from]?.horaSeleccionada || '',
-        Precio: usuarioData[ctx.from]?.valor || 0,
-        Estado: 'Pendiente',
-        Pawwer: 'No asignado'
-      });
-      await sendText(ctx.from, `¡Paseo agendado exitosamente! 🐾`);
-    } catch (e) {
-      await sendText(ctx.from, `Ocurrió un error al guardar el agendamiento. Intenta de nuevo más tarde.`);
-    }
-  })
-  .addAnswer('', { capture: true })
-  .addAction(async (ctx, { endFlow }) => {
-    return endFlow();
-  });
-*/
 
 //TODO: Enviar lead al equipo de soporte
 //const enviarLeadSoporte = addKeyword('enviarLeadSoporte')
