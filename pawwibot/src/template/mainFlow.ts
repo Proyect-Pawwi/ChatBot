@@ -270,7 +270,7 @@ const agendarTiempoPaseo = addKeyword('agendarTiempoPaseo')
         agendamiento = '30 minutos';
         precio = 10000;
         break;
-      case 'ADVENTURE_60_MIN':
+      case 'ADVENTURE_1_HORA':
         agendamiento = '60 minutos';
         precio = 17000;
         break;
@@ -431,4 +431,4 @@ Precio del servicio: $${usuarioData[ctx.from].valor}`);
 
 //TODO: Flujo de pawwer dividido con el del cliente
 
-export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarDireccionPaseo, agendarResumenPaseo };
+export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarDireccionPaseo, agendarMetodoPaseo, agendarResumenPaseo };
