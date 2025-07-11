@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 
 const AIRTABLE_BASE = 'https://api.airtable.com/v0/appOceFmbxh8PfLKT/Leads';
-const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || 'YOUR_SECRET_API_TOKEN';
+const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.airtableApiKey;
 
 interface LeadFields {
   FechaCreacion: string;

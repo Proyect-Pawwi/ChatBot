@@ -277,17 +277,17 @@ const agendarTiempoPaseo = addKeyword('agendarTiempoPaseo')
     switch (bodyBoton) {
       case '1️⃣ Paseo Flash':
         mensaje = 'Has seleccionado Paseo Flash (15 minutos). ¡Vamos a agendarlo!';
-        agendamiento = 'Paseo Flash (15 minutos)';
+        agendamiento = '15 minutos';
         precio = 7500;
         break;
       case '2️⃣ Paseo Chill':
         mensaje = 'Has seleccionado Paseo Chill (30 minutos). ¡Vamos a agendarlo!';
-        agendamiento = 'Paseo Chill (30 minutos)';
+        agendamiento = '30 minutos';
         precio = 10000;
         break;
       case '3️⃣ Paseo Adventure':
         mensaje = 'Has seleccionado Paseo Adventure (60 minutos). ¡Vamos a agendarlo!';
-        agendamiento = 'Paseo Adventure (60 minutos)';
+        agendamiento = '60 minutos';
         precio = 17000;
         break;
       default:
@@ -377,7 +377,7 @@ Total: $${usuarioData[ctx.from].valor}
           FechaCreacion: new Date().toISOString(),
           Celular: ctx.from,
           Perro: usuarioData[ctx.from].perroSeleccionado,
-          Anotaciones: '',
+          Anotaciones: '', // o pon algún dato real aquí si quieres
           Direccion: usuarioData[ctx.from].direccion,
           TipoServicio: 'paseo',
           TiempoServicio: usuarioData[ctx.from].agendamientoSeleccionado,
@@ -387,9 +387,11 @@ Total: $${usuarioData[ctx.from].valor}
           Estado: 'Pendiente',
           Pawwer: 'No asignado'
         });
+
         await sendText(ctx.from, `¡Paseo agendado exitosamente! 🐾`);
       } catch (e) {
         await sendText(ctx.from, `Ocurrió un error al guardar el agendamiento. Intenta de nuevo más tarde.`);
+        console.error("Error al crear el lead:", e?.message || e);
       }
       return endFlow();
     } 
