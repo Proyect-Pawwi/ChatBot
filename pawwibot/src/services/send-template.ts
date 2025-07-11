@@ -299,3 +299,206 @@ export async function TEMPLATE_registro_agendar_paseo(to, dogName) {
     console.error("❌ Error al enviar plantilla 'registro_agendar_paseo':", err.response?.data || err);
   }
 }
+
+export async function TEMPLATE_agendar_tipo_paseo(to, dogName = "tu perrito") {
+  const token = process.env.jwtToken;
+  const phone_number_id = process.env.numberId;
+
+  const body = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: "agendar_tipo_paseo", // Debe coincidir exactamente con el nombre en Meta
+      language: { code: "es" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: dogName } // Reemplaza {{1}} en la plantilla
+          ]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: 0,
+          parameters: [
+            { type: "payload", payload: "FLASH_15_MIN" } // Payload del botón 1: Flash
+          ]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: 1,
+          parameters: [
+            { type: "payload", payload: "CHILL_30_MIN" } // Payload del botón 2: Chill
+          ]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: 2,
+          parameters: [
+            { type: "payload", payload: "ADVENTURE_1_HORA" } // Payload del botón 3: Adventure
+          ]
+        }
+      ]
+    }
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v19.0/${phone_number_id}/messages`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("✅ Plantilla 'agendar_tipo_paseo' enviada:", res.data);
+  } catch (err) {
+    console.error("❌ Error al enviar plantilla 'agendar_tipo_paseo':", err.response?.data || err);
+  }
+}
+
+
+export async function TEMPLATE_agendar_fecha_paseo(to, dogName = "tu perrito") {
+  const token = process.env.jwtToken;
+  const phone_number_id = process.env.numberId;
+
+  const body = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: "agendar_fecha_paseo", // Nombre exacto en Meta
+      language: { code: "es" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: dogName } // Reemplaza {{1}} con nombre del perrito
+          ]
+        }
+      ]
+    }
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v19.0/${phone_number_id}/messages`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("✅ Plantilla 'agendar_fecha_paseo' enviada:", res.data);
+  } catch (err) {
+    console.error("❌ Error al enviar plantilla 'agendar_fecha_paseo':", err.response?.data || err);
+  }
+}
+
+export async function TEMPLATE_ragendar_hora_paseo(to, dogName = "tu perrito") {
+  const token = process.env.jwtToken;
+  const phone_number_id = process.env.numberId;
+
+  const body = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: "agendar_hora_paseo", // Asegúrate que el nombre coincida con la plantilla aprobada
+      language: { code: "es" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: dogName } // Reemplaza {{1}} con el nombre del perrito
+          ]
+        }
+      ]
+    }
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v19.0/${phone_number_id}/messages`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("✅ Plantilla 'ragendar_hora_paseo' enviada:", res.data);
+  } catch (err) {
+    console.error("❌ Error al enviar plantilla 'ragendar_hora_paseo':", err.response?.data || err);
+  }
+}
+
+export async function TEMPLATE_agendar_metodo_pago(to, dogName = "tu perrito") {
+  const token = process.env.jwtToken;
+  const phone_number_id = process.env.numberId;
+
+  const body = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: "agendar_metodo_pago", // Debe coincidir con el nombre aprobado en Meta
+      language: { code: "es" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: dogName } // Reemplaza {{1}} con el nombre del perrito
+          ]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: 0,
+          parameters: [{ type: "payload", payload: "METODO_PAGO_NEQUI" }]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: 1,
+          parameters: [{ type: "payload", payload: "METODO_PAGO_LINK_BOLD" }]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: 2,
+          parameters: [{ type: "payload", payload: "METODO_PAGO_EFECTIVO" }]
+        }
+      ]
+    }
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v19.0/${phone_number_id}/messages`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("✅ Plantilla 'agendar_metodo_pago' enviada:", res.data);
+  } catch (err) {
+    console.error("❌ Error al enviar plantilla 'agendar_metodo_pago':", err.response?.data || err);
+  }
+}

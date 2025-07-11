@@ -1,9 +1,9 @@
 import { addKeyword, EVENTS } from "@builderbot/bot";
-import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito } from "../services/send-template";
+import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito, TEMPLATE_agendar_tipo_paseo, TEMPLATE_agendar_fecha_paseo, TEMPLATE_ragendar_hora_paseo, TEMPLATE_agendar_metodo_pago } from "../services/send-template";
 import { sendText, sendButtons } from "../services/send-text";
 import { createDog } from "../services/airtable-dogs";
 import { createUser, getUsers } from "../services/airtable-users";
-import { log } from "console";
+import { createLead } from '../services/airtable-leads';
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -74,7 +74,6 @@ const init = addKeyword(EVENTS.WELCOME)
         //Agendar un paseo
         //Si no tiene perros registrados, redirigir al registro
         if (!usuarioData[ctx.from] || !usuarioData[ctx.from].Perros || usuarioData[ctx.from].Perros.length === 0) {
-          await sendText(ctx.from, `Para agendar un paseo, primero debes registrar a tu perrito.`);
           return gotoFlow(RegistrarNombrePerrito);
         }
         else {
@@ -110,7 +109,8 @@ ni emojis.
 Ejemplo: Max, Luna, Toby.`);
         return gotoFlow(init);
       }
-      perritoData[ctx.from] = { nombre: nombre };
+      perritoData[ctx.from] = perritoData[ctx.from] || {};
+      perritoData[ctx.from].nombre = nombre;
       return gotoFlow(RegistrarRazaPerrito);
   });
 
@@ -197,29 +197,19 @@ const RegistrarPerro = addKeyword('RegistrarPerro')
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { gotoFlow }) => {
-      //const vacunas = ctx.body.trim();
-      const textoBoton = ctx.body;
-      const payloadBoton = ctx.payload || "Sin payload";
-      console.log(`[INTERACTION] Botón oprimido: ${textoBoton}, Payload: ${payloadBoton}`);
-      if (payloadBoton === "AGENDAR_PASEO_SI") {
-        perritoData[ctx.from].vacunas = true;
-        
-        usuarioData[ctx.from].perroSeleccionado.Nombre = perritoData[ctx.from].nombre;
-        usuarioData[ctx.from].perroSeleccionado.Raza = perritoData[ctx.from].raza;
-        usuarioData[ctx.from].perroSeleccionado.Edad = perritoData[ctx.from].edad;
-        usuarioData[ctx.from].perroSeleccionado.Consideraciones = perritoData[ctx.from].consideraciones;
-        usuarioData[ctx.from].perroSeleccionado.Vacunas = perritoData[ctx.from].vacunas;
-        return gotoFlow(agendarTiempoPaseo);
-      } 
-      else if (payloadBoton === "No, no registrar") {
-        perritoData[ctx.from].vacunas = false;
-        return gotoFlow(init);
-      }
-      else {
-        return gotoFlow(init);
-      }
-      
+      // Aseguramos que el objeto perroSeleccionado existe antes de asignar propiedades
+      if (!usuarioData[ctx.from]) usuarioData[ctx.from] = {};
+      if (!usuarioData[ctx.from].perroSeleccionado) usuarioData[ctx.from].perroSeleccionado = {};
+
+      usuarioData[ctx.from].perroSeleccionado.Nombre = perritoData[ctx.from].nombre;
+      usuarioData[ctx.from].perroSeleccionado.Raza = perritoData[ctx.from].raza;
+      usuarioData[ctx.from].perroSeleccionado.Edad = perritoData[ctx.from].edad;
+      usuarioData[ctx.from].perroSeleccionado.Consideraciones = perritoData[ctx.from].consideraciones;
+      usuarioData[ctx.from].perroSeleccionado.Vacunas = perritoData[ctx.from].vacunas;
+
+      return gotoFlow(agendarTiempoPaseo);
   });
+
 
 const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
   .addAction(async (ctx) => {
@@ -260,75 +250,69 @@ const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
 
 const agendarTiempoPaseo = addKeyword('agendarTiempoPaseo')
   .addAction(async (ctx) => {
-    // Opciones de paseo
-    const buttons = [
-      { body: '1️⃣ Paseo Flash', payload: 'FLASH' },
-      { body: '2️⃣ Paseo Chill', payload: 'CHILL' },
-      { body: '3️⃣ Paseo Adventure', payload: 'ADVENTURE' }
-    ];
-    await sendButtons(
-      ctx.from,
-      `¿Cuánto tiempo necesitas el paseo?\n\nFlash (15 minutos): $7500\nChill (30 minutos): $10000\nAdventure (60 minutos): $17000`,
-      buttons
-    );
+    // Usa la plantilla con el nombre del perrito seleccionado
+    const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
+    await TEMPLATE_agendar_tipo_paseo(ctx.from, nombrePerro);
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { gotoFlow }) => {
-    const bodyBoton = ctx.body;
-    let mensaje = '';
+    const payloadBoton = ctx.payload || "";
     let agendamiento = '';
     let precio = 0;
-    log(`[INTERACTION] Botón oprimido: ${ctx.body}`);
-    switch (bodyBoton) {
-      case '1️⃣ Paseo Flash':
-        mensaje = 'Has seleccionado Paseo Flash (15 minutos). ¡Vamos a agendarlo!';
+    console.log(`[INTERACTION] Payload recibido: ${payloadBoton}`);
+
+    switch (payloadBoton) {
+      case 'FLASH_15_MIN':
         agendamiento = '15 minutos';
         precio = 7500;
         break;
-      case '2️⃣ Paseo Chill':
-        mensaje = 'Has seleccionado Paseo Chill (30 minutos). ¡Vamos a agendarlo!';
+      case 'CHILL_30_MIN':
         agendamiento = '30 minutos';
         precio = 10000;
         break;
-      case '3️⃣ Paseo Adventure':
-        mensaje = 'Has seleccionado Paseo Adventure (60 minutos). ¡Vamos a agendarlo!';
+      case 'ADVENTURE_60_MIN':
         agendamiento = '60 minutos';
         precio = 17000;
         break;
       default:
-        mensaje = 'Por favor, selecciona una opción válida usando los botones.';
-        await sendText(ctx.from, mensaje);
-        return gotoFlow(init);
+        await sendText(ctx.from, 'Por favor, selecciona una opción válida usando los botones.');
+        return gotoFlow(agendarTiempoPaseo);
     }
-    // Guardar la opción de agendamiento seleccionada
+
     if (!usuarioData[ctx.from]) usuarioData[ctx.from] = {};
     usuarioData[ctx.from].agendamientoSeleccionado = agendamiento;
     usuarioData[ctx.from].valor = precio;
+
     return gotoFlow(agendarDiaPaseo);
   });
 
 const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
   .addAction(async (ctx) => {
-      await sendText(ctx.from, `Indica el dia en la que quieres que paseemos a ${usuarioData[ctx.from].perroSeleccionado.Nombre}.`);
+    const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
+    await TEMPLATE_agendar_fecha_paseo(ctx.from, nombrePerro);
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { gotoFlow }) => {
-      const diaSeleccionado = ctx.body.trim();
-      if (!usuarioData[ctx.from]) usuarioData[ctx.from] = {};
-      usuarioData[ctx.from].diaSeleccionado = diaSeleccionado;
-      return gotoFlow(agendarHoraPaseo);
+    const diaSeleccionado = ctx.body.trim();
+
+    usuarioData[ctx.from].diaSeleccionado = diaSeleccionado;
+
+    return gotoFlow(agendarHoraPaseo);
   });
 
 const agendarHoraPaseo = addKeyword('agendarHoraPaseo')
   .addAction(async (ctx) => {
-      await sendText(ctx.from, `Indica la hora en la que quieres que paseemos a ${usuarioData[ctx.from].perroSeleccionado.Nombre}.`);
+    const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
+    await TEMPLATE_ragendar_hora_paseo(ctx.from, nombrePerro);
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { gotoFlow }) => {
-      const diaSeleccionado = ctx.body.trim();
-      if (!usuarioData[ctx.from]) usuarioData[ctx.from] = {};
-      usuarioData[ctx.from].diaSeleccionado = diaSeleccionado;
-      return gotoFlow(agendarDireccionPaseo);
+    const horaSeleccionado = ctx.body.trim();
+
+    usuarioData[ctx.from] ??= {};
+    usuarioData[ctx.from].horaSeleccionado = horaSeleccionado;
+
+    return gotoFlow(agendarDireccionPaseo);
   });
 
 const agendarDireccionPaseo = addKeyword('agendarDireccionPaseo')
@@ -340,10 +324,24 @@ const agendarDireccionPaseo = addKeyword('agendarDireccionPaseo')
       const direccion = ctx.body.trim();
       if (!usuarioData[ctx.from]) usuarioData[ctx.from] = {};
       usuarioData[ctx.from].direccion = direccion;
-      return gotoFlow(agendarResumenPaseo);
+      return gotoFlow(agendarMetodoPaseo);
   });
 
-import { createLead } from '../services/airtable-leads';
+//Metodo de pago
+const agendarMetodoPaseo = addKeyword('agendarMetodoPaseo')
+  .addAction(async (ctx) => {
+    const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
+    await TEMPLATE_agendar_metodo_pago(ctx.from, nombrePerro);
+  })
+  .addAnswer('', { capture: true })
+  .addAction(async (ctx, { gotoFlow }) => {
+    const metodo = ctx.body.trim().toLowerCase();
+
+    usuarioData[ctx.from] ??= {};
+    usuarioData[ctx.from].metodoPago = metodo;
+
+    return gotoFlow(agendarResumenPaseo); // o el flujo siguiente que uses
+  });  
 
 const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
   .addAction(async (ctx) => {
@@ -409,7 +407,7 @@ Descripcion:
   Vacunas: ${usuarioData[ctx.from].perroSeleccionado.Vacunas ? 'Si' : 'No'}
 Duración: ${usuarioData[ctx.from].agendamientoSeleccionado}
 Donde: ${usuarioData[ctx.from].direccion}
-Hora: ${usuarioData[ctx.from].horaSeleccionada || 'No especificada'}
+Hora: ${usuarioData[ctx.from].diaSeleccionada || 'No especificada'},${usuarioData[ctx.from].horaSeleccionada || 'No especificada'}
 Precio del servicio: $${usuarioData[ctx.from].valor}`);
       } catch (e) {
         await sendText(ctx.from, `Ocurrió un error al guardar el agendamiento. Intenta de nuevo más tarde.`);
@@ -426,9 +424,6 @@ Precio del servicio: $${usuarioData[ctx.from].valor}`);
       return gotoFlow(agendarResumenPaseo);
     }
   });
-
-//TODO: Enviar lead al equipo de soporte
-//const enviarLeadSoporte = addKeyword('enviarLeadSoporte')
 
 //TODO: Revisar BDD para enviar confirmacion a cliente y a paseador
 
