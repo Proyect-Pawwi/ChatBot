@@ -16,6 +16,7 @@ interface LeadFields {
   Precio: number;
   Estado?: string;
   Pawwer?: string;
+  "metodo Pago"?: string;
 }
 
 export async function createLead(fields: LeadFields) {

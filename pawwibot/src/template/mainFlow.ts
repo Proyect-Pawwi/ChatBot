@@ -1,8 +1,8 @@
 import { addKeyword, EVENTS } from "@builderbot/bot";
-import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito, TEMPLATE_agendar_tipo_paseo, TEMPLATE_agendar_fecha_paseo, TEMPLATE_ragendar_hora_paseo, TEMPLATE_agendar_metodo_pago } from "../services/send-template";
+import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito, TEMPLATE_agendar_tipo_paseo, TEMPLATE_agendar_fecha_paseo, TEMPLATE_ragendar_hora_paseo, TEMPLATE_agendar_metodo_pago, TEMPLATE_agendar_resumen_paseo } from "../services/send-template";
 import { sendText, sendButtons } from "../services/send-text";
 import { createDog } from "../services/airtable-dogs";
-import { createUser, getUsers } from "../services/airtable-users";
+import { createUser, getUsers, updateUser } from "../services/airtable-users";
 import { createLead } from '../services/airtable-leads';
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
@@ -16,7 +16,16 @@ const perritoData = {};
 const usuarioData = {};
 
 const init = addKeyword(EVENTS.WELCOME)
-  .addAction(async (ctx) => {
+  .addAction(async (ctx, { endFlow }) => {
+    // Solo ignoramos mensajes que no tengan cuerpo y no sean iniciados por el usuario
+    if (!ctx.body || typeof ctx.body !== 'string') {
+      console.log(`[IGNORADO] Mensaje inválido o sin texto. Tipo: ${ctx.messageType}`);
+      return endFlow();
+    }
+
+    console.log("[DEBUG ctx]", JSON.stringify(ctx, null, 2));
+
+
     const nombre = ctx.pushName || "Usuario";
     console.log(`[INIT] Usuario ${nombre} ha iniciado el flujo. Número: ${ctx.from}`);
     
@@ -39,6 +48,7 @@ const init = addKeyword(EVENTS.WELCOME)
           }
         }
         console.log("Usuario y perros recuperados de Airtable");
+        console.log("Usuario:", usuarioData[ctx.from]);
       } else {
         // Crear usuario si no existe
         const createRes = await createUser({
@@ -177,6 +187,40 @@ const RegistrarVacunasPerrito = addKeyword('RegistrarVacunasPerrito')
       
   });
 
+const RegistrarDireccion = addKeyword('RegistrarDireccion')
+  .addAction(async (ctx) => {
+    await sendText(
+      ctx.from,
+      `📍 ¿Cuál es la dirección exacta donde recogeremos a tus peluditos?.`
+    );
+  })
+  .addAnswer('', { capture: true })
+  .addAction(async (ctx, { gotoFlow }) => {
+    const direccion = ctx.body.trim();
+
+    if (!direccion || direccion.length < 10) {
+      await sendText(
+        ctx.from,
+        `🚫 La dirección parece muy corta o incompleta.\n\nPor favor asegúrate de incluir:\n• Calle\n• Número\n• Colonia\n• Referencias si es posible`
+      );
+      return gotoFlow(RegistrarDireccion);
+    }
+
+    usuarioData[ctx.from].Direccion = direccion;
+
+    // ✅ Aquí se actualiza la dirección en Airtable
+    try {
+      await updateUser(usuarioData[ctx.from]._recordId, {
+        Direccion: direccion
+      });
+    } catch (e) {
+      console.error("Error actualizando dirección en Airtable", e?.message || e);
+    }
+
+    return gotoFlow(agendarMetodoPaseo);
+  });
+
+
 const RegistrarPerro = addKeyword('RegistrarPerro')
   .addAction(async (ctx) => {
       const data = perritoData[ctx.from];
@@ -206,7 +250,7 @@ const RegistrarPerro = addKeyword('RegistrarPerro')
       usuarioData[ctx.from].perroSeleccionado.Edad = perritoData[ctx.from].edad;
       usuarioData[ctx.from].perroSeleccionado.Consideraciones = perritoData[ctx.from].consideraciones;
       usuarioData[ctx.from].perroSeleccionado.Vacunas = perritoData[ctx.from].vacunas;
-
+      
       return gotoFlow(agendarTiempoPaseo);
   });
 
@@ -310,21 +354,15 @@ const agendarHoraPaseo = addKeyword('agendarHoraPaseo')
     const horaSeleccionado = ctx.body.trim();
 
     usuarioData[ctx.from] ??= {};
-    usuarioData[ctx.from].horaSeleccionado = horaSeleccionado;
+    usuarioData[ctx.from].horaSeleccionada = horaSeleccionado;
 
-    return gotoFlow(agendarDireccionPaseo);
-  });
-
-const agendarDireccionPaseo = addKeyword('agendarDireccionPaseo')
-  .addAction(async (ctx) => {
-      await sendText(ctx.from, `¿Cuál es la dirección exacta donde recogeremos a tu peludito? `);
-  })
-  .addAnswer('', { capture: true })
-  .addAction(async (ctx, { gotoFlow }) => {
-      const direccion = ctx.body.trim();
-      if (!usuarioData[ctx.from]) usuarioData[ctx.from] = {};
-      usuarioData[ctx.from].direccion = direccion;
+    if (usuarioData[ctx.from].Direccion === undefined || usuarioData[ctx.from].Direccion === "") {
+        //await sendText(ctx.from, "Por favor, primero registra la dirección donde recogeremos a tu peludito.");
+        return gotoFlow(RegistrarDireccion);
+    }
+    else {
       return gotoFlow(agendarMetodoPaseo);
+    }
   });
 
 //Metodo de pago
@@ -345,27 +383,19 @@ const agendarMetodoPaseo = addKeyword('agendarMetodoPaseo')
 
 const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
   .addAction(async (ctx) => {
-    // Opciones de paseo
-    const buttons = [
-      { body: 'Si', payload: 'SI' },
-      { body: 'No', payload: 'NO' },
-    ];
-    await sendButtons(
-      ctx.from,
-      `
-Ya casi
-Te confirmo estos datos:
+    const data = usuarioData[ctx.from];
 
-Peludito ${usuarioData[ctx.from].perroSeleccionado.Nombre}
-Duración:${usuarioData[ctx.from].agendamientoSeleccionado}
-Fecha: ${usuarioData[ctx.from].diaSeleccionado}
-Donde: ${usuarioData[ctx.from].direccion}
+    await TEMPLATE_agendar_resumen_paseo(ctx.from, {
+      dogName: data.perroSeleccionado.Nombre || 'No definido',
+      calle: data.Direccion?.split(' – ')[0] || 'No definida',
+      colonia: data.Direccion?.split(' – ')[1] || 'No definida',
+      fecha: data.diaSeleccionado || 'No definida',
+      hora: data.horaSeleccionada || 'No definida',
+      tipoPaseo: data.agendamientoSeleccionado || 'No definido',
+      precio: `$${data.valor || 0}`,
+      metodoPago: data.metodoPago || 'No definido'
+    });
 
-Total: $${usuarioData[ctx.from].valor}
-
-¿Es correcto?`,
-      buttons
-    );
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { endFlow, gotoFlow }) => {
@@ -373,49 +403,55 @@ Total: $${usuarioData[ctx.from].valor}
     const payloadBoton = ctx.payload || '';
     console.log(`[INTERACTION] Botón oprimido: ${textoBoton}, Payload: ${payloadBoton}`);
     
-    if (textoBoton === 'Si') {
+    if (textoBoton === 'Si' || payloadBoton === 'SI') {
       // Crear el lead en Airtable
       try {
+        const data = usuarioData[ctx.from];
+
         await createLead({
           FechaCreacion: new Date().toISOString(),
           Celular: ctx.from,
-          Perro: usuarioData[ctx.from].perroSeleccionado.Nombre,
-          Anotaciones: `\nRaza: ${usuarioData[ctx.from].perroSeleccionado.Raza}\n Edad: ${usuarioData[ctx.from].perroSeleccionado.Edad}\n Consideraciones: ${usuarioData[ctx.from].perroSeleccionado.Consideraciones}\n Vacunas: ${usuarioData[ctx.from].perroSeleccionado.Vacunas ? 'Si' : 'No'}`,
-          Direccion: usuarioData[ctx.from].direccion,
+          Perro: data.perroSeleccionado.Nombre,
+          Anotaciones: `\nRaza: ${data.perroSeleccionado.Raza}\n Edad: ${data.perroSeleccionado.Edad}\n Consideraciones: ${data.perroSeleccionado.Consideraciones}\n Vacunas: ${data.perroSeleccionado.Vacunas ? 'Si' : 'No'}`,
+          Direccion: data.Direccion,
           TipoServicio: 'paseo',
-          TiempoServicio: usuarioData[ctx.from].agendamientoSeleccionado,
-          Fecha: usuarioData[ctx.from].diaSeleccionado,
-          Hora: usuarioData[ctx.from].horaSeleccionada || '',
-          Precio: usuarioData[ctx.from].valor,
+          TiempoServicio: data.agendamientoSeleccionado,
+          Fecha: data.diaSeleccionado,
+          Hora: data.horaSeleccionada || '',
+          Precio: data.valor,
           Estado: 'Pendiente',
-          Pawwer: 'No asignado'
+          Pawwer: 'No asignado',
+          "metodo Pago": data.metodoPago || 'No especificado'
         });
 
         await sendText(ctx.from, `✅ ¡Solicitud enviada exitosamente!
 
-En unos instantes nuestro Equipo de Pawwi se estará comunicando contigo para confirmar el paseo de Nina
+En unos instantes nuestro Equipo de Pawwi se estará comunicando contigo para confirmar el paseo de ${data.perroSeleccionado.Nombre} 🐶
 
-Si tienes dudas con tu servicio, o quieres comentar una novedad, contáctate con  Pawwer de soporte +57 3023835152`);
+Si tienes dudas con tu servicio, o quieres comentar una novedad, contáctate con nuestro Pawwer de soporte +57 3023835152`);
+
         await sendText('573332885462', `🔔 Lead nuevo registrado desde el bot.`);
         await sendText('573332885462', `Nuevo paseo
 
-Peludito: ${usuarioData[ctx.from].perroSeleccionado.Nombre}
+Peludito: ${data.perroSeleccionado.Nombre}
 Descripcion:
-  Raza: ${usuarioData[ctx.from].perroSeleccionado.Raza}
-  Edad: ${usuarioData[ctx.from].perroSeleccionado.Edad}
-  Consideraciones: ${usuarioData[ctx.from].perroSeleccionado.Consideraciones}
-  Vacunas: ${usuarioData[ctx.from].perroSeleccionado.Vacunas ? 'Si' : 'No'}
-Duración: ${usuarioData[ctx.from].agendamientoSeleccionado}
-Donde: ${usuarioData[ctx.from].direccion}
-Hora: ${usuarioData[ctx.from].diaSeleccionada || 'No especificada'},${usuarioData[ctx.from].horaSeleccionada || 'No especificada'}
-Precio del servicio: $${usuarioData[ctx.from].valor}`);
+  Raza: ${data.perroSeleccionado.Raza}
+  Edad: ${data.perroSeleccionado.Edad}
+  Consideraciones: ${data.perroSeleccionado.Consideraciones}
+  Vacunas: ${data.perroSeleccionado.Vacunas ? 'Si' : 'No'}
+Duración: ${data.agendamientoSeleccionado}
+Donde: ${data.Direccion}
+Hora: ${data.diaSeleccionado || 'No especificada'}, ${data.horaSeleccionada || 'No especificada'}
+Metodo de pago: ${data.metodoPago || 'No especificado'}
+Precio del servicio: $${data.valor}`);
+
       } catch (e) {
         await sendText(ctx.from, `Ocurrió un error al guardar el agendamiento. Intenta de nuevo más tarde.`);
         console.error("Error al crear el lead:", e?.message || e);
       }
       return endFlow();
     } 
-    else if (textoBoton === 'No') {
+    else if (textoBoton === 'No' || payloadBoton === 'NO') {
       await sendText(ctx.from, `Por favor, vuelve a intentar agendar el paseo.`);
       return gotoFlow(init);
     } 
@@ -425,10 +461,15 @@ Precio del servicio: $${usuarioData[ctx.from].valor}`);
     }
   });
 
+
+
+export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo };
+
+
 //TODO: Revisar BDD para enviar confirmacion a cliente y a paseador
 
 //TODO: Revisar BDD para enviar recordatorio 1 hora antes del paseo
 
 //TODO: Flujo de pawwer dividido con el del cliente
 
-export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarDireccionPaseo, agendarMetodoPaseo, agendarResumenPaseo };
+//Notas:

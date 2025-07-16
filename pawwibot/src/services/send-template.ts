@@ -502,3 +502,74 @@ export async function TEMPLATE_agendar_metodo_pago(to, dogName = "tu perrito") {
     console.error("❌ Error al enviar plantilla 'agendar_metodo_pago':", err.response?.data || err);
   }
 }
+
+export async function TEMPLATE_agendar_resumen_paseo(
+  to,
+  {
+    dogName = 'tu perrito',
+    calle = 'Calle no especificada',
+    colonia = 'Colonia no especificada',
+    fecha = 'Fecha no definida',
+    hora = 'Hora no definida',
+    tipoPaseo = 'Tipo no definido',
+    precio = '$0',
+    metodoPago = 'No definido'
+  }
+) {
+  const token = process.env.jwtToken;
+  const phone_number_id = process.env.numberId;
+
+  const body = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: "agendar_resumen_paseo",
+      language: { code: "es" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: dogName },
+            { type: "text", text: calle },
+            { type: "text", text: colonia },
+            { type: "text", text: fecha },
+            { type: "text", text: hora },
+            { type: "text", text: tipoPaseo },
+            { type: "text", text: precio },
+            { type: "text", text: metodoPago }
+          ]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: 0,
+          parameters: [{ type: "payload", payload: "SI" }]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: 1,
+          parameters: [{ type: "payload", payload: "NO" }]
+        }
+      ]
+    }
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v19.0/${phone_number_id}/messages`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("✅ Plantilla 'agendar_resumen_paseo' enviada:", res.data);
+  } catch (err) {
+    console.error("❌ Error al enviar plantilla 'agendar_resumen_paseo':", err.response?.data || err);
+  }
+}
