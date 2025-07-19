@@ -1,30 +1,22 @@
 # Pawwi bot
 
-Pawwi chatbot designed to manage dog owners' scheduling with dog walkers
+Chatbot de Pawwi para atender clientes
 
-## Requirements
-* Nodejs v.20 or higher
+## Requerimientos
+* Nodejs v.20 o superior
 
-## Installation
+## Installacion
 ```bash
 npm install
 ```
 
-```bash
-npm install dotenv
-```
-
-```bash
-npm install openai
-```
-
-## How to run
-1. Open port 3000 on your device and make it public, If your using visual Studio Code, copy the url
-2. Run chatBot with:
+## Como correr (local)
+1. En Visual Studio, abre el puerto 3000 y hazlo publico, copia el link
+2. Corre el bot con el siguiente comando:
 ```bash
 npm run dev
 ```
-3. Go to meta -> WhatsApp -> Configuration
-4. On Callback URL, paste the url from your port, followed by /webhook
-5. On token verification, write the same token verification on .env
-6. Send a message to the bot in WhatsApp
+3. Ve a meta -> WhatsApp -> Configuration
+4. En Callback URL, pega la url del puerto y añadele /webhook
+5. En verificacion de token, pega el mismo token que esta en .env
+6. Envia un mensaje al bot
