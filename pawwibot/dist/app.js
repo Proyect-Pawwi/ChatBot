@@ -1,13 +1,12 @@
 'use strict';
 
-var bot = require('@builderbot/bot');
-var dotenv = require('dotenv');
-var axios = require('axios');
-var mongodb = require('mongodb');
-var fetch = require('node-fetch');
-var node_console = require('node:console');
-var providerMeta = require('@builderbot/provider-meta');
-require('dotenv/config');
+import { addKeyword, EVENTS } from '@builderbot/bot';
+import dotenv from 'dotenv';
+import axios from 'axios';
+import { MongoClient } from 'mongodb';
+import fetch from 'node-fetch';
+import console from 'node:console';
+import providerMeta from '@builderbot/provider-meta';
 
 dotenv.config();
 async function TEMPLATE_bienvenida_pawwi(to, name = "amigo") {

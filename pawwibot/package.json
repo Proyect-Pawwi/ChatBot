@@ -5,10 +5,9 @@
   "main": "dist/app.js",
   "type": "module",
   "scripts": {
-    "clean": "rd /s /q dist || rm -rf dist",
-    "build": "npm run clean && npx rollup -c",
-    "start": "node ./dist/app.js",
-    "lint": "eslint . --no-ignore",
+    "build": "npx tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint src --ext .ts",
     "dev": "npm run lint && nodemon ./src/app.ts"
   },
   "keywords": [],
