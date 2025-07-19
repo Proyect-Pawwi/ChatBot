@@ -1,9 +1,9 @@
 import fetch from 'node-fetch';
 
-const AIRTABLE_BASE = 'https://api.airtable.com/v0/appOceFmbxh8PfLKT/Leads';
+const AIRTABLE_BASE = 'https://api.airtable.com/v0/appOceFmbxh8PfLKT/Completados';
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.airtableApiKey;
 
-interface LeadFields {
+export interface CompletadoFields {
   FechaCreacion: string;
   Celular: string;
   Perro: string;
@@ -15,40 +15,38 @@ interface LeadFields {
   Hora: string;
   Precio: number;
   Estado?: string;
-  Pawwer?: string;
+  Pawwer?: string[];
   "metodo Pago"?: string;
   "Nombre cliente": string;
-  "Nombre completo (from Pawwer)"?: string;
-  "Numero de teléfono (from Pawwer)"?: string[];
+  "Nombre pawwer"?: string;
+  "Link Strava"?: string;
 }
 
-interface AirtableRecord {
+export interface CompletadoRecord {
   id: string;
   createdTime: string;
-  fields: LeadFields;
+  fields: CompletadoFields;
 }
 
-interface AirtableResponse {
-  records: AirtableRecord[];
+export interface CompletadoResponse {
+  records: CompletadoRecord[];
   offset?: string;
 }
 
-interface AirtableDeleteResponse {
+export interface CompletadoDeleteResponse {
   id: string;
   deleted: boolean;
 }
 
-// ✅ Crear Lead
-export async function createLead(fields: LeadFields): Promise<AirtableResponse> {
+// ✅ Crear Completado
+export async function createCompletado(fields: CompletadoFields): Promise<CompletadoResponse> {
   const res = await fetch(AIRTABLE_BASE, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      records: [{ fields }],
-    }),
+    body: JSON.stringify({ records: [{ fields }] }),
   });
 
   if (!res.ok) {
@@ -56,16 +54,16 @@ export async function createLead(fields: LeadFields): Promise<AirtableResponse> 
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableResponse>;
+  return res.json() as Promise<CompletadoResponse>;
 }
 
-// ✅ Obtener Leads (con filtro opcional)
-export async function getLeads(
+// ✅ Obtener Completados
+export async function getCompletados(
   filterByFormula?: string,
   maxRecords = 100,
   view = 'Grid view',
   offset?: string
-): Promise<AirtableResponse> {
+): Promise<CompletadoResponse> {
   const params = new URLSearchParams({
     maxRecords: maxRecords.toString(),
     view,
@@ -86,11 +84,11 @@ export async function getLeads(
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableResponse>;
+  return res.json() as Promise<CompletadoResponse>;
 }
 
-// ✅ Obtener Lead por ID (nuevo)
-export async function getLeadById(recordId: string): Promise<AirtableRecord> {
+// ✅ Obtener Completado por ID
+export async function getCompletadoById(recordId: string): Promise<CompletadoRecord> {
   const url = `${AIRTABLE_BASE}/${recordId}`;
   const res = await fetch(url, {
     headers: {
@@ -104,11 +102,11 @@ export async function getLeadById(recordId: string): Promise<AirtableRecord> {
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableRecord>;
+  return res.json() as Promise<CompletadoRecord>;
 }
 
-// ✅ Actualizar Lead
-export async function updateLead(recordId: string, fields: Partial<LeadFields>): Promise<AirtableResponse> {
+// ✅ Actualizar Completado
+export async function updateCompletado(recordId: string, fields: Partial<CompletadoFields>): Promise<CompletadoResponse> {
   const res = await fetch(AIRTABLE_BASE, {
     method: 'PATCH',
     headers: {
@@ -125,11 +123,11 @@ export async function updateLead(recordId: string, fields: Partial<LeadFields>):
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableResponse>;
+  return res.json() as Promise<CompletadoResponse>;
 }
 
-// ✅ Eliminar Lead
-export async function deleteLead(recordId: string): Promise<AirtableDeleteResponse> {
+// ✅ Eliminar Completado
+export async function deleteCompletado(recordId: string): Promise<CompletadoDeleteResponse> {
   const url = `${AIRTABLE_BASE}/${recordId}`;
   const res = await fetch(url, {
     method: 'DELETE',
@@ -144,5 +142,5 @@ export async function deleteLead(recordId: string): Promise<AirtableDeleteRespon
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableDeleteResponse>;
+  return res.json() as Promise<CompletadoDeleteResponse>;
 }

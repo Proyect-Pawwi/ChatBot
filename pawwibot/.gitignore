@@ -4,6 +4,7 @@ node_modules
 *_sessions
 *tokens
 .wwebjs*
+.env
 
 *.log
 *qr.png
