@@ -1,9 +1,16 @@
-node_modules
+# Dependencias y ambiente
+node_modules/
 
+# Código fuente TS (no subir)
+src/
+
+# Archivos de configuración y logs
+*.env
+*.log
+*qr.png
 *_sessions
 *tokens
 .wwebjs*
-.env
 
-*.log
-*qr.png
+# Compilados NO ignorar, los subimos
+!dist/

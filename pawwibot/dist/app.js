@@ -1,11 +1,13 @@
-import { addKeyword, EVENTS, createFlow, createProvider, createBot, MemoryDB } from '@builderbot/bot';
-import dotenv from 'dotenv';
-import axios from 'axios';
-import { MongoClient, ServerApiVersion } from 'mongodb';
-import fetch from 'node-fetch';
-import { log } from 'node:console';
-import { MetaProvider } from '@builderbot/provider-meta';
-import 'dotenv/config';
+'use strict';
+
+var bot = require('@builderbot/bot');
+var dotenv = require('dotenv');
+var axios = require('axios');
+var mongodb = require('mongodb');
+var fetch = require('node-fetch');
+var node_console = require('node:console');
+var providerMeta = require('@builderbot/provider-meta');
+require('dotenv/config');
 
 dotenv.config();
 async function TEMPLATE_bienvenida_pawwi(to, name = "amigo") {
@@ -912,9 +914,9 @@ const uri = process.env.MONGO_URI || "";
 let client = null;
 async function getMongoClient() {
     if (!client) {
-        client = new MongoClient(uri, {
+        client = new mongodb.MongoClient(uri, {
             serverApi: {
-                version: ServerApiVersion.v1,
+                version: mongodb.ServerApiVersion.v1,
                 strict: true,
                 deprecationErrors: true,
             },
@@ -1362,7 +1364,7 @@ async function checkLEADS() {
     }
 }
 setInterval(checkLeadCount, 5 * 1000);
-const init = addKeyword(EVENTS.WELCOME)
+const init = bot.addKeyword(bot.EVENTS.WELCOME)
     .addAction(async (ctx, { endFlow, gotoFlow }) => {
     if (!ctx.body || typeof ctx.body !== "string") {
         console.log(`[IGNORADO] Mensaje inválido o sin texto. Tipo: ${ctx.messageType}`);
@@ -1419,7 +1421,7 @@ const init = addKeyword(EVENTS.WELCOME)
                         await TEMPLATE_llegada_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"][0], { nombrePawwer, nombrePerrito });
                         return endFlow();
                     }
-                    log(`Pawwer ${usuario.nombre} ha confirmado su llegada.`);
+                    node_console.log(`Pawwer ${usuario.nombre} ha confirmado su llegada.`);
                     await updatePaseo(paseoId, { Estado: 'Esperando Strava' });
                     console.log(`✅ Estado del paseo ${paseoId} actualizado a "Esperando Strava"`);
                     await TEMPLATE_pawwer_llego_cliente(fields.Celular, {
@@ -1556,7 +1558,7 @@ const init = addKeyword(EVENTS.WELCOME)
         return gotoFlow(init);
     }
 });
-const RegistrarNombrePerrito = addKeyword('RegistrarNombrePerrito')
+const RegistrarNombrePerrito = bot.addKeyword('RegistrarNombrePerrito')
     .addAction(async (ctx) => {
     await TEMPLATE_registro_nombre_perrito(ctx.from);
 })
@@ -1574,7 +1576,7 @@ Ejemplo: Max, Luna, Toby.`);
     perritoData[ctx.from].nombre = nombre;
     return gotoFlow(RegistrarRazaPerrito);
 });
-const RegistrarRazaPerrito = addKeyword('RegistrarRazaPerrito')
+const RegistrarRazaPerrito = bot.addKeyword('RegistrarRazaPerrito')
     .addAction(async (ctx) => {
     await TEMPLATE_registro_raza_perrito(ctx.from, perritoData[ctx.from]?.nombre || "");
 })
@@ -1589,7 +1591,7 @@ Ejemplo: Husky, Pitbull, criollo.`);
     perritoData[ctx.from].raza = raza;
     return gotoFlow(RegistrarEdadPerrito);
 });
-const RegistrarEdadPerrito = addKeyword('RegistrarEdadPerrito')
+const RegistrarEdadPerrito = bot.addKeyword('RegistrarEdadPerrito')
     .addAction(async (ctx) => {
     await TEMPLATE_registro_edad_perrito(ctx.from, perritoData[ctx.from]?.nombre || "");
 })
@@ -1599,7 +1601,7 @@ const RegistrarEdadPerrito = addKeyword('RegistrarEdadPerrito')
     perritoData[ctx.from].edad = edad;
     return gotoFlow(RegistrarConsideracionesPerrito);
 });
-const RegistrarConsideracionesPerrito = addKeyword('RegistrarConsideracionesPerrito')
+const RegistrarConsideracionesPerrito = bot.addKeyword('RegistrarConsideracionesPerrito')
     .addAction(async (ctx) => {
     await TEMPLATE_registro_consideraciones_perrito(ctx.from, perritoData[ctx.from]?.nombre || "");
 })
@@ -1609,7 +1611,7 @@ const RegistrarConsideracionesPerrito = addKeyword('RegistrarConsideracionesPerr
     perritoData[ctx.from].consideraciones = consideraciones;
     return gotoFlow(RegistrarVacunasPerrito);
 });
-const RegistrarVacunasPerrito = addKeyword('RegistrarVacunasPerrito')
+const RegistrarVacunasPerrito = bot.addKeyword('RegistrarVacunasPerrito')
     .addAction(async (ctx) => {
     await TEMPLATE_registro_vacunas_perrito(ctx.from, perritoData[ctx.from]?.nombre || "");
 })
@@ -1631,7 +1633,7 @@ const RegistrarVacunasPerrito = addKeyword('RegistrarVacunasPerrito')
         return gotoFlow(RegistrarVacunasPerrito);
     }
 });
-const RegistrarDireccion = addKeyword('RegistrarDireccion')
+const RegistrarDireccion = bot.addKeyword('RegistrarDireccion')
     .addAction(async (ctx) => {
     await sendText(ctx.from, `📍 ¿Cuál es la dirección exacta donde recogeremos a tus peluditos?.`);
 })
@@ -1651,7 +1653,7 @@ const RegistrarDireccion = addKeyword('RegistrarDireccion')
     }
     return gotoFlow(agendarMetodoPaseo);
 });
-const RegistrarPerro = addKeyword('RegistrarPerro')
+const RegistrarPerro = bot.addKeyword('RegistrarPerro')
     .addAction(async (ctx) => {
     const data = perritoData[ctx.from];
     try {
@@ -1667,7 +1669,7 @@ const RegistrarPerro = addKeyword('RegistrarPerro')
     usuarioData[ctx.from].perroSeleccionado = perritoData[ctx.from];
     return gotoFlow(agendarTiempoPaseo);
 });
-const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
+const AgendarlistarPerritos = bot.addKeyword('AgendarlistarPerritos')
     .addAction(async (ctx) => {
     const currentUser = usuarioData[ctx.from];
     if (!currentUser || !currentUser.perros || currentUser.perros.length === 0) {
@@ -1704,7 +1706,7 @@ const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
         return gotoFlow(AgendarlistarPerritos);
     }
 });
-const agendarTiempoPaseo = addKeyword('agendarTiempoPaseo')
+const agendarTiempoPaseo = bot.addKeyword('agendarTiempoPaseo')
     .addAction(async (ctx) => {
     const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
     await TEMPLATE_agendar_tipo_paseo(ctx.from, nombrePerro);
@@ -1738,7 +1740,7 @@ const agendarTiempoPaseo = addKeyword('agendarTiempoPaseo')
     usuarioData[ctx.from].valor = precio;
     return gotoFlow(agendarDiaPaseo);
 });
-const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
+const agendarDiaPaseo = bot.addKeyword('agendarDiaPaseo')
     .addAction(async (ctx) => {
     const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
     await TEMPLATE_agendar_fecha_paseo(ctx.from, nombrePerro);
@@ -1749,15 +1751,16 @@ const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
     usuarioData[ctx.from].diaSeleccionado = diaSeleccionado;
     return gotoFlow(agendarHoraPaseo);
 });
-const agendarHoraPaseo = addKeyword('agendarHoraPaseo')
+const agendarHoraPaseo = bot.addKeyword('agendarHoraPaseo')
     .addAction(async (ctx) => {
     const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
     await TEMPLATE_ragendar_hora_paseo(ctx.from, nombrePerro);
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
+    var _a;
     const horaSeleccionado = ctx.body.trim();
-    usuarioData[ctx.from] ??= {};
+    usuarioData[_a = ctx.from] ?? (usuarioData[_a] = {});
     usuarioData[ctx.from].horaSeleccionada = horaSeleccionado;
     if (usuarioData[ctx.from].Direccion === undefined || usuarioData[ctx.from].Direccion === "") {
         return gotoFlow(RegistrarDireccion);
@@ -1766,19 +1769,20 @@ const agendarHoraPaseo = addKeyword('agendarHoraPaseo')
         return gotoFlow(agendarMetodoPaseo);
     }
 });
-const agendarMetodoPaseo = addKeyword('agendarMetodoPaseo')
+const agendarMetodoPaseo = bot.addKeyword('agendarMetodoPaseo')
     .addAction(async (ctx) => {
     const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
     await TEMPLATE_agendar_metodo_pago(ctx.from, nombrePerro);
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
+    var _a;
     const metodo = ctx.body.trim().toLowerCase();
-    usuarioData[ctx.from] ??= {};
+    usuarioData[_a = ctx.from] ?? (usuarioData[_a] = {});
     usuarioData[ctx.from].metodoPago = metodo;
     return gotoFlow(agendarResumenPaseo);
 });
-const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
+const agendarResumenPaseo = bot.addKeyword('agendarResumenPaseo')
     .addAction(async (ctx) => {
     const data = usuarioData[ctx.from];
     const selectedDog = data.perroSeleccionado;
@@ -1865,7 +1869,7 @@ Precio: $${data.valor * 0.6 || 0}`);
 });
 
 dotenv.config();
-var template = createFlow([
+var template = bot.createFlow([
     init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo
 ]);
 
@@ -1877,7 +1881,7 @@ const config = {
     version: "v20.0"
 };
 
-const provider = createProvider(MetaProvider, {
+const provider = bot.createProvider(providerMeta.MetaProvider, {
     jwtToken: config.jwtToken,
     numberId: config.numberId,
     verifyToken: config.verifyToken,
@@ -1887,11 +1891,12 @@ const provider = createProvider(MetaProvider, {
 dotenv.config();
 const PORT = process.env.PORT ?? 3008;
 const main = async () => {
-    const { httpServer } = await createBot({
+    const { httpServer } = await bot.createBot({
         flow: template,
         provider: provider,
-        database: new MemoryDB(),
+        database: new bot.MemoryDB(),
     });
     httpServer(+PORT);
 };
 main();
+//# sourceMappingURL=app.js.map

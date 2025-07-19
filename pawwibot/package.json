@@ -5,10 +5,11 @@
   "main": "dist/app.js",
   "type": "module",
   "scripts": {
+    "clean": "rd /s /q dist || rm -rf dist",
+    "build": "npm run clean && npx rollup -c",
     "start": "node ./dist/app.js",
     "lint": "eslint . --no-ignore",
-    "dev": "npm run lint && nodemon ./src/app.ts",
-    "build": "npx rollup -c"
+    "dev": "npm run lint && nodemon ./src/app.ts"
   },
   "keywords": [],
   "dependencies": {
