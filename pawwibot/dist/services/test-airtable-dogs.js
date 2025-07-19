@@ -6,7 +6,7 @@ async function testCRUD() {
         Raza: "TestRaza",
         Edad: "2",
         Consideraciones: "Ninguna",
-        Vacunas: true
+        Vacunas: "true"
     };
     console.log("Creating dog...");
     const createRes = await createDog(dog);

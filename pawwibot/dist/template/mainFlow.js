@@ -447,7 +447,7 @@ const init = addKeyword(EVENTS.WELCOME)
     }
     await TEMPLATE_bienvenida_pawwi(ctx.from, nombre);
 })
-    .addAnswer(null, { capture: true }, async (ctx, { endFlow, gotoFlow }) => {
+    .addAnswer("", { capture: true }, async (ctx, { endFlow, gotoFlow }) => {
     const textoBoton = ctx.body;
     const payloadBoton = ctx.payload || "Sin payload";
     console.log(`[INTERACTION] Botón oprimido: ${textoBoton}, Payload: ${payloadBoton}`);
@@ -595,7 +595,7 @@ const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
         return;
     }
     const perrosRegistrados = currentUser.perros;
-    const buttons = perrosRegistrados.map(perro => ({
+    const buttons = perrosRegistrados.map((perro) => ({
         body: perro.nombre,
         payload: perro.nombre
     }));
@@ -768,11 +768,11 @@ Anotaciones:
   Tiempo de servicio: ${data.agendamientoSeleccionado || 'No definido'}
 Fecha: ${data.diaSeleccionado || 'No definida'}
 Hora: ${data.horaSeleccionada || 'No definida'}
-Precio: $${data.valor * 0.6 || 0}`);
+Precio: $${(data.valor || 0) * 0.6 || 0}`);
         }
         catch (e) {
             await sendText(ctx.from, `Ocurrió un error al guardar el agendamiento.`);
-            console.error("Error al crear el lead:", e?.message || e);
+            console.error("Error al crear el lead:", e);
         }
         return endFlow();
     }

@@ -2,7 +2,7 @@ import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
 
-export async function TEMPLATE_bienvenida_pawwi(to, name = "amigo") {
+export async function TEMPLATE_bienvenida_pawwi(to: string, name = "amigo") {
   const token = process.env.jwtToken;
   const phone_number_id = process.env.numberId;
 
@@ -37,12 +37,12 @@ export async function TEMPLATE_bienvenida_pawwi(to, name = "amigo") {
     );
 
     console.log("✅ Plantilla enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla:", err.response?.data || err);
   }
 }
 
-export async function TEMPLATE_registro_nombre_perrito(to) {
+export async function TEMPLATE_registro_nombre_perrito(to: any) {
   const token = process.env.jwtToken;
   const phone_number_id = process.env.numberId;
 
@@ -71,12 +71,12 @@ export async function TEMPLATE_registro_nombre_perrito(to) {
     );
 
     console.log("✅ Plantilla 'registro_nombre_perrito' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'registro_nombre_perrito':", err.response?.data || err);
   }
 }
 
-export async function TEMPLATE_registro_raza_perrito(to, dogName) {
+export async function TEMPLATE_registro_raza_perrito(to: any, dogName: string) {
   const token = process.env.jwtToken;
   const phone_number_id = process.env.numberId;
 
@@ -91,7 +91,7 @@ export async function TEMPLATE_registro_raza_perrito(to, dogName) {
         {
           type: "body",
           parameters: [
-            { type: "text", text: dogName } // Replaces {{1}} in the template with the dog's name
+            { type: "text", text: dogName} // Replaces {{1}} in the template with the dog's name
           ]
         }
       ]
@@ -111,12 +111,12 @@ export async function TEMPLATE_registro_raza_perrito(to, dogName) {
     );
 
     console.log("✅ Plantilla 'registro_raza_perrito' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'registro_raza_perrito':", err.response?.data || err);
   }
 }
 
-export async function TEMPLATE_registro_edad_perrito(to, dogName) {
+export async function TEMPLATE_registro_edad_perrito(to: any, dogName: string) {
   const token = process.env.jwtToken;
   const phone_number_id = process.env.numberId;
 
@@ -151,12 +151,12 @@ export async function TEMPLATE_registro_edad_perrito(to, dogName) {
     );
 
     console.log("✅ Plantilla 'registro_edad_perrito' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'registro_edad_perrito':", err.response?.data || err);
   }
 }
 
-export async function TEMPLATE_registro_consideraciones_perrito(to, dogName) {
+export async function TEMPLATE_registro_consideraciones_perrito(to: any, dogName: string) {
   const token = process.env.jwtToken;
   const phone_number_id = process.env.numberId;
 
@@ -191,12 +191,12 @@ export async function TEMPLATE_registro_consideraciones_perrito(to, dogName) {
     );
 
     console.log("✅ Plantilla 'registro_consideraciones_perrito' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'registro_consideraciones_perrito':", err.response?.data || err);
   }
 }
 
-export async function TEMPLATE_registro_vacunas_perrito(to, dogName) {
+export async function TEMPLATE_registro_vacunas_perrito(to: any, dogName: string) {
   const token = process.env.jwtToken;
   const phone_number_id = process.env.numberId;
 
@@ -243,12 +243,12 @@ export async function TEMPLATE_registro_vacunas_perrito(to, dogName) {
     );
 
     console.log("✅ Plantilla 'registro_vacunas_perrito' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'registro_vacunas_perrito':", err.response?.data || err);
   }
 }
 
-export async function TEMPLATE_registro_agendar_paseo(to, dogName) {
+export async function TEMPLATE_registro_agendar_paseo(to: any, dogName: string) {
   const token = process.env.jwtToken;
   const phone_number_id = process.env.numberId;
 
@@ -295,12 +295,12 @@ export async function TEMPLATE_registro_agendar_paseo(to, dogName) {
     );
 
     console.log("✅ Plantilla 'registro_agendar_paseo' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'registro_agendar_paseo':", err.response?.data || err);
   }
 }
 
-export async function TEMPLATE_agendar_tipo_paseo(to, dogName = "tu perrito") {
+export async function TEMPLATE_agendar_tipo_paseo(to: any, dogName: string = "tu perrito") {
   const token = process.env.jwtToken;
   const phone_number_id = process.env.numberId;
 
@@ -359,13 +359,13 @@ export async function TEMPLATE_agendar_tipo_paseo(to, dogName = "tu perrito") {
     );
 
     console.log("✅ Plantilla 'agendar_tipo_paseo' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'agendar_tipo_paseo':", err.response?.data || err);
   }
 }
 
 
-export async function TEMPLATE_agendar_fecha_paseo(to, dogName = "tu perrito") {
+export async function TEMPLATE_agendar_fecha_paseo(to: any, dogName: string = "tu perrito") {
   const token = process.env.jwtToken;
   const phone_number_id = process.env.numberId;
 
@@ -400,12 +400,12 @@ export async function TEMPLATE_agendar_fecha_paseo(to, dogName = "tu perrito") {
     );
 
     console.log("✅ Plantilla 'agendar_fecha_paseo' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'agendar_fecha_paseo':", err.response?.data || err);
   }
 }
 
-export async function TEMPLATE_ragendar_hora_paseo(to, dogName = "tu perrito") {
+export async function TEMPLATE_ragendar_hora_paseo(to: any, dogName: string = "tu perrito") {
   const token = process.env.jwtToken;
   const phone_number_id = process.env.numberId;
 
@@ -440,12 +440,12 @@ export async function TEMPLATE_ragendar_hora_paseo(to, dogName = "tu perrito") {
     );
 
     console.log("✅ Plantilla 'ragendar_hora_paseo' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'ragendar_hora_paseo':", err.response?.data || err);
   }
 }
 
-export async function TEMPLATE_agendar_metodo_pago(to, dogName = "tu perrito") {
+export async function TEMPLATE_agendar_metodo_pago(to: any, dogName: string = "tu perrito") {
   const token = process.env.jwtToken;
   const phone_number_id = process.env.numberId;
 
@@ -498,13 +498,13 @@ export async function TEMPLATE_agendar_metodo_pago(to, dogName = "tu perrito") {
     );
 
     console.log("✅ Plantilla 'agendar_metodo_pago' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'agendar_metodo_pago':", err.response?.data || err);
   }
 }
 
 export async function TEMPLATE_agendar_resumen_paseo(
-  to,
+  to: any,
   {
     dogName = 'tu perrito',
     calle = 'Calle no especificada',
@@ -569,7 +569,7 @@ export async function TEMPLATE_agendar_resumen_paseo(
     );
 
     console.log("✅ Plantilla 'agendar_resumen_paseo' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'agendar_resumen_paseo':", err.response?.data || err);
   }
 }
@@ -618,7 +618,7 @@ export async function enviarPlantillaWhatsApp(numeroDestino: string, plantilla: 
 
 
 export async function TEMPLATE_confirmacion_paseo_cliente(
-  to,
+  to:any,
   {
     nombreCliente,
     nombrePerrito,
@@ -629,6 +629,16 @@ export async function TEMPLATE_confirmacion_paseo_cliente(
     duracion,
     precio,
     pawwer
+  }: {
+    nombreCliente: any;
+    nombrePerrito: any; // <-- Add type here
+    calle: any;
+    colonia: any;
+    fecha: any;
+    hora: any;
+    duracion: any; // Or number if it's a numeric duration
+    precio: any; // Or number if it's a numeric price
+    pawwer: any;
   }
 ) {
   const token = process.env.jwtToken;
@@ -673,7 +683,7 @@ export async function TEMPLATE_confirmacion_paseo_cliente(
     );
 
     console.log("✅ Plantilla 'confirmacion_paseo_cliente' enviada:", res.data);
-  } catch (err) {
+  } catch (err: any) {
     console.error("❌ Error al enviar plantilla 'confirmacion_paseo_cliente':", err.response?.data || err);
   }
 }

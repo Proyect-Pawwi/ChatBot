@@ -8,7 +8,8 @@ async function testCRUD() {
     Raza: "TestRaza",
     Edad: "2",
     Consideraciones: "Ninguna",
-    Vacunas: true
+    // Changed Vacunas to a string to match the expected 'string' type
+    Vacunas: "true" // Or "false", "Sí", "No", etc., depending on your string representation
   };
   console.log("Creating dog...");
   const createRes = await createDog(dog);

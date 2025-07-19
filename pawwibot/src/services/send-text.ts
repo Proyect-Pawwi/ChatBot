@@ -30,7 +30,7 @@ export async function sendText(to: string, text: string) {
 
     console.log("✅ Mensaje de texto enviado:", res.data);
   } catch (err) {
-    console.error("❌ Error al enviar texto:", err.response?.data || err);
+    console.error("❌ Error al enviar texto:", err);
   }
 }
 
@@ -71,6 +71,6 @@ export async function sendButtons(to: string, text: string, buttons: { body: str
     );
     console.log("✅ Mensaje con botones enviado:", res.data);
   } catch (err) {
-    console.error("❌ Error al enviar mensaje con botones:", err.response?.data || err);
+    console.error("❌ Error al enviar mensaje con botones:", err);
   }
 }

@@ -22,7 +22,7 @@ export async function sendText(to, text) {
         console.log("✅ Mensaje de texto enviado:", res.data);
     }
     catch (err) {
-        console.error("❌ Error al enviar texto:", err.response?.data || err);
+        console.error("❌ Error al enviar texto:", err);
     }
 }
 export async function sendButtons(to, text, buttons) {
@@ -56,7 +56,7 @@ export async function sendButtons(to, text, buttons) {
         console.log("✅ Mensaje con botones enviado:", res.data);
     }
     catch (err) {
-        console.error("❌ Error al enviar mensaje con botones:", err.response?.data || err);
+        console.error("❌ Error al enviar mensaje con botones:", err);
     }
 }
 //# sourceMappingURL=send-text.js.map

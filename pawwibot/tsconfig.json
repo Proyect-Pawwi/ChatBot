@@ -1,33 +1,43 @@
 {
   "compilerOptions": {
-    "target": "ES2020",                // ES2022 está bien, pero bajar a ES2020 mejora compatibilidad sin perder mucho
-    "module": "ESNext",                // Rollup trabaja mejor con módulo ESNext
-    "declaration": false,              // Puedes activarlo si quieres tipos .d.ts
+    "target": "ES2020",              
+    "module": "ESNext",              
+
+    "declaration": false,
     "declarationMap": false,
+    
     "moduleResolution": "node",
+    
     "removeComments": true,
+    
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    
     "allowSyntheticDefaultImports": true,
-    "sourceMap": true,                 // Para debugging es útil, pon true para build dev
+    
+    "sourceMap": true,
+    
     "outDir": "./dist",
     "baseUrl": "./",
-    "rootDir": "./src",                // Mejor indicar que el root es ./src para evitar incluir archivos no TS
+    "rootDir": "./src",
+    
     "incremental": true,
     "skipLibCheck": true,
+    
     "paths": {
       "~/*": ["./src/*"]
-    }
+    },
+    
+    // Recomendación para evitar errores con módulos ESNext y node
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "**e2e**",
-    "**mock**"
+    "dist"
   ]
 }

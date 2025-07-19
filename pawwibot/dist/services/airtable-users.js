@@ -14,7 +14,7 @@ export async function createUser(user) {
     const res = await fetch(AIRTABLE_API_URL, {
         method: "POST",
         headers: {
-            "Authorization": `Bearer ${AIRTABLE_API_KEY}`,
+            Authorization: `Bearer ${AIRTABLE_API_KEY}`,
             "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
@@ -27,7 +27,7 @@ export async function getUsers(filter = "") {
     const url = filter ? `${AIRTABLE_API_URL}?filterByFormula=${encodeURIComponent(filter)}` : AIRTABLE_API_URL;
     const res = await fetch(url, {
         headers: {
-            "Authorization": `Bearer ${AIRTABLE_API_KEY}`
+            Authorization: `Bearer ${AIRTABLE_API_KEY}`
         }
     });
     if (!res.ok)
@@ -50,7 +50,7 @@ export async function updateUser(recordId, userFields) {
     const res = await fetch(AIRTABLE_API_URL, {
         method: "PATCH",
         headers: {
-            "Authorization": `Bearer ${AIRTABLE_API_KEY}`,
+            Authorization: `Bearer ${AIRTABLE_API_KEY}`,
             "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
@@ -64,7 +64,7 @@ export async function deleteUser(recordId) {
     const res = await fetch(url, {
         method: "DELETE",
         headers: {
-            "Authorization": `Bearer ${AIRTABLE_API_KEY}`
+            Authorization: `Bearer ${AIRTABLE_API_KEY}`
         }
     });
     if (!res.ok)

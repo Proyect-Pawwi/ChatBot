@@ -9,17 +9,15 @@ export async function createDog(dog) {
         Edad: dog.Edad,
         Consideraciones: dog.Consideraciones,
         Vacunas: dog.Vacunas,
-        "Usuario": dog["Usuario"] || []
+        Usuario: dog.Usuario || []
     };
     const payload = {
-        records: [
-            { fields }
-        ]
+        records: [{ fields }]
     };
     const res = await fetch(AIRTABLE_API_URL, {
         method: "POST",
         headers: {
-            "Authorization": `Bearer ${AIRTABLE_API_KEY}`,
+            Authorization: `Bearer ${AIRTABLE_API_KEY}`,
             "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
@@ -32,7 +30,7 @@ export async function getDogs(filter = "") {
     const url = filter ? `${AIRTABLE_API_URL}?filterByFormula=${encodeURIComponent(filter)}` : AIRTABLE_API_URL;
     const res = await fetch(url, {
         headers: {
-            "Authorization": `Bearer ${AIRTABLE_API_KEY}`
+            Authorization: `Bearer ${AIRTABLE_API_KEY}`
         }
     });
     if (!res.ok)
@@ -53,17 +51,15 @@ export async function updateDog(recordId, dogFields) {
         fields.Consideraciones = dogFields.Consideraciones;
     if (dogFields.Vacunas !== undefined)
         fields.Vacunas = dogFields.Vacunas;
-    if (dogFields["Usuario"] !== undefined)
-        fields["Usuario"] = dogFields["Usuario"];
+    if (dogFields.Usuario !== undefined)
+        fields.Usuario = dogFields.Usuario;
     const payload = {
-        records: [
-            { id: recordId, fields }
-        ]
+        records: [{ id: recordId, fields }]
     };
     const res = await fetch(AIRTABLE_API_URL, {
         method: "PATCH",
         headers: {
-            "Authorization": `Bearer ${AIRTABLE_API_KEY}`,
+            Authorization: `Bearer ${AIRTABLE_API_KEY}`,
             "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
@@ -77,7 +73,7 @@ export async function deleteDog(recordId) {
     const res = await fetch(url, {
         method: "DELETE",
         headers: {
-            "Authorization": `Bearer ${AIRTABLE_API_KEY}`
+            Authorization: `Bearer ${AIRTABLE_API_KEY}`
         }
     });
     if (!res.ok)

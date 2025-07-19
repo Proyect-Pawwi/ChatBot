@@ -13,13 +13,13 @@ import { text } from "node:stream/consumers";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
-const regex = (text) => {
+const regex = (text: string) => {
   if (!text || text.trim() === "") return false;
   return /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(text.trim());
 };
 
-const perritoData = {};
-const usuarioData = {};
+const perritoData: any = {};
+const usuarioData: any = {};
 
 // Define the interface for a single dog (Perro)
 interface Perro {
@@ -48,14 +48,14 @@ interface Usuario {
   agendamientoSeleccionado?: string;
 }
 
-const createLeadMongo = async (leadData) => {
+const createLeadMongo = async (leadData: any) => {
   const client = await getMongoClient();
   const db = client.db("pawwi_bot");
   const leads = db.collection("leads");
   await leads.insertOne({ ...leadData, creadoEn: new Date() });
 };
 
-const updateUsuarioDireccion = async (celular, direccion) => {
+const updateUsuarioDireccion = async (celular: any, direccion: any) => {
   const client = await getMongoClient();
   const db = client.db("pawwi_bot");
   const usuarios = db.collection("usuarios");
@@ -138,7 +138,7 @@ const checkLeadCount = async () => {
 };
 
 async function checkPaseos() {
-  const paseos = await getPaseos();
+  const paseos: any = await getPaseos();
 
     //PASEOS
     for (const paseo of paseos.records) {
@@ -165,6 +165,7 @@ async function checkPaseos() {
           const tiempoRestanteMs = finPaseo.getTime() - ahora.getTime();
 
           if (tiempoRestanteMs <= 0 && paseo.fields.Estado == "Esperando finalizacion") {
+            
             console.log(`✅ El paseo ya terminó hace ${Math.abs(Math.floor(tiempoRestanteMs / 60000))} minutos.`);
             await updatePaseo(paseo.id, { Estado: "Esperando finalizacion de Pawwer" });
             await TEMPLATE_finalizar_paseo_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"][0], {
@@ -427,7 +428,7 @@ const init = addKeyword(EVENTS.WELCOME)
         console.log("✅ Usuario recuperado de Mongo:", usuario);
 
         if (usuario.tipoUsuario == "pawwer") {
-          const paseo = await getPaseoByPawwerTelefonoActive(ctx.from);
+          const paseo: any = await getPaseoByPawwerTelefonoActive(ctx.from);
 
           if (!paseo) {
             await sendText(ctx.from, "No tienes paseos activos en este momento. Por favor, contacta al soporte si crees que es un error.");
@@ -575,7 +576,7 @@ const init = addKeyword(EVENTS.WELCOME)
         perritoData[perroId] = { ...perro };
       }
 
-    } catch (e) {
+    } catch (e: any) {
       console.error("❌ Error al manejar usuario desde Mongo:", e.message);
     }
 
@@ -583,7 +584,7 @@ const init = addKeyword(EVENTS.WELCOME)
   })
 
   .addAnswer(
-    null,
+    "",
     { capture: true },
     async (ctx, { endFlow, gotoFlow }) => {
       const textoBoton = ctx.body;
@@ -720,7 +721,7 @@ const RegistrarDireccion = addKeyword('RegistrarDireccion')
 
     try {
       await updateUsuarioDireccion(ctx.from, direccion);
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error actualizando dirección en Mongo", e?.message || e);
     }
 
@@ -733,7 +734,7 @@ const RegistrarPerro = addKeyword('RegistrarPerro')
     const data = perritoData[ctx.from];
     try {
       await insertarPerro(ctx.from, data);
-    } catch (e) {
+    } catch (e: any) {
       console.error("❌ Error guardando perro en Mongo:", e.message);
     }
     await TEMPLATE_registro_agendar_paseo(ctx.from, perritoData[ctx.from]?.nombre || "");
@@ -757,7 +758,7 @@ const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
     const perrosRegistrados = currentUser.perros; // Use the dogs from the user object
 
     // 2. Create buttons from the registered dogs
-    const buttons = perrosRegistrados.map(perro => ({
+    const buttons = perrosRegistrados.map((perro: { nombre: any; }) => ({
       // Assuming 'nombre' is the property for the dog's name in your Perro interface
       body: perro.nombre,
       payload: perro.nombre // Use the dog's name as payload for selection
@@ -772,7 +773,7 @@ const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
 
     // 3. Find the selected dog in the user's registered dogs
     const perroSeleccionado = currentUser.perros.find(
-      (perro) => perro.nombre === selectedDogName
+      (perro: { nombre: any; }) => perro.nombre === selectedDogName
     );
 
     if (perroSeleccionado) {
@@ -962,10 +963,10 @@ Anotaciones:
   Tiempo de servicio: ${data.agendamientoSeleccionado || 'No definido'}
 Fecha: ${data.diaSeleccionado || 'No definida'}
 Hora: ${data.horaSeleccionada || 'No definida'}
-Precio: $${data.valor * 0.6 || 0}`);
+Precio: $${(data.valor || 0) * 0.6 || 0}`);
       } catch (e) {
         await sendText(ctx.from, `Ocurrió un error al guardar el agendamiento.`);
-        console.error("Error al crear el lead:", e?.message || e);
+        console.error("Error al crear el lead:", e);
       }
       return endFlow();
     } else if (textoBoton === 'No' || payloadBoton === 'NO') {
