@@ -1,47 +1,31 @@
-# Etapa 1: Builder
+# Etapa 1: build
 FROM node:21-alpine3.18 AS builder
 
 WORKDIR /app
 
-# Activar pnpm (corepack)
-RUN corepack enable && corepack prepare pnpm@latest --activate
+COPY package*.json ./
 
-# Copiar solo archivos de dependencias para aprovechar cache
-COPY package.json pnpm-lock.yaml* ./
+RUN npm install
 
-# Instalar dependencias
-RUN pnpm install
-
-# Copiar el resto del código
 COPY . .
 
-# Construir el proyecto
-RUN pnpm run build
+RUN npm run build
 
-
-# Etapa 2: Deploy (más liviana)
-FROM node:21-alpine3.18 AS deploy
+# Etapa 2: producción
+FROM node:21-alpine3.18 AS production
 
 WORKDIR /app
 
-ARG PORT
-ENV PORT=$PORT
-EXPOSE $PORT
+COPY package*.json ./
 
-# Copiar archivos necesarios desde builder
+RUN npm install --production
+
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/assets ./assets
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/pnpm-lock.yaml* ./
 
-# Activar pnpm (corepack)
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Si tienes assets, descomenta esta línea:
+# COPY --from=builder /app/assets ./assets
 
-# Instalar solo dependencias de producción
-RUN pnpm install --prod
-
-# Usuario sin privilegios (opcional, buena práctica)
-RUN addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs
-USER nodejs
+ENV PORT=3000
+EXPOSE $PORT
 
 CMD ["npm", "start"]
