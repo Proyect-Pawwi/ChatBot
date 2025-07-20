@@ -1,2 +1,8 @@
-[start]
-cmd = "npm run dev"
+[phases.setup]
+packages = ["nodejs", "npm"]
+
+[phases.install]
+command = "npm ci"
+
+[phases.start]
+command = "npm run dev"
