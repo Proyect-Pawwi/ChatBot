@@ -382,8 +382,7 @@ async function checkLEADS() {
     }
 }
 
-setInterval(checkLeadCount, 5 * 1000);
-
+setInterval(checkLeadCount, 30 * 1000);
 
 const init = addKeyword(EVENTS.WELCOME)
   .addAction(async (ctx, { endFlow, gotoFlow }) => {
