@@ -16,5 +16,6 @@ const main = async () => {
 
     httpServer(+PORT)
 }
+console.log("Bot Pawwi iniciado");
 
 main()

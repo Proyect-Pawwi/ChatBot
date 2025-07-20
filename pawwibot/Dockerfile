@@ -1,40 +1,35 @@
-# Image size ~ 400MB
-FROM node:21-alpine3.18 as builder
+# Etapa de construcción
+FROM node:18-alpine as builder
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
-ENV PNPM_HOME=/usr/local/bin
+# Instala dependencias necesarias para compilar paquetes nativos
+RUN apk add --no-cache python3 make g++ git
+
+COPY package*.json ./
+RUN npm install
 
 COPY . .
 
-COPY package*.json *-lock.yaml ./
+# Compila el proyecto TypeScript
+RUN npm run build
 
-RUN apk add --no-cache --virtual .gyp \
-        python3 \
-        make \
-        g++ \
-    && apk add --no-cache git \
-    && pnpm install && pnpm run build \
-    && apk del .gyp
-
-FROM node:21-alpine3.18 as deploy
+# Etapa de producción
+FROM node:18-alpine as deploy
 
 WORKDIR /app
 
+# Copia solo lo necesario desde builder
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+
+# Instala solo dependencias de producción
+RUN npm install --omit=dev
+
+# Railway maneja el puerto por variable de entorno
 ARG PORT
 ENV PORT $PORT
 EXPOSE $PORT
 
-COPY --from=builder /app/assets ./assets
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/*.json /app/*-lock.yaml ./
-
-RUN corepack enable && corepack prepare pnpm@latest --activate 
-ENV PNPM_HOME=/usr/local/bin
-
-RUN npm cache clean --force && pnpm install --production --ignore-scripts \
-    && addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs \
-    && rm -rf $PNPM_HOME/.npm $PNPM_HOME/.node-gyp
-
+# Ejecuta el bot
 CMD ["npm", "start"]

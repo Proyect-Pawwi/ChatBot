@@ -1,7 +1,6 @@
 {
   "name": "base-bailey-json",
   "version": "1.0.0",
-  "description": "",
   "main": "dist/app.js",
   "type": "module",
   "scripts": {
@@ -9,12 +8,10 @@
     "build": "tsc",
     "start": "node dist/app.js"
   },
-  "keywords": [],
   "dependencies": {
     "@builderbot/bot": "1.2.5",
     "@builderbot/provider-meta": "1.2.5",
     "airtable": "^0.12.2",
-    "base-bailey-json": "file:",
     "dotenv": "^16.4.7",
     "googleapis": "^148.0.0",
     "mongodb": "^6.17.0",
@@ -30,13 +27,9 @@
     "eslint": "^8.57.1",
     "eslint-plugin-builderbot": "latest",
     "nodemon": "^3.1.10",
-    "rollup": "^4.10.0",
-    "rollup-plugin-typescript2": "^0.36.0",
     "tsx": "^4.7.1"
   },
   "engines": {
     "node": ">=18.x"
-  },
-  "author": "",
-  "license": "ISC"
+  }
 }
