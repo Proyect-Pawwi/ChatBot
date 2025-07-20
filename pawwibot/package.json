@@ -8,7 +8,8 @@
     "build": "npx tsc",
     "start": "node dist/index.js",
     "lint": "eslint src --ext .ts",
-    "dev": "npm run lint && nodemon ./src/app.ts"
+    "dev": "tsx src/app.ts",
+    "dev:local": "npm run lint && nodemon ./src/app.ts"
   },
   "keywords": [],
   "dependencies": {
