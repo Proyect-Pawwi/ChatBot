@@ -5,7 +5,7 @@ Chatbot de Pawwi para atender clientes
 ## Requerimientos
 * Nodejs v.20 o superior
 
-## Installacion
+## Installacion.
 ```bash
 npm install
 ```
