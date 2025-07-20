@@ -5,7 +5,7 @@ Pawwi chatbot designed to manage dog owners' scheduling with dog walkers
 ## Requirements
 * Nodejs v.20 or higher
 
-## Installation
+## Installation.
 ```bash
 npm install
 ```
