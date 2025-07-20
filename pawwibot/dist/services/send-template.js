@@ -1,7 +1,35 @@
-import axios from "axios";
-import dotenv from "dotenv";
-dotenv.config();
-export async function TEMPLATE_bienvenida_pawwi(to, name = "amigo") {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TEMPLATE_bienvenida_pawwi = TEMPLATE_bienvenida_pawwi;
+exports.TEMPLATE_registro_nombre_perrito = TEMPLATE_registro_nombre_perrito;
+exports.TEMPLATE_registro_raza_perrito = TEMPLATE_registro_raza_perrito;
+exports.TEMPLATE_registro_edad_perrito = TEMPLATE_registro_edad_perrito;
+exports.TEMPLATE_registro_consideraciones_perrito = TEMPLATE_registro_consideraciones_perrito;
+exports.TEMPLATE_registro_vacunas_perrito = TEMPLATE_registro_vacunas_perrito;
+exports.TEMPLATE_registro_agendar_paseo = TEMPLATE_registro_agendar_paseo;
+exports.TEMPLATE_agendar_tipo_paseo = TEMPLATE_agendar_tipo_paseo;
+exports.TEMPLATE_agendar_fecha_paseo = TEMPLATE_agendar_fecha_paseo;
+exports.TEMPLATE_ragendar_hora_paseo = TEMPLATE_ragendar_hora_paseo;
+exports.TEMPLATE_agendar_metodo_pago = TEMPLATE_agendar_metodo_pago;
+exports.TEMPLATE_agendar_resumen_paseo = TEMPLATE_agendar_resumen_paseo;
+exports.enviarPlantillaWhatsApp = enviarPlantillaWhatsApp;
+exports.TEMPLATE_confirmacion_paseo_cliente = TEMPLATE_confirmacion_paseo_cliente;
+exports.TEMPLATE_recordatorio_paseo_cliente = TEMPLATE_recordatorio_paseo_cliente;
+exports.TEMPLATE_recordatorio_paseo_pawwer = TEMPLATE_recordatorio_paseo_pawwer;
+exports.TEMPLATE_llegada_pawwer = TEMPLATE_llegada_pawwer;
+exports.TEMPLATE_pawwer_llego_cliente = TEMPLATE_pawwer_llego_cliente;
+exports.TEMPLATE_strava_recordatorio_pawwer = TEMPLATE_strava_recordatorio_pawwer;
+exports.TEMPLATE_link_strava_cliente = TEMPLATE_link_strava_cliente;
+exports.TEMPLATE_finalizar_paseo_pawwer = TEMPLATE_finalizar_paseo_pawwer;
+exports.TEMPLATE_paseo_finalizado_cliente = TEMPLATE_paseo_finalizado_cliente;
+exports.TEMPLATE_recordatorio_pago_cliente = TEMPLATE_recordatorio_pago_cliente;
+const axios_1 = __importDefault(require("axios"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+async function TEMPLATE_bienvenida_pawwi(to, name = "amigo") {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -22,7 +50,7 @@ export async function TEMPLATE_bienvenida_pawwi(to, name = "amigo") {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -34,7 +62,7 @@ export async function TEMPLATE_bienvenida_pawwi(to, name = "amigo") {
         console.error("❌ Error al enviar plantilla:", err.response?.data || err);
     }
 }
-export async function TEMPLATE_registro_nombre_perrito(to) {
+async function TEMPLATE_registro_nombre_perrito(to) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -47,7 +75,7 @@ export async function TEMPLATE_registro_nombre_perrito(to) {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -59,7 +87,7 @@ export async function TEMPLATE_registro_nombre_perrito(to) {
         console.error("❌ Error al enviar plantilla 'registro_nombre_perrito':", err.response?.data || err);
     }
 }
-export async function TEMPLATE_registro_raza_perrito(to, dogName) {
+async function TEMPLATE_registro_raza_perrito(to, dogName) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -80,7 +108,7 @@ export async function TEMPLATE_registro_raza_perrito(to, dogName) {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -92,7 +120,7 @@ export async function TEMPLATE_registro_raza_perrito(to, dogName) {
         console.error("❌ Error al enviar plantilla 'registro_raza_perrito':", err.response?.data || err);
     }
 }
-export async function TEMPLATE_registro_edad_perrito(to, dogName) {
+async function TEMPLATE_registro_edad_perrito(to, dogName) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -113,7 +141,7 @@ export async function TEMPLATE_registro_edad_perrito(to, dogName) {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -125,7 +153,7 @@ export async function TEMPLATE_registro_edad_perrito(to, dogName) {
         console.error("❌ Error al enviar plantilla 'registro_edad_perrito':", err.response?.data || err);
     }
 }
-export async function TEMPLATE_registro_consideraciones_perrito(to, dogName) {
+async function TEMPLATE_registro_consideraciones_perrito(to, dogName) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -146,7 +174,7 @@ export async function TEMPLATE_registro_consideraciones_perrito(to, dogName) {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -158,7 +186,7 @@ export async function TEMPLATE_registro_consideraciones_perrito(to, dogName) {
         console.error("❌ Error al enviar plantilla 'registro_consideraciones_perrito':", err.response?.data || err);
     }
 }
-export async function TEMPLATE_registro_vacunas_perrito(to, dogName) {
+async function TEMPLATE_registro_vacunas_perrito(to, dogName) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -191,7 +219,7 @@ export async function TEMPLATE_registro_vacunas_perrito(to, dogName) {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -203,7 +231,7 @@ export async function TEMPLATE_registro_vacunas_perrito(to, dogName) {
         console.error("❌ Error al enviar plantilla 'registro_vacunas_perrito':", err.response?.data || err);
     }
 }
-export async function TEMPLATE_registro_agendar_paseo(to, dogName) {
+async function TEMPLATE_registro_agendar_paseo(to, dogName) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -236,7 +264,7 @@ export async function TEMPLATE_registro_agendar_paseo(to, dogName) {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -248,7 +276,7 @@ export async function TEMPLATE_registro_agendar_paseo(to, dogName) {
         console.error("❌ Error al enviar plantilla 'registro_agendar_paseo':", err.response?.data || err);
     }
 }
-export async function TEMPLATE_agendar_tipo_paseo(to, dogName = "tu perrito") {
+async function TEMPLATE_agendar_tipo_paseo(to, dogName = "tu perrito") {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -293,7 +321,7 @@ export async function TEMPLATE_agendar_tipo_paseo(to, dogName = "tu perrito") {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -305,7 +333,7 @@ export async function TEMPLATE_agendar_tipo_paseo(to, dogName = "tu perrito") {
         console.error("❌ Error al enviar plantilla 'agendar_tipo_paseo':", err.response?.data || err);
     }
 }
-export async function TEMPLATE_agendar_fecha_paseo(to, dogName = "tu perrito") {
+async function TEMPLATE_agendar_fecha_paseo(to, dogName = "tu perrito") {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -326,7 +354,7 @@ export async function TEMPLATE_agendar_fecha_paseo(to, dogName = "tu perrito") {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -338,7 +366,7 @@ export async function TEMPLATE_agendar_fecha_paseo(to, dogName = "tu perrito") {
         console.error("❌ Error al enviar plantilla 'agendar_fecha_paseo':", err.response?.data || err);
     }
 }
-export async function TEMPLATE_ragendar_hora_paseo(to, dogName = "tu perrito") {
+async function TEMPLATE_ragendar_hora_paseo(to, dogName = "tu perrito") {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -359,7 +387,7 @@ export async function TEMPLATE_ragendar_hora_paseo(to, dogName = "tu perrito") {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -371,7 +399,7 @@ export async function TEMPLATE_ragendar_hora_paseo(to, dogName = "tu perrito") {
         console.error("❌ Error al enviar plantilla 'ragendar_hora_paseo':", err.response?.data || err);
     }
 }
-export async function TEMPLATE_agendar_metodo_pago(to, dogName = "tu perrito") {
+async function TEMPLATE_agendar_metodo_pago(to, dogName = "tu perrito") {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -410,7 +438,7 @@ export async function TEMPLATE_agendar_metodo_pago(to, dogName = "tu perrito") {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -422,7 +450,7 @@ export async function TEMPLATE_agendar_metodo_pago(to, dogName = "tu perrito") {
         console.error("❌ Error al enviar plantilla 'agendar_metodo_pago':", err.response?.data || err);
     }
 }
-export async function TEMPLATE_agendar_resumen_paseo(to, { dogName = 'tu perrito', calle = 'Calle no especificada', colonia = 'Colonia no especificada', fecha = 'Fecha no definida', hora = 'Hora no definida', tipoPaseo = 'Tipo no definido', precio = '$0', metodoPago = 'No definido' }) {
+async function TEMPLATE_agendar_resumen_paseo(to, { dogName = 'tu perrito', calle = 'Calle no especificada', colonia = 'Colonia no especificada', fecha = 'Fecha no definida', hora = 'Hora no definida', tipoPaseo = 'Tipo no definido', precio = '$0', metodoPago = 'No definido' }) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -462,7 +490,7 @@ export async function TEMPLATE_agendar_resumen_paseo(to, { dogName = 'tu perrito
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -474,7 +502,7 @@ export async function TEMPLATE_agendar_resumen_paseo(to, { dogName = 'tu perrito
         console.error("❌ Error al enviar plantilla 'agendar_resumen_paseo':", err.response?.data || err);
     }
 }
-export async function enviarPlantillaWhatsApp(numeroDestino, plantilla, variables) {
+async function enviarPlantillaWhatsApp(numeroDestino, plantilla, variables) {
     const url = `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_PHONE_NUMBER_ID}/messages`;
     const headers = {
         Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
@@ -496,7 +524,7 @@ export async function enviarPlantillaWhatsApp(numeroDestino, plantilla, variable
         },
     };
     try {
-        const response = await axios.post(url, body, { headers });
+        const response = await axios_1.default.post(url, body, { headers });
         console.log(`✅ Mensaje enviado a ${numeroDestino} con plantilla "${plantilla}"`);
         return response.data;
     }
@@ -505,7 +533,7 @@ export async function enviarPlantillaWhatsApp(numeroDestino, plantilla, variable
         throw error;
     }
 }
-export async function TEMPLATE_confirmacion_paseo_cliente(to, { nombreCliente, nombrePerrito, calle, colonia, fecha, hora, duracion, precio, pawwer }) {
+async function TEMPLATE_confirmacion_paseo_cliente(to, { nombreCliente, nombrePerrito, calle, colonia, fecha, hora, duracion, precio, pawwer }) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -534,7 +562,7 @@ export async function TEMPLATE_confirmacion_paseo_cliente(to, { nombreCliente, n
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -546,7 +574,7 @@ export async function TEMPLATE_confirmacion_paseo_cliente(to, { nombreCliente, n
         console.error("❌ Error al enviar plantilla 'confirmacion_paseo_cliente':", err.response?.data || err);
     }
 }
-export async function TEMPLATE_recordatorio_paseo_cliente(to, { nombreCliente, nombrePerrito, fecha, hora, calle, colonia, duracion, }) {
+async function TEMPLATE_recordatorio_paseo_cliente(to, { nombreCliente, nombrePerrito, fecha, hora, calle, colonia, duracion, }) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -573,7 +601,7 @@ export async function TEMPLATE_recordatorio_paseo_cliente(to, { nombreCliente, n
         },
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -585,7 +613,7 @@ export async function TEMPLATE_recordatorio_paseo_cliente(to, { nombreCliente, n
         console.error("❌ Error al enviar plantilla 'recordatorio_paseo_cliente':", err.response?.data || err.message);
     }
 }
-export async function TEMPLATE_recordatorio_paseo_pawwer(to, { nombrePawwer, nombrePerrito, calle, colonia, fecha, hora, duracion, }) {
+async function TEMPLATE_recordatorio_paseo_pawwer(to, { nombrePawwer, nombrePerrito, calle, colonia, fecha, hora, duracion, }) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -612,7 +640,7 @@ export async function TEMPLATE_recordatorio_paseo_pawwer(to, { nombrePawwer, nom
         },
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -624,7 +652,7 @@ export async function TEMPLATE_recordatorio_paseo_pawwer(to, { nombrePawwer, nom
         console.error("❌ Error al enviar plantilla 'recordatorio_paseo_pawwer':", err.response?.data || err.message);
     }
 }
-export async function TEMPLATE_llegada_pawwer(to, { nombrePawwer, nombrePerrito, }) {
+async function TEMPLATE_llegada_pawwer(to, { nombrePawwer, nombrePerrito, }) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -652,7 +680,7 @@ export async function TEMPLATE_llegada_pawwer(to, { nombrePawwer, nombrePerrito,
         },
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -664,7 +692,7 @@ export async function TEMPLATE_llegada_pawwer(to, { nombrePawwer, nombrePerrito,
         console.error("❌ Error al enviar plantilla 'llegada_pawwer':", err.response?.data || err.message);
     }
 }
-export async function TEMPLATE_pawwer_llego_cliente(to, { nombreCliente, nombrePawwer, nombrePerrito, calle, colonia, fecha, hora, duracion, }) {
+async function TEMPLATE_pawwer_llego_cliente(to, { nombreCliente, nombrePawwer, nombrePerrito, calle, colonia, fecha, hora, duracion, }) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -691,7 +719,7 @@ export async function TEMPLATE_pawwer_llego_cliente(to, { nombreCliente, nombreP
             ],
         },
     };
-    const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+    const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
         headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -699,7 +727,7 @@ export async function TEMPLATE_pawwer_llego_cliente(to, { nombreCliente, nombreP
     });
     console.log("📩 pawwer_llego_cliente enviada:", res.data);
 }
-export async function TEMPLATE_strava_recordatorio_pawwer(to, { nombrePawwer, nombrePerrito, }) {
+async function TEMPLATE_strava_recordatorio_pawwer(to, { nombrePawwer, nombrePerrito, }) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -721,7 +749,7 @@ export async function TEMPLATE_strava_recordatorio_pawwer(to, { nombrePawwer, no
         },
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -733,7 +761,7 @@ export async function TEMPLATE_strava_recordatorio_pawwer(to, { nombrePawwer, no
         console.error("❌ Error al enviar plantilla 'strava_recordatorio_pawwer':", err.response?.data || err.message);
     }
 }
-export async function TEMPLATE_link_strava_cliente(to, { nombreCliente, nombrePerrito, linkStrava, }) {
+async function TEMPLATE_link_strava_cliente(to, { nombreCliente, nombrePerrito, linkStrava, }) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -756,7 +784,7 @@ export async function TEMPLATE_link_strava_cliente(to, { nombreCliente, nombrePe
         },
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -768,7 +796,7 @@ export async function TEMPLATE_link_strava_cliente(to, { nombreCliente, nombrePe
         console.error("❌ Error al enviar plantilla 'link_strava_cliente':", err.response?.data || err.message);
     }
 }
-export async function TEMPLATE_finalizar_paseo_pawwer(to, { nombrePawwer, nombrePerrito, }) {
+async function TEMPLATE_finalizar_paseo_pawwer(to, { nombrePawwer, nombrePerrito, }) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -790,7 +818,7 @@ export async function TEMPLATE_finalizar_paseo_pawwer(to, { nombrePawwer, nombre
         },
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -802,7 +830,7 @@ export async function TEMPLATE_finalizar_paseo_pawwer(to, { nombrePawwer, nombre
         console.error("❌ Error al enviar plantilla 'finalizar_paseo_pawwer':", err.response?.data || err.message);
     }
 }
-export async function TEMPLATE_paseo_finalizado_cliente(to, { nombreCliente, nombrePerrito, }) {
+async function TEMPLATE_paseo_finalizado_cliente(to, { nombreCliente, nombrePerrito, }) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -824,7 +852,7 @@ export async function TEMPLATE_paseo_finalizado_cliente(to, { nombreCliente, nom
         },
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
@@ -836,7 +864,7 @@ export async function TEMPLATE_paseo_finalizado_cliente(to, { nombreCliente, nom
         console.error("❌ Error al enviar plantilla 'paseo_finalizado_cliente':", err.response?.data || err.message);
     }
 }
-export async function TEMPLATE_recordatorio_pago_cliente(to, { nombreCliente, nombrePerrito, valorPaseo, }) {
+async function TEMPLATE_recordatorio_pago_cliente(to, { nombreCliente, nombrePerrito, valorPaseo, }) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -859,7 +887,7 @@ export async function TEMPLATE_recordatorio_pago_cliente(to, { nombreCliente, no
         },
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",

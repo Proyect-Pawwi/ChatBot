@@ -1,8 +1,18 @@
-import fetch from 'node-fetch';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createCompletado = createCompletado;
+exports.getCompletados = getCompletados;
+exports.getCompletadoById = getCompletadoById;
+exports.updateCompletado = updateCompletado;
+exports.deleteCompletado = deleteCompletado;
+const node_fetch_1 = __importDefault(require("node-fetch"));
 const AIRTABLE_BASE = 'https://api.airtable.com/v0/appOceFmbxh8PfLKT/Completados';
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.airtableApiKey;
-export async function createCompletado(fields) {
-    const res = await fetch(AIRTABLE_BASE, {
+async function createCompletado(fields) {
+    const res = await (0, node_fetch_1.default)(AIRTABLE_BASE, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
@@ -16,7 +26,7 @@ export async function createCompletado(fields) {
     }
     return res.json();
 }
-export async function getCompletados(filterByFormula, maxRecords = 100, view = 'Grid view', offset) {
+async function getCompletados(filterByFormula, maxRecords = 100, view = 'Grid view', offset) {
     const params = new URLSearchParams({
         maxRecords: maxRecords.toString(),
         view,
@@ -26,7 +36,7 @@ export async function getCompletados(filterByFormula, maxRecords = 100, view = '
     if (offset)
         params.append('offset', offset);
     const url = `${AIRTABLE_BASE}?${params.toString()}`;
-    const res = await fetch(url, {
+    const res = await (0, node_fetch_1.default)(url, {
         headers: {
             'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
             'Content-Type': 'application/json',
@@ -38,9 +48,9 @@ export async function getCompletados(filterByFormula, maxRecords = 100, view = '
     }
     return res.json();
 }
-export async function getCompletadoById(recordId) {
+async function getCompletadoById(recordId) {
     const url = `${AIRTABLE_BASE}/${recordId}`;
-    const res = await fetch(url, {
+    const res = await (0, node_fetch_1.default)(url, {
         headers: {
             'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
             'Content-Type': 'application/json',
@@ -52,8 +62,8 @@ export async function getCompletadoById(recordId) {
     }
     return res.json();
 }
-export async function updateCompletado(recordId, fields) {
-    const res = await fetch(AIRTABLE_BASE, {
+async function updateCompletado(recordId, fields) {
+    const res = await (0, node_fetch_1.default)(AIRTABLE_BASE, {
         method: 'PATCH',
         headers: {
             'Authorization': `Bearer ${AIRTABLE_TOKEN}`,
@@ -69,9 +79,9 @@ export async function updateCompletado(recordId, fields) {
     }
     return res.json();
 }
-export async function deleteCompletado(recordId) {
+async function deleteCompletado(recordId) {
     const url = `${AIRTABLE_BASE}/${recordId}`;
-    const res = await fetch(url, {
+    const res = await (0, node_fetch_1.default)(url, {
         method: 'DELETE',
         headers: {
             'Authorization': `Bearer ${AIRTABLE_TOKEN}`,

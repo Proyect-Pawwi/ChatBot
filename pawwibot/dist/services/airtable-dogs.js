@@ -1,7 +1,16 @@
-import fetch from "node-fetch";
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createDog = createDog;
+exports.getDogs = getDogs;
+exports.updateDog = updateDog;
+exports.deleteDog = deleteDog;
+const node_fetch_1 = __importDefault(require("node-fetch"));
 const AIRTABLE_API_URL = "https://api.airtable.com/v0/appOceFmbxh8PfLKT/Perros";
 const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY || process.env.airtableApiKey;
-export async function createDog(dog) {
+async function createDog(dog) {
     const fields = {
         Celular: dog.Celular,
         Nombre: dog.Nombre,
@@ -14,7 +23,7 @@ export async function createDog(dog) {
     const payload = {
         records: [{ fields }]
     };
-    const res = await fetch(AIRTABLE_API_URL, {
+    const res = await (0, node_fetch_1.default)(AIRTABLE_API_URL, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${AIRTABLE_API_KEY}`,
@@ -26,9 +35,9 @@ export async function createDog(dog) {
         throw new Error("Airtable create failed");
     return res.json();
 }
-export async function getDogs(filter = "") {
+async function getDogs(filter = "") {
     const url = filter ? `${AIRTABLE_API_URL}?filterByFormula=${encodeURIComponent(filter)}` : AIRTABLE_API_URL;
-    const res = await fetch(url, {
+    const res = await (0, node_fetch_1.default)(url, {
         headers: {
             Authorization: `Bearer ${AIRTABLE_API_KEY}`
         }
@@ -37,7 +46,7 @@ export async function getDogs(filter = "") {
         throw new Error("Airtable get failed");
     return res.json();
 }
-export async function updateDog(recordId, dogFields) {
+async function updateDog(recordId, dogFields) {
     const fields = {};
     if (dogFields.Celular !== undefined)
         fields.Celular = dogFields.Celular;
@@ -56,7 +65,7 @@ export async function updateDog(recordId, dogFields) {
     const payload = {
         records: [{ id: recordId, fields }]
     };
-    const res = await fetch(AIRTABLE_API_URL, {
+    const res = await (0, node_fetch_1.default)(AIRTABLE_API_URL, {
         method: "PATCH",
         headers: {
             Authorization: `Bearer ${AIRTABLE_API_KEY}`,
@@ -68,9 +77,9 @@ export async function updateDog(recordId, dogFields) {
         throw new Error("Airtable update failed");
     return res.json();
 }
-export async function deleteDog(recordId) {
+async function deleteDog(recordId) {
     const url = `${AIRTABLE_API_URL}/${recordId}`;
-    const res = await fetch(url, {
+    const res = await (0, node_fetch_1.default)(url, {
         method: "DELETE",
         headers: {
             Authorization: `Bearer ${AIRTABLE_API_KEY}`

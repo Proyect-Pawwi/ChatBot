@@ -1,11 +1,14 @@
-import { addKeyword, EVENTS } from "@builderbot/bot";
-import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito, TEMPLATE_agendar_tipo_paseo, TEMPLATE_agendar_fecha_paseo, TEMPLATE_ragendar_hora_paseo, TEMPLATE_agendar_metodo_pago, TEMPLATE_agendar_resumen_paseo, TEMPLATE_confirmacion_paseo_cliente, TEMPLATE_llegada_pawwer, TEMPLATE_pawwer_llego_cliente, TEMPLATE_strava_recordatorio_pawwer, TEMPLATE_link_strava_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer, TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_paseo_finalizado_cliente, TEMPLATE_recordatorio_pago_cliente } from "../services/send-template";
-import { sendText, sendButtons } from "../services/send-text";
-import { getMongoClient } from '../services/mongo';
-import { createLead, deleteLead, getLeads, updateLead } from "~/services/airtable-leads";
-import { createPaseo, getPaseoByPawwerTelefonoActive, getPaseos, updatePaseo } from "~/services/airtable-paseos";
-import { log } from "node:console";
-import { createCompletado } from "~/services/airtable-completados";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.agendarResumenPaseo = exports.agendarMetodoPaseo = exports.agendarHoraPaseo = exports.agendarDiaPaseo = exports.agendarTiempoPaseo = exports.AgendarlistarPerritos = exports.RegistrarPerro = exports.RegistrarDireccion = exports.RegistrarVacunasPerrito = exports.RegistrarConsideracionesPerrito = exports.RegistrarEdadPerrito = exports.RegistrarRazaPerrito = exports.RegistrarNombrePerrito = exports.init = void 0;
+const bot_1 = require("@builderbot/bot");
+const send_template_1 = require("../services/send-template");
+const send_text_1 = require("../services/send-text");
+const mongo_1 = require("../services/mongo");
+const airtable_leads_1 = require("~/services/airtable-leads");
+const airtable_paseos_1 = require("~/services/airtable-paseos");
+const node_console_1 = require("node:console");
+const airtable_completados_1 = require("~/services/airtable-completados");
 const regex = (text) => {
     if (!text || text.trim() === "")
         return false;
@@ -14,19 +17,19 @@ const regex = (text) => {
 const perritoData = {};
 const usuarioData = {};
 const createLeadMongo = async (leadData) => {
-    const client = await getMongoClient();
+    const client = await (0, mongo_1.getMongoClient)();
     const db = client.db("pawwi_bot");
     const leads = db.collection("leads");
     await leads.insertOne({ ...leadData, creadoEn: new Date() });
 };
 const updateUsuarioDireccion = async (celular, direccion) => {
-    const client = await getMongoClient();
+    const client = await (0, mongo_1.getMongoClient)();
     const db = client.db("pawwi_bot");
     const usuarios = db.collection("usuarios");
     await usuarios.updateOne({ celular }, { $set: { Direccion: direccion } });
 };
 const insertarPerro = async (celular, perroData) => {
-    const client = await getMongoClient();
+    const client = await (0, mongo_1.getMongoClient)();
     const db = client.db("pawwi_bot");
     const usuarios = db.collection("usuarios");
     await usuarios.updateOne({ celular }, { $push: { perros: perroData } });
@@ -63,14 +66,14 @@ async function checkAndUpdatePaseoEstado(recordFields) {
     const diffMinutos = diffMs / 60000;
     if (diffMinutos > 59 && diffMinutos < 61) {
         const filter = `AND({Celular}='${recordFields.Celular}', {Fecha}='${recordFields.Fecha}', {Hora}='${recordFields.Hora}')`;
-        const paseosResp = await getPaseos(filter, 1, "Grid view");
+        const paseosResp = await (0, airtable_paseos_1.getPaseos)(filter, 1, "Grid view");
         if (paseosResp.records.length === 0) {
             console.warn("No se encontró paseo para actualizar estado 1 hora");
             return;
         }
         const paseoRecord = paseosResp.records[0];
         if (paseoRecord.fields.Estado !== "Por realizarse en 1 hora") {
-            await updatePaseo(paseoRecord.id, { Estado: "Por realizarse en 1 hora" });
+            await (0, airtable_paseos_1.updatePaseo)(paseoRecord.id, { Estado: "Por realizarse en 1 hora" });
             console.log(`🕐 Estado actualizado a 'Por realizarse en 1 hora' para paseo ID: ${paseoRecord.id}`);
         }
     }
@@ -85,7 +88,7 @@ const checkLeadCount = async () => {
     }
 };
 async function checkPaseos() {
-    const paseos = await getPaseos();
+    const paseos = await (0, airtable_paseos_1.getPaseos)();
     for (const paseo of paseos.records) {
         const fechaPaseo = parseFechaHora(paseo.fields.Fecha, paseo.fields.Hora);
         if (fechaPaseo) {
@@ -105,8 +108,8 @@ async function checkPaseos() {
                 const tiempoRestanteMs = finPaseo.getTime() - ahora.getTime();
                 if (tiempoRestanteMs <= 0 && paseo.fields.Estado == "Esperando finalizacion") {
                     console.log(`✅ El paseo ya terminó hace ${Math.abs(Math.floor(tiempoRestanteMs / 60000))} minutos.`);
-                    await updatePaseo(paseo.id, { Estado: "Esperando finalizacion de Pawwer" });
-                    await TEMPLATE_finalizar_paseo_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"][0], {
+                    await (0, airtable_paseos_1.updatePaseo)(paseo.id, { Estado: "Esperando finalizacion de Pawwer" });
+                    await (0, send_template_1.TEMPLATE_finalizar_paseo_pawwer)(paseo.fields["Numero de teléfono (from Pawwer)"][0], {
                         nombrePawwer: paseo.fields["Nombre pawwer"] || "Pawwer",
                         nombrePerrito: paseo.fields.Perro || "tu perrito",
                     });
@@ -123,10 +126,10 @@ async function checkPaseos() {
                 const totalMinutos = Math.floor(diferenciaMs / (1000 * 60));
                 if (totalMinutos <= 60 && paseo.fields.Estado == "Por realizarse") {
                     try {
-                        await updatePaseo(paseo.id, { Estado: "Por realizarse en 1 hora" });
+                        await (0, airtable_paseos_1.updatePaseo)(paseo.id, { Estado: "Por realizarse en 1 hora" });
                         console.log(`Cliente ${paseo.fields.Celular}`);
                         console.log(`Pawwer ${paseo.fields['Numero de teléfono (from Pawwer)'][0]}`);
-                        await TEMPLATE_recordatorio_paseo_cliente(paseo.fields.Celular, {
+                        await (0, send_template_1.TEMPLATE_recordatorio_paseo_cliente)(paseo.fields.Celular, {
                             nombreCliente: paseo.fields["Nombre cliente"] || "Cliente",
                             nombrePerrito: paseo.fields.Perro || "tu perrito",
                             fecha: paseo.fields.Fecha || "No definida",
@@ -136,7 +139,7 @@ async function checkPaseos() {
                             duracion: paseo.fields.TiempoServicio || "No definido",
                         });
                         const [calle = "No definida", colonia = "No definida"] = (paseo.fields.Direccion || "").split(" – ");
-                        await TEMPLATE_recordatorio_paseo_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"]?.[0] || "", {
+                        await (0, send_template_1.TEMPLATE_recordatorio_paseo_pawwer)(paseo.fields["Numero de teléfono (from Pawwer)"]?.[0] || "", {
                             nombrePawwer: paseo.fields["Nombre pawwer"] || "Pawwer",
                             nombrePerrito: paseo.fields.Perro || "tu perrito",
                             calle,
@@ -153,7 +156,7 @@ async function checkPaseos() {
                 }
                 else if (totalMinutos <= 10 && paseo.fields.Estado == "Por realizarse en 1 hora") {
                     try {
-                        await updatePaseo(paseo.id, { Estado: "Esperando Pawwer" });
+                        await (0, airtable_paseos_1.updatePaseo)(paseo.id, { Estado: "Esperando Pawwer" });
                         console.log(`⏳ Estado actualizado a "Esperando Pawwer" para paseo ID ${paseo.id}`);
                         const pawwerTelefono = Array.isArray(paseo.fields.Pawwer) && paseo.fields.Pawwer.length > 0
                             ? paseo.fields.Pawwer[0]
@@ -161,7 +164,7 @@ async function checkPaseos() {
                         const nombrePawwer = "Pawwer";
                         const nombrePerrito = paseo.fields.Perro || "tu perrito";
                         if (pawwerTelefono) {
-                            await TEMPLATE_llegada_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"][0], { nombrePawwer, nombrePerrito });
+                            await (0, send_template_1.TEMPLATE_llegada_pawwer)(paseo.fields["Numero de teléfono (from Pawwer)"][0], { nombrePawwer, nombrePerrito });
                             console.log(`✅ Plantilla llegada_pawwer enviada a Pawwer ${pawwerTelefono}`);
                         }
                         else {
@@ -181,7 +184,7 @@ async function checkPaseos() {
 }
 async function checkLEADS() {
     const filterFormula = "Estado = 'confirmado'";
-    const response = await getLeads(filterFormula, 2, "Grid view");
+    const response = await (0, airtable_leads_1.getLeads)(filterFormula, 2, "Grid view");
     console.log(`[LEAD COUNT] Total de leads confirmados (máx 2): ${response.records.length}`);
     for (const record of response.records) {
         const { Fecha, Hora, Pawwer, Celular } = record.fields;
@@ -199,12 +202,12 @@ async function checkLEADS() {
             console.warn(`⚠️ Registro inválido (ID: ${record.id}) para celular ${Celular}`);
             errores.forEach((e) => console.warn(` - ${e}`));
             try {
-                await updateLead(record.id, { Estado: "onChange" });
+                await (0, airtable_leads_1.updateLead)(record.id, { Estado: "onChange" });
                 console.log(`🔁 Estado actualizado a 'onChange' para ID: ${record.id}`);
                 const mensaje = `Hola 👋, tu solicitud presenta errores:\n\n${errores
                     .map((e) => `• ${e}`)
                     .join("\n")}\n\nPor favor revisa la información ingresada.`;
-                await sendText("573332885462", mensaje);
+                await (0, send_text_1.sendText)("573332885462", mensaje);
                 console.log(`📤 Mensaje de error enviado a ${Celular}`);
             }
             catch (updateError) {
@@ -214,7 +217,7 @@ async function checkLEADS() {
         else {
             console.log(`✅ Registro válido (ID: ${record.id}):`, record.fields);
             try {
-                await updateLead(record.id, { Estado: "validando" });
+                await (0, airtable_leads_1.updateLead)(record.id, { Estado: "validando" });
                 console.log(`🔄 Estado actualizado a 'validando' para ID: ${record.id}`);
                 const nombreCliente = record.fields["Nombre cliente"];
                 const nombrePerrito = record.fields.Perro || "tu peludito";
@@ -226,7 +229,7 @@ async function checkLEADS() {
                 const precio = `$${record.fields.Precio || 0}`;
                 const pawwer = record.fields["Nombre completo (from Pawwer)"] || "Pawwer";
                 console.log(pawwer);
-                await TEMPLATE_confirmacion_paseo_cliente(record.fields.Celular, {
+                await (0, send_template_1.TEMPLATE_confirmacion_paseo_cliente)(record.fields.Celular, {
                     nombreCliente,
                     nombrePerrito,
                     calle,
@@ -242,7 +245,7 @@ async function checkLEADS() {
                 const pawwerNumero = Array.isArray(pawwerNumeros) ? pawwerNumeros[0] : null;
                 if (pawwerNumero) {
                     const mensajePawwer = `¡Hola ${pawwerName}! 🐾\nTienes una nueva solicitud asignada para el ${Fecha} a las ${Hora}.`;
-                    await sendText(pawwerNumero, mensajePawwer);
+                    await (0, send_text_1.sendText)(pawwerNumero, mensajePawwer);
                     console.log(`📤 Mensaje enviado al Pawwer ${pawwerNumero}`);
                 }
                 else {
@@ -269,10 +272,10 @@ async function checkLEADS() {
                     "Link Strava": undefined,
                     "Nombre cliente": record.fields["Nombre cliente"] || "Cliente",
                 };
-                await createPaseo(nuevoPaseoData);
+                await (0, airtable_paseos_1.createPaseo)(nuevoPaseoData);
                 console.log(`✅ Registro creado en Control de paseos para lead ID ${record.id}`);
                 await checkAndUpdatePaseoEstado(record.fields);
-                await deleteLead(record.id);
+                await (0, airtable_leads_1.deleteLead)(record.id);
                 console.log(`🗑️ Lead eliminado con ID: ${record.id}`);
             }
             catch (validError) {
@@ -282,7 +285,7 @@ async function checkLEADS() {
     }
 }
 setInterval(checkLeadCount, 5 * 1000);
-const init = addKeyword(EVENTS.WELCOME)
+const init = (0, bot_1.addKeyword)(bot_1.EVENTS.WELCOME)
     .addAction(async (ctx, { endFlow, gotoFlow }) => {
     if (!ctx.body || typeof ctx.body !== "string") {
         console.log(`[IGNORADO] Mensaje inválido o sin texto. Tipo: ${ctx.messageType}`);
@@ -297,7 +300,7 @@ const init = addKeyword(EVENTS.WELCOME)
         return endFlow();
     }
     try {
-        const client = await getMongoClient();
+        const client = await (0, mongo_1.getMongoClient)();
         const db = client.db("pawwi_bot");
         const usuarios = db.collection("usuarios");
         let usuario = await usuarios.findOne({ celular: ctx.from });
@@ -318,9 +321,9 @@ const init = addKeyword(EVENTS.WELCOME)
         else {
             console.log("✅ Usuario recuperado de Mongo:", usuario);
             if (usuario.tipoUsuario == "pawwer") {
-                const paseo = await getPaseoByPawwerTelefonoActive(ctx.from);
+                const paseo = await (0, airtable_paseos_1.getPaseoByPawwerTelefonoActive)(ctx.from);
                 if (!paseo) {
-                    await sendText(ctx.from, "No tienes paseos activos en este momento. Por favor, contacta al soporte si crees que es un error.");
+                    await (0, send_text_1.sendText)(ctx.from, "No tienes paseos activos en este momento. Por favor, contacta al soporte si crees que es un error.");
                     console.log('❌ No se encontró ningún paseo para este Pawwer con estado "Esperando Pawwer"');
                     return;
                 }
@@ -336,13 +339,13 @@ const init = addKeyword(EVENTS.WELCOME)
                 const duracion = fields.TiempoServicio || '';
                 if (paseo.fields.Estado == "Esperando Pawwer") {
                     if (ctx.payload !== "confirmar_llegada") {
-                        await TEMPLATE_llegada_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"][0], { nombrePawwer, nombrePerrito });
+                        await (0, send_template_1.TEMPLATE_llegada_pawwer)(paseo.fields["Numero de teléfono (from Pawwer)"][0], { nombrePawwer, nombrePerrito });
                         return endFlow();
                     }
-                    log(`Pawwer ${usuario.nombre} ha confirmado su llegada.`);
-                    await updatePaseo(paseoId, { Estado: 'Esperando Strava' });
+                    (0, node_console_1.log)(`Pawwer ${usuario.nombre} ha confirmado su llegada.`);
+                    await (0, airtable_paseos_1.updatePaseo)(paseoId, { Estado: 'Esperando Strava' });
                     console.log(`✅ Estado del paseo ${paseoId} actualizado a "Esperando Strava"`);
-                    await TEMPLATE_pawwer_llego_cliente(fields.Celular, {
+                    await (0, send_template_1.TEMPLATE_pawwer_llego_cliente)(fields.Celular, {
                         nombreCliente,
                         nombrePawwer,
                         nombrePerrito,
@@ -352,7 +355,7 @@ const init = addKeyword(EVENTS.WELCOME)
                         hora,
                         duracion,
                     });
-                    await TEMPLATE_strava_recordatorio_pawwer(ctx.from, {
+                    await (0, send_template_1.TEMPLATE_strava_recordatorio_pawwer)(ctx.from, {
                         nombrePawwer,
                         nombrePerrito,
                     });
@@ -362,18 +365,18 @@ const init = addKeyword(EVENTS.WELCOME)
                     console.log("Link recibido:", linkRecibido);
                     const regexStrava = /^https:\/\/(www\.)?strava\.com\/activities\/\d+$/;
                     if (!regexStrava.test(linkRecibido)) {
-                        await sendText(ctx.from, "Por favor, envía un link válido de Strava que tenga este formato:\nhttps://www.strava.com/activities/123456789");
+                        await (0, send_text_1.sendText)(ctx.from, "Por favor, envía un link válido de Strava que tenga este formato:\nhttps://www.strava.com/activities/123456789");
                         return;
                     }
                     try {
-                        await updatePaseo(paseo.id, {
+                        await (0, airtable_paseos_1.updatePaseo)(paseo.id, {
                             Estado: "Esperando finalizacion",
                             "Link Strava": linkRecibido,
                         });
-                        await sendText(ctx.from, "¡Gracias! Hemos recibido tu link de Strava y se lo enviaremos al cliente.");
+                        await (0, send_text_1.sendText)(ctx.from, "¡Gracias! Hemos recibido tu link de Strava y se lo enviaremos al cliente.");
                         const celularCliente = paseo.fields.Celular;
                         const nombrePerrito = paseo.fields.Perro || "tu perrito";
-                        await TEMPLATE_link_strava_cliente(celularCliente, {
+                        await (0, send_template_1.TEMPLATE_link_strava_cliente)(celularCliente, {
                             nombreCliente,
                             nombrePerrito,
                             linkStrava: linkRecibido,
@@ -381,31 +384,31 @@ const init = addKeyword(EVENTS.WELCOME)
                     }
                     catch (error) {
                         console.error("Error al actualizar paseo con link de Strava:", error);
-                        await sendText(ctx.from, "Ocurrió un error al guardar tu link, por favor intenta de nuevo.");
+                        await (0, send_text_1.sendText)(ctx.from, "Ocurrió un error al guardar tu link, por favor intenta de nuevo.");
                     }
                 }
                 else if ("Esperando finalizacion" === paseo.fields.Estado) {
-                    await sendText(ctx.from, "Tienes actualmente un paseo en curso. Por favor, si deseas comentar alguna novedad o crees que es un error, contacta al numero de soporte +57 3332885462");
+                    await (0, send_text_1.sendText)(ctx.from, "Tienes actualmente un paseo en curso. Por favor, si deseas comentar alguna novedad o crees que es un error, contacta al numero de soporte +57 3332885462");
                 }
                 else if (paseo.fields.Estado === "Esperando finalizacion de Pawwer") {
                     if (ctx.payload !== "Finalizar paseo") {
-                        await TEMPLATE_finalizar_paseo_pawwer(ctx.from, {
+                        await (0, send_template_1.TEMPLATE_finalizar_paseo_pawwer)(ctx.from, {
                             nombrePawwer, nombrePerrito
                         });
                         return endFlow();
                     }
                     else {
-                        await sendText(ctx.from, "Gracias por finalizar el paseo. En breve el dueño recogera a su mascota");
-                        await TEMPLATE_paseo_finalizado_cliente(paseo.fields.Celular, {
+                        await (0, send_text_1.sendText)(ctx.from, "Gracias por finalizar el paseo. En breve el dueño recogera a su mascota");
+                        await (0, send_template_1.TEMPLATE_paseo_finalizado_cliente)(paseo.fields.Celular, {
                             nombreCliente,
                             nombrePerrito,
                         });
-                        await TEMPLATE_recordatorio_pago_cliente(paseo.fields.Celular, {
+                        await (0, send_template_1.TEMPLATE_recordatorio_pago_cliente)(paseo.fields.Celular, {
                             nombreCliente,
                             nombrePerrito,
                             valorPaseo: paseo.fields.Precio?.toString() || "No definido"
                         });
-                        await createCompletado({
+                        await (0, airtable_completados_1.createCompletado)({
                             FechaCreacion: paseo.fields.FechaCreacion,
                             Celular: paseo.fields.Celular,
                             Perro: paseo.fields.Perro,
@@ -423,7 +426,7 @@ const init = addKeyword(EVENTS.WELCOME)
                             "Nombre pawwer": Array.isArray(paseo.fields["Nombre completo (from Pawwer)"]) ? paseo.fields["Nombre completo (from Pawwer)"][0] : paseo.fields["Nombre completo (from Pawwer)"] || "No definido",
                             "Link Strava": paseo.fields["Link Strava"],
                         });
-                        await deleteLead(paseo.id);
+                        await (0, airtable_leads_1.deleteLead)(paseo.id);
                     }
                 }
                 else {
@@ -432,7 +435,7 @@ const init = addKeyword(EVENTS.WELCOME)
                 return endFlow();
             }
             else if (usuario.tipoUsuario == "support") {
-                await sendText(ctx.from, `Hola ${nombre}, si lees esto es porque eres de soporte`);
+                await (0, send_text_1.sendText)(ctx.from, `Hola ${nombre}, si lees esto es porque eres de soporte`);
                 return endFlow();
             }
         }
@@ -445,7 +448,7 @@ const init = addKeyword(EVENTS.WELCOME)
     catch (e) {
         console.error("❌ Error al manejar usuario desde Mongo:", e.message);
     }
-    await TEMPLATE_bienvenida_pawwi(ctx.from, nombre);
+    await (0, send_template_1.TEMPLATE_bienvenida_pawwi)(ctx.from, nombre);
 })
     .addAnswer("", { capture: true }, async (ctx, { endFlow, gotoFlow }) => {
     const textoBoton = ctx.body;
@@ -464,27 +467,28 @@ const init = addKeyword(EVENTS.WELCOME)
         }
     }
     else if (payloadBoton === "Hablar con el equipo") {
-        await sendText(ctx.from, `En unos instantes nuestro Pawwier de soporte se comunicara contigo. O puedes comunicarte al número +57 3332885462`);
-        await sendText('573332885462', `El usuario ${ctx.from} ha solicitado hablar con el equipo de soporte.`);
+        await (0, send_text_1.sendText)(ctx.from, `En unos instantes nuestro Pawwier de soporte se comunicara contigo. O puedes comunicarte al número +57 3332885462`);
+        await (0, send_text_1.sendText)('573332885462', `El usuario ${ctx.from} ha solicitado hablar con el equipo de soporte.`);
         return endFlow();
     }
     else if (payloadBoton === "Conviértete en Pawwer") {
-        await sendText(ctx.from, `Perfecto, para ser un Pawwer, completa el siguiente formulario: https://tally.so/r/wMyVRE`);
+        await (0, send_text_1.sendText)(ctx.from, `Perfecto, para ser un Pawwer, completa el siguiente formulario: https://tally.so/r/wMyVRE`);
         return endFlow();
     }
     else {
         return gotoFlow(init);
     }
 });
-const RegistrarNombrePerrito = addKeyword('RegistrarNombrePerrito')
+exports.init = init;
+const RegistrarNombrePerrito = (0, bot_1.addKeyword)('RegistrarNombrePerrito')
     .addAction(async (ctx) => {
-    await TEMPLATE_registro_nombre_perrito(ctx.from);
+    await (0, send_template_1.TEMPLATE_registro_nombre_perrito)(ctx.from);
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
     const nombre = ctx.body.trim();
     if (!regex(nombre)) {
-        await sendText(ctx.from, `Por favor, responde solo con el nombre
+        await (0, send_text_1.sendText)(ctx.from, `Por favor, responde solo con el nombre
 de tu perrito, sin números, símbolos
 ni emojis.
 Ejemplo: Max, Luna, Toby.`);
@@ -494,24 +498,26 @@ Ejemplo: Max, Luna, Toby.`);
     perritoData[ctx.from].nombre = nombre;
     return gotoFlow(RegistrarRazaPerrito);
 });
-const RegistrarRazaPerrito = addKeyword('RegistrarRazaPerrito')
+exports.RegistrarNombrePerrito = RegistrarNombrePerrito;
+const RegistrarRazaPerrito = (0, bot_1.addKeyword)('RegistrarRazaPerrito')
     .addAction(async (ctx) => {
-    await TEMPLATE_registro_raza_perrito(ctx.from, perritoData[ctx.from]?.nombre || "");
+    await (0, send_template_1.TEMPLATE_registro_raza_perrito)(ctx.from, perritoData[ctx.from]?.nombre || "");
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
     const raza = ctx.body.trim();
     if (!regex(raza)) {
-        await sendText(ctx.from, `Por favor, responde solo con la raza de tu perrito, sin números, símbolos ni emojis.
+        await (0, send_text_1.sendText)(ctx.from, `Por favor, responde solo con la raza de tu perrito, sin números, símbolos ni emojis.
 Ejemplo: Husky, Pitbull, criollo.`);
         return gotoFlow(init);
     }
     perritoData[ctx.from].raza = raza;
     return gotoFlow(RegistrarEdadPerrito);
 });
-const RegistrarEdadPerrito = addKeyword('RegistrarEdadPerrito')
+exports.RegistrarRazaPerrito = RegistrarRazaPerrito;
+const RegistrarEdadPerrito = (0, bot_1.addKeyword)('RegistrarEdadPerrito')
     .addAction(async (ctx) => {
-    await TEMPLATE_registro_edad_perrito(ctx.from, perritoData[ctx.from]?.nombre || "");
+    await (0, send_template_1.TEMPLATE_registro_edad_perrito)(ctx.from, perritoData[ctx.from]?.nombre || "");
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
@@ -519,9 +525,10 @@ const RegistrarEdadPerrito = addKeyword('RegistrarEdadPerrito')
     perritoData[ctx.from].edad = edad;
     return gotoFlow(RegistrarConsideracionesPerrito);
 });
-const RegistrarConsideracionesPerrito = addKeyword('RegistrarConsideracionesPerrito')
+exports.RegistrarEdadPerrito = RegistrarEdadPerrito;
+const RegistrarConsideracionesPerrito = (0, bot_1.addKeyword)('RegistrarConsideracionesPerrito')
     .addAction(async (ctx) => {
-    await TEMPLATE_registro_consideraciones_perrito(ctx.from, perritoData[ctx.from]?.nombre || "");
+    await (0, send_template_1.TEMPLATE_registro_consideraciones_perrito)(ctx.from, perritoData[ctx.from]?.nombre || "");
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
@@ -529,9 +536,10 @@ const RegistrarConsideracionesPerrito = addKeyword('RegistrarConsideracionesPerr
     perritoData[ctx.from].consideraciones = consideraciones;
     return gotoFlow(RegistrarVacunasPerrito);
 });
-const RegistrarVacunasPerrito = addKeyword('RegistrarVacunasPerrito')
+exports.RegistrarConsideracionesPerrito = RegistrarConsideracionesPerrito;
+const RegistrarVacunasPerrito = (0, bot_1.addKeyword)('RegistrarVacunasPerrito')
     .addAction(async (ctx) => {
-    await TEMPLATE_registro_vacunas_perrito(ctx.from, perritoData[ctx.from]?.nombre || "");
+    await (0, send_template_1.TEMPLATE_registro_vacunas_perrito)(ctx.from, perritoData[ctx.from]?.nombre || "");
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
@@ -547,19 +555,20 @@ const RegistrarVacunasPerrito = addKeyword('RegistrarVacunasPerrito')
         return gotoFlow(init);
     }
     else {
-        await sendText(ctx.from, `Por favor, selecciona una opción válida.`);
+        await (0, send_text_1.sendText)(ctx.from, `Por favor, selecciona una opción válida.`);
         return gotoFlow(RegistrarVacunasPerrito);
     }
 });
-const RegistrarDireccion = addKeyword('RegistrarDireccion')
+exports.RegistrarVacunasPerrito = RegistrarVacunasPerrito;
+const RegistrarDireccion = (0, bot_1.addKeyword)('RegistrarDireccion')
     .addAction(async (ctx) => {
-    await sendText(ctx.from, `📍 ¿Cuál es la dirección exacta donde recogeremos a tus peluditos?.`);
+    await (0, send_text_1.sendText)(ctx.from, `📍 ¿Cuál es la dirección exacta donde recogeremos a tus peluditos?.`);
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
     const direccion = ctx.body.trim();
     if (!direccion || direccion.length < 10) {
-        await sendText(ctx.from, `🚫 La dirección parece muy corta o incompleta.`);
+        await (0, send_text_1.sendText)(ctx.from, `🚫 La dirección parece muy corta o incompleta.`);
         return gotoFlow(RegistrarDireccion);
     }
     usuarioData[ctx.from].Direccion = direccion;
@@ -571,7 +580,8 @@ const RegistrarDireccion = addKeyword('RegistrarDireccion')
     }
     return gotoFlow(agendarMetodoPaseo);
 });
-const RegistrarPerro = addKeyword('RegistrarPerro')
+exports.RegistrarDireccion = RegistrarDireccion;
+const RegistrarPerro = (0, bot_1.addKeyword)('RegistrarPerro')
     .addAction(async (ctx) => {
     const data = perritoData[ctx.from];
     try {
@@ -580,18 +590,19 @@ const RegistrarPerro = addKeyword('RegistrarPerro')
     catch (e) {
         console.error("❌ Error guardando perro en Mongo:", e.message);
     }
-    await TEMPLATE_registro_agendar_paseo(ctx.from, perritoData[ctx.from]?.nombre || "");
+    await (0, send_template_1.TEMPLATE_registro_agendar_paseo)(ctx.from, perritoData[ctx.from]?.nombre || "");
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
     usuarioData[ctx.from].perroSeleccionado = perritoData[ctx.from];
     return gotoFlow(agendarTiempoPaseo);
 });
-const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
+exports.RegistrarPerro = RegistrarPerro;
+const AgendarlistarPerritos = (0, bot_1.addKeyword)('AgendarlistarPerritos')
     .addAction(async (ctx) => {
     const currentUser = usuarioData[ctx.from];
     if (!currentUser || !currentUser.perros || currentUser.perros.length === 0) {
-        await sendText(ctx.from, "No tienes perritos registrados.\n\nSi deseas registrar un nuevo perrito, por favor selecciona la opción correspondiente en el menú principal.");
+        await (0, send_text_1.sendText)(ctx.from, "No tienes perritos registrados.\n\nSi deseas registrar un nuevo perrito, por favor selecciona la opción correspondiente en el menú principal.");
         return;
     }
     const perrosRegistrados = currentUser.perros;
@@ -599,7 +610,7 @@ const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
         body: perro.nombre,
         payload: perro.nombre
     }));
-    await sendButtons(ctx.from, "¿A quien vamos a pasear hoy?", buttons);
+    await (0, send_text_1.sendButtons)(ctx.from, "¿A quien vamos a pasear hoy?", buttons);
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
@@ -620,14 +631,15 @@ const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
         return gotoFlow(agendarTiempoPaseo);
     }
     else {
-        await sendText(ctx.from, `Por favor, selecciona un perrito válido de la lista.`);
+        await (0, send_text_1.sendText)(ctx.from, `Por favor, selecciona un perrito válido de la lista.`);
         return gotoFlow(AgendarlistarPerritos);
     }
 });
-const agendarTiempoPaseo = addKeyword('agendarTiempoPaseo')
+exports.AgendarlistarPerritos = AgendarlistarPerritos;
+const agendarTiempoPaseo = (0, bot_1.addKeyword)('agendarTiempoPaseo')
     .addAction(async (ctx) => {
     const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
-    await TEMPLATE_agendar_tipo_paseo(ctx.from, nombrePerro);
+    await (0, send_template_1.TEMPLATE_agendar_tipo_paseo)(ctx.from, nombrePerro);
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
@@ -649,7 +661,7 @@ const agendarTiempoPaseo = addKeyword('agendarTiempoPaseo')
             precio = 17000;
             break;
         default:
-            await sendText(ctx.from, 'Por favor, selecciona una opción válida usando los botones.');
+            await (0, send_text_1.sendText)(ctx.from, 'Por favor, selecciona una opción válida usando los botones.');
             return gotoFlow(agendarTiempoPaseo);
     }
     if (!usuarioData[ctx.from])
@@ -658,10 +670,11 @@ const agendarTiempoPaseo = addKeyword('agendarTiempoPaseo')
     usuarioData[ctx.from].valor = precio;
     return gotoFlow(agendarDiaPaseo);
 });
-const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
+exports.agendarTiempoPaseo = agendarTiempoPaseo;
+const agendarDiaPaseo = (0, bot_1.addKeyword)('agendarDiaPaseo')
     .addAction(async (ctx) => {
     const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
-    await TEMPLATE_agendar_fecha_paseo(ctx.from, nombrePerro);
+    await (0, send_template_1.TEMPLATE_agendar_fecha_paseo)(ctx.from, nombrePerro);
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
@@ -669,10 +682,11 @@ const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
     usuarioData[ctx.from].diaSeleccionado = diaSeleccionado;
     return gotoFlow(agendarHoraPaseo);
 });
-const agendarHoraPaseo = addKeyword('agendarHoraPaseo')
+exports.agendarDiaPaseo = agendarDiaPaseo;
+const agendarHoraPaseo = (0, bot_1.addKeyword)('agendarHoraPaseo')
     .addAction(async (ctx) => {
     const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
-    await TEMPLATE_ragendar_hora_paseo(ctx.from, nombrePerro);
+    await (0, send_template_1.TEMPLATE_ragendar_hora_paseo)(ctx.from, nombrePerro);
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
@@ -687,10 +701,11 @@ const agendarHoraPaseo = addKeyword('agendarHoraPaseo')
         return gotoFlow(agendarMetodoPaseo);
     }
 });
-const agendarMetodoPaseo = addKeyword('agendarMetodoPaseo')
+exports.agendarHoraPaseo = agendarHoraPaseo;
+const agendarMetodoPaseo = (0, bot_1.addKeyword)('agendarMetodoPaseo')
     .addAction(async (ctx) => {
     const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
-    await TEMPLATE_agendar_metodo_pago(ctx.from, nombrePerro);
+    await (0, send_template_1.TEMPLATE_agendar_metodo_pago)(ctx.from, nombrePerro);
 })
     .addAnswer('', { capture: true })
     .addAction(async (ctx, { gotoFlow }) => {
@@ -700,11 +715,12 @@ const agendarMetodoPaseo = addKeyword('agendarMetodoPaseo')
     usuarioData[ctx.from].metodoPago = metodo;
     return gotoFlow(agendarResumenPaseo);
 });
-const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
+exports.agendarMetodoPaseo = agendarMetodoPaseo;
+const agendarResumenPaseo = (0, bot_1.addKeyword)('agendarResumenPaseo')
     .addAction(async (ctx) => {
     const data = usuarioData[ctx.from];
     const selectedDog = data.perroSeleccionado;
-    await TEMPLATE_agendar_resumen_paseo(ctx.from, {
+    await (0, send_template_1.TEMPLATE_agendar_resumen_paseo)(ctx.from, {
         dogName: selectedDog?.nombre || 'No definido',
         calle: data.Direccion?.split(' – ')[0] || 'No definida',
         colonia: data.Direccion?.split(' – ')[1] || 'No definida',
@@ -723,7 +739,7 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
         try {
             const data = usuarioData[ctx.from];
             const selectedDog = data.perroSeleccionado;
-            await createLead({
+            await (0, airtable_leads_1.createLead)({
                 FechaCreacion: new Date().toISOString(),
                 Celular: ctx.from,
                 "Nombre cliente": ctx.pushName || 'Usuario',
@@ -753,9 +769,9 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
                 pawwer: 'No asignado',
                 metodoPago: data.metodoPago || 'No especificado'
             });
-            await sendText(ctx.from, `En unos instantes nuestro Equipo de Pawwi se estará comunicando contigo para confirmar el paseo 🐶
+            await (0, send_text_1.sendText)(ctx.from, `En unos instantes nuestro Equipo de Pawwi se estará comunicando contigo para confirmar el paseo 🐶
 Si tienes dudas con tu servicio, o quieres comentar una novedad, contáctate con nuestro Pawwer de soporte +57 3023835152`);
-            await sendText('573332885462', `🔔 Lead nuevo registrado desde el bot.
+            await (0, send_text_1.sendText)('573332885462', `🔔 Lead nuevo registrado desde el bot.
           
 Nombre: ${ctx.pushName || 'Usuario'} 
 Perro: ${selectedDog?.nombre || 'No definido'}
@@ -771,19 +787,19 @@ Hora: ${data.horaSeleccionada || 'No definida'}
 Precio: $${(data.valor || 0) * 0.6 || 0}`);
         }
         catch (e) {
-            await sendText(ctx.from, `Ocurrió un error al guardar el agendamiento.`);
+            await (0, send_text_1.sendText)(ctx.from, `Ocurrió un error al guardar el agendamiento.`);
             console.error("Error al crear el lead:", e);
         }
         return endFlow();
     }
     else if (textoBoton === 'No' || payloadBoton === 'NO') {
-        await sendText(ctx.from, `Por favor, vuelve a intentar agendar el paseo.`);
+        await (0, send_text_1.sendText)(ctx.from, `Por favor, vuelve a intentar agendar el paseo.`);
         return gotoFlow(init);
     }
     else {
-        await sendText(ctx.from, `Por favor, selecciona una opción válida.`);
+        await (0, send_text_1.sendText)(ctx.from, `Por favor, selecciona una opción válida.`);
         return gotoFlow(agendarResumenPaseo);
     }
 });
-export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo };
+exports.agendarResumenPaseo = agendarResumenPaseo;
 //# sourceMappingURL=mainFlow.js.map

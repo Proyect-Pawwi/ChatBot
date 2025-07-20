@@ -1,4 +1,7 @@
-export class conversation {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.conversation = void 0;
+class conversation {
     constructor() {
         this.lastInteraction = Date.now();
         this.id = '';
@@ -17,4 +20,5 @@ export class conversation {
         this.lastInteraction = Date.now();
     }
 }
+exports.conversation = conversation;
 //# sourceMappingURL=models.js.map

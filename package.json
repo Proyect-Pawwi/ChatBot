@@ -17,6 +17,4 @@
   "lint": "eslint src --ext .ts",
   "dev": "npm run lint && nodemon ./src/app.ts"
 }
-
-
 }

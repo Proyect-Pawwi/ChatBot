@@ -1,7 +1,14 @@
-import axios from "axios";
-import dotenv from "dotenv";
-dotenv.config();
-export async function sendText(to, text) {
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sendText = sendText;
+exports.sendButtons = sendButtons;
+const axios_1 = __importDefault(require("axios"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+async function sendText(to, text) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -13,7 +20,7 @@ export async function sendText(to, text) {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"
@@ -25,7 +32,7 @@ export async function sendText(to, text) {
         console.error("❌ Error al enviar texto:", err);
     }
 }
-export async function sendButtons(to, text, buttons) {
+async function sendButtons(to, text, buttons) {
     const token = process.env.jwtToken;
     const phone_number_id = process.env.numberId;
     const body = {
@@ -47,7 +54,7 @@ export async function sendButtons(to, text, buttons) {
         }
     };
     try {
-        const res = await axios.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
+        const res = await axios_1.default.post(`https://graph.facebook.com/v19.0/${phone_number_id}/messages`, body, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json"

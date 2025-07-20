@@ -1,11 +1,14 @@
-import { MongoClient, ServerApiVersion } from "mongodb";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getMongoClient = getMongoClient;
+const mongodb_1 = require("mongodb");
 const uri = process.env.MONGO_URI || "";
 let client = null;
-export async function getMongoClient() {
+async function getMongoClient() {
     if (!client) {
-        client = new MongoClient(uri, {
+        client = new mongodb_1.MongoClient(uri, {
             serverApi: {
-                version: ServerApiVersion.v1,
+                version: mongodb_1.ServerApiVersion.v1,
                 strict: true,
                 deprecationErrors: true,
             },
