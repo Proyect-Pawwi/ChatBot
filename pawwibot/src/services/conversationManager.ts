@@ -1,4 +1,4 @@
-import { conversations } from "~/services/memoryStore";
+import { conversations } from "../services/memoryStore";
 import { conversation } from "~/model/models";
 
 export function handleConversationTimeout(userId: string) {
