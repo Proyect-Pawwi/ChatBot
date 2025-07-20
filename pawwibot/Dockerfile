@@ -1,35 +1,47 @@
-# Etapa de construcción
-FROM node:18-alpine as builder
+# Etapa 1: Builder
+FROM node:21-alpine3.18 AS builder
 
 WORKDIR /app
 
-# Instala dependencias necesarias para compilar paquetes nativos
-RUN apk add --no-cache python3 make g++ git
+# Activar pnpm (corepack)
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-COPY package*.json ./
-RUN npm install
+# Copiar solo archivos de dependencias para aprovechar cache
+COPY package.json pnpm-lock.yaml* ./
 
+# Instalar dependencias
+RUN pnpm install
+
+# Copiar el resto del código
 COPY . .
 
-# Compila el proyecto TypeScript
-RUN npm run build
+# Construir el proyecto
+RUN pnpm run build
 
-# Etapa de producción
-FROM node:18-alpine as deploy
+
+# Etapa 2: Deploy (más liviana)
+FROM node:21-alpine3.18 AS deploy
 
 WORKDIR /app
 
-# Copia solo lo necesario desde builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package*.json ./
-
-# Instala solo dependencias de producción
-RUN npm install --omit=dev
-
-# Railway maneja el puerto por variable de entorno
 ARG PORT
-ENV PORT $PORT
+ENV PORT=$PORT
 EXPOSE $PORT
 
-# Ejecuta el bot
+# Copiar archivos necesarios desde builder
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/assets ./assets
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml* ./
+
+# Activar pnpm (corepack)
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Instalar solo dependencias de producción
+RUN pnpm install --prod
+
+# Usuario sin privilegios (opcional, buena práctica)
+RUN addgroup -g 1001 -S nodejs && adduser -S -u 1001 nodejs
+USER nodejs
+
 CMD ["npm", "start"]
