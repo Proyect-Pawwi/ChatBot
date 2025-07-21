@@ -851,10 +851,11 @@ const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
       }
       //Guardar en texto como formato mm/dd
       const diaFormateado = `${fecha.getDate()}/${fecha.getMonth() + 1}`;
+      usuarioData[ctx.from].diaSeleccionado = diaFormateado;
     }
-
-    usuarioData[ctx.from].diaSeleccionado = diaSeleccionado;
-
+    else {
+      usuarioData[ctx.from].diaSeleccionado = diaSeleccionado;
+    }
     return gotoFlow(agendarHoraPaseo);
   });
 
