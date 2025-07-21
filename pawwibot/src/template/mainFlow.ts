@@ -118,7 +118,7 @@ async function checkAndUpdatePaseoEstado(recordFields: any) {
 
     const paseoRecord = paseosResp.records[0];
 
-    // Solo actualizamos si el estado es distinto para evitar llamadas repetidas
+    // Solo actualizamos si el estado es distinto para evitar llamadas repetidas.
     if (paseoRecord.fields.Estado !== "Por realizarse en 1 hora") {
       await updatePaseo(paseoRecord.id, { Estado: "Por realizarse en 1 hora" });
       console.log(`🕐 Estado actualizado a 'Por realizarse en 1 hora' para paseo ID: ${paseoRecord.id}`);
