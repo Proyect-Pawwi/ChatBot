@@ -37,6 +37,9 @@ async function createNewClient(): Promise<MongoClient> {
       strict: true,
       deprecationErrors: true,
     },
+    tls: true,
+    tlsAllowInvalidCertificates: false, // true solo si pruebas local con certificado autofirmado
+    serverSelectionTimeoutMS: 10000,
   });
 
   await newClient.connect();
