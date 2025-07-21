@@ -17,7 +17,7 @@
     "base-bailey-json": "file:",
     "dotenv": "^16.4.7",
     "googleapis": "^148.0.0",
-    "mongodb": "^5.9.2",
+    "mongodb": "^6.17.0",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.10.1",
     "openai": "^4.91.1"
