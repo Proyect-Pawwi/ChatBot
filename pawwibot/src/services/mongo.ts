@@ -1,13 +1,9 @@
-import { MongoClient, ServerApiVersion } from "mongodb";
+import { MongoClient } from "mongodb";
 
 const uri = process.env.MONGO_URI || "";
 
 let client: MongoClient | null = null;
 
-/**
- * Returns a connected MongoClient instance.
- * If the client is disconnected or unusable, reconnects it.
- */
 export async function getMongoClient(): Promise<MongoClient> {
   try {
     if (!client) {
@@ -15,7 +11,6 @@ export async function getMongoClient(): Promise<MongoClient> {
       client = await createNewClient();
     } else {
       try {
-        // Verifica la conexión con un ping
         await client.db("admin").command({ ping: 1 });
       } catch (pingError) {
         console.warn("⚠️ Cliente Mongo no respondió al ping, reconectando...");
@@ -32,15 +27,12 @@ export async function getMongoClient(): Promise<MongoClient> {
 
 async function createNewClient(): Promise<MongoClient> {
   const newClient = new MongoClient(uri, {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
     tls: true,
-    tlsAllowInvalidCertificates: false, // true solo si pruebas local con certificado autofirmado
+    tlsAllowInvalidCertificates: false,
     serverSelectionTimeoutMS: 10000,
-  });
+  } as any); // 👈 forzamos tipo porque TypeScript a veces se queja con v4
 
   await newClient.connect();
   console.log("✅ MongoDB conectado");
