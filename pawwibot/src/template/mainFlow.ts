@@ -844,6 +844,15 @@ const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
   .addAction(async (ctx, { gotoFlow }) => {
     const diaSeleccionado = ctx.body.trim();
 
+    if (diaSeleccionado == "Hoy" || diaSeleccionado == "Mañana") {
+      const fecha = new Date();
+      if (diaSeleccionado == "Mañana") {
+        fecha.setDate(fecha.getDate() + 1);
+      }
+      //Guardar en texto como formato mm/dd
+      const diaFormateado = `${fecha.getDate()}/${fecha.getMonth() + 1}`;
+    }
+
     usuarioData[ctx.from].diaSeleccionado = diaSeleccionado;
 
     return gotoFlow(agendarHoraPaseo);
