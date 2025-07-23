@@ -136,14 +136,19 @@ async function checkAndUpdatePaseoEstado(recordFields: any) {
 
 const checkLeadCount = async () => {
   try {
-    checkPaseos();
+    const ahora = new Date();
+    const horaFormateada = ahora.toLocaleTimeString('es-MX', { hour12: false });
 
+    console.log("🕒 Hora actual del sistema:", horaFormateada);
+
+    checkPaseos();
     checkLEADS();
     
   } catch (error) {
     console.error("❌ Error al consultar los leads en Airtable:", error);
   }
 };
+
 
 async function checkPaseos() {
   const paseos = await getPaseos();
@@ -979,7 +984,7 @@ Anotaciones:
   Tiempo de servicio: ${data.agendamientoSeleccionado || 'No definido'}
 Fecha: ${data.diaSeleccionado || 'No definida'}
 Hora: ${data.horaSeleccionada || 'No definida'}
-Precio: $${data.valor * 0.6 || 0}`);
+Precio: $${data.valor || 0}`);
       } catch (e) {
         await sendText(ctx.from, `Ocurrió un error al guardar el agendamiento.`);
         console.error("Error al crear el lead:", e?.message || e);
