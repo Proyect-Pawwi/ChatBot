@@ -10,6 +10,7 @@ import { BotContext } from "@builderbot/bot/dist/types";
 import { send } from "node:process";
 import { createCompletado } from "../services/airtable-completados";
 import { text } from "node:stream/consumers";
+import { DateTime } from "luxon";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -71,8 +72,9 @@ const insertarPerro = async (celular: string, perroData: Perro) => { // Add type
     { $push: { perros: perroData } }
   );
 };
+
 function parseFechaHora(fecha: string, hora: string): Date | null {
-   if (!fecha || typeof fecha !== 'string') {
+  if (!fecha || typeof fecha !== 'string') {
     console.warn('parseFechaHora: fecha inválida:', fecha);
     return null;
   }
@@ -80,22 +82,28 @@ function parseFechaHora(fecha: string, hora: string): Date | null {
     console.warn('parseFechaHora: hora inválida:', hora);
     return null;
   }
-  // fecha formato "DD/MM"
+
   const [dayStr, monthStr] = fecha.split('/');
-  if (!dayStr || !monthStr) return null;
-
-  const now = new Date();
-  const year = now.getFullYear();
-
-  const day = parseInt(dayStr, 10);
-  const month = parseInt(monthStr, 10) - 1; // meses base 0
-
   const [hourStr, minStr] = hora.split(':');
-  if (!hourStr || !minStr) return null;
-  const hour = parseInt(hourStr, 10);
-  const min = parseInt(minStr, 10);
 
-  return new Date(year, month, day, hour, min, 0);
+  const now = DateTime.now().setZone("America/Bogota"); // UTC-5 zona horaria
+
+  const year = now.year;
+  const day = parseInt(dayStr, 10);
+  const month = parseInt(monthStr, 10);
+
+  const parsed = DateTime.fromObject(
+    {
+      year,
+      month,
+      day,
+      hour: parseInt(hourStr, 10),
+      minute: parseInt(minStr, 10),
+    },
+    { zone: "America/Bogota" } // <- fuerza a usar zona horaria GMT-5
+  );
+
+  return parsed.isValid ? parsed.toJSDate() : null;
 }
 
 async function checkAndUpdatePaseoEstado(recordFields: any) {
@@ -382,7 +390,7 @@ async function checkLEADS() {
     }
 }
 
-setInterval(checkLeadCount, 60 * 1000);
+setInterval(checkLeadCount, 10 * 1000);
 
 const init = addKeyword(EVENTS.WELCOME)
   .addAction(async (ctx, { endFlow, gotoFlow }) => {
