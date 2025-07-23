@@ -136,10 +136,10 @@ async function checkAndUpdatePaseoEstado(recordFields: any) {
 
 const checkLeadCount = async () => {
   try {
-    const ahora = new Date();
-    const horaFormateada = ahora.toLocaleTimeString('es-MX', { hour12: false });
+    const ahoraColombia = DateTime.now().setZone("America/Bogota");
+    const horaFormateada = ahoraColombia.toFormat("HH:mm:ss");
 
-    console.log("🕒 Hora actual del sistema:", horaFormateada);
+    console.log("🕒 Hora actual en Colombia:", horaFormateada);
 
     checkPaseos();
     checkLEADS();
