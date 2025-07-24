@@ -997,6 +997,7 @@ Precio: $${data.valor || 0}`);
     }
   });
 
+await TEMPLATE_llegada_pawwer('573023835142', { nombrePawwer:"hola",nombrePerrito: "mundo" });
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
 
