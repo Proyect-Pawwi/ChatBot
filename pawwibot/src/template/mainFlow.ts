@@ -319,7 +319,7 @@ async function checkLEADS() {
           await updateLead(record.id, { Estado: "validando" });
           console.log(`🔄 Estado actualizado a 'validando' para ID: ${record.id}`);
 
-          const nombreCliente = record.fields["Nombre cliente"]; // Si tienes el nombre real, úsalo aquí
+          const nombreCliente = record.fields["Nombre cliente"];
           const nombrePerrito = record.fields.Perro || "tu peludito";
           const direccionCompleta = record.fields.Direccion || "";
           const [calle = "No definida", colonia = "No definida"] = direccionCompleta.split(" – ");
@@ -996,13 +996,6 @@ Precio: $${data.valor || 0}`);
       return gotoFlow(agendarResumenPaseo);
     }
   });
-
-
-await TEMPLATE_recordatorio_pago_cliente("573023835142", {
-  nombreCliente: "Juan",
-  nombrePerrito: "Max",
-  valorPaseo: "$25.000",
-});
 
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};

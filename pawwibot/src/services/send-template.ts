@@ -739,10 +739,17 @@ export async function TEMPLATE_recordatorio_paseo_cliente(
 
     console.log("✅ Plantilla 'recordatorio_paseo_cliente' enviada:", res.data);
   } catch (err: any) {
-    console.error(
-      "❌ Error al enviar plantilla 'recordatorio_paseo_cliente':",
-      err.response?.data || err.message
-    );
+    const errorData = err.response?.data;
+
+    console.error("❌ Error al enviar plantilla 'recordatorio_paseo_cliente':");
+    if (errorData) {
+      console.error("📌 Código de error:", errorData.error?.code);
+      console.error("📌 Mensaje:", errorData.error?.message);
+      console.error("📌 Tipo:", errorData.error?.type);
+      console.error("📌 Detalles:", JSON.stringify(errorData, null, 2));
+    } else {
+      console.error("📌 Error desconocido:", err.message);
+    }
   }
 }
 
