@@ -322,26 +322,29 @@ async function checkLEADS() {
           const nombreCliente = record.fields["Nombre cliente"]; // Si tienes el nombre real, úsalo aquí
           const nombrePerrito = record.fields.Perro || "tu peludito";
           const direccionCompleta = record.fields.Direccion || "";
-          const [calle = "No definida", colonia = "No definida"] = direccionCompleta.split(" – ");
+          const [calle = "No definida", colonia = ""] = direccionCompleta.split(" – ");
           const fecha = record.fields.Fecha || "No definida";
           const hora = record.fields.Hora || "No definida";
           const duracion = record.fields.TiempoServicio || "No definido";
           const precio = `$${record.fields.Precio || 0}`;
           const pawwer = record.fields["Nombre completo (from Pawwer)"] || "Pawwer";
-          console.log(pawwer);
+          console.log("Holaaaas" + pawwer);
+          console.log("👉 pawwer:", pawwer, typeof pawwer);
+
           
 
           await TEMPLATE_confirmacion_paseo_cliente(record.fields.Celular, {
-            nombreCliente,
-            nombrePerrito,
-            calle,
-            colonia,
-            fecha,
-            hora,
-            duracion,
-            precio,
-            pawwer,
+            nombreCliente: String(nombreCliente),
+            nombrePerrito: String(nombrePerrito),
+            calle: String(calle),
+            colonia: String(colonia),
+            fecha: String(fecha),
+            hora: String(hora),
+            duracion: String(duracion),
+            precio: String(precio),
+            pawwer: String(pawwer),
           });
+
 
           // Obtener número del Pawwer desde el campo correcto
           const pawwerNumeros = record.fields['Numero de teléfono (from Pawwer)'];
@@ -554,7 +557,7 @@ const init = addKeyword(EVENTS.WELCOME)
                 Fecha: paseo.fields.Fecha,
                 Hora: paseo.fields.Hora,
                 Precio: paseo.fields.Precio,
-                Estado: paseo.fields.Estado,
+                Estado: "Finalizado",
                 Pawwer: paseo.fields.Pawwer,
                 "metodo Pago": paseo.fields["metodo Pago"],
                 "Nombre cliente": paseo.fields["Nombre cliente"],
