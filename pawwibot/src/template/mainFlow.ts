@@ -6,10 +6,7 @@ import { getMongoClient } from '../services/mongo';
 import { createLead, deleteLead, getLeads, updateLead } from "../services/airtable-leads";
 import { createPaseo, getPaseoByPawwerTelefono, getPaseoByPawwerTelefonoActive, getPaseos, updatePaseo } from "../services/airtable-paseos";
 import { log } from "node:console";
-import { BotContext } from "@builderbot/bot/dist/types";
-import { send } from "node:process";
 import { createCompletado } from "../services/airtable-completados";
-import { text } from "node:stream/consumers";
 import { DateTime } from "luxon";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
@@ -164,6 +161,7 @@ async function checkPaseos() {
 
         if (diferenciaMs <= 0) {
           console.log(`⏱️ El paseo ya ocurrió o está ocurriendo ahora.`);
+          //Validar que no este atrazado
 
           let tiempoServicioMinutos = 15;
 
@@ -998,6 +996,14 @@ Precio: $${data.valor || 0}`);
       return gotoFlow(agendarResumenPaseo);
     }
   });
+
+
+await TEMPLATE_recordatorio_pago_cliente("573023835142", {
+  nombreCliente: "Juan",
+  nombrePerrito: "Max",
+  valorPaseo: "$25.000",
+});
+
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
 
