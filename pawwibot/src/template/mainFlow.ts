@@ -384,11 +384,15 @@ async function checkLEADS() {
           const hora = record.fields.Hora || "No definida";
           const duracion = record.fields.TiempoServicio || "No definido";
           const precio = `$${record.fields.Precio || 0}`;
-          const pawwer = record.fields["Nombre completo (from Pawwer)"] || "Pawwer";
-          console.log("Holaaaas" + pawwer);
-          console.log("👉 pawwer:", pawwer[0], typeof pawwer[0]);
 
-          
+          let pawwerNombre = "Pawwer"; // valor por defecto
+
+          const pawwerField = record.fields["Nombre completo (from Pawwer)"];
+          if (Array.isArray(pawwerField) && pawwerField.length > 0) {
+            pawwerNombre = pawwerField[0]; // o usa otro campo si es un ID y necesitas el nombre real
+          } else if (typeof pawwerField === "string") {
+            pawwerNombre = pawwerField;
+          }
 
           await TEMPLATE_confirmacion_paseo_cliente(record.fields.Celular, {
             nombreCliente: String(nombreCliente),
@@ -399,7 +403,7 @@ async function checkLEADS() {
             hora: String(hora),
             duracion: String(duracion),
             precio: String(precio),
-            pawwer: String(pawwer[0]),
+            pawwer: String(pawwerNombre),
           });
 
 
@@ -1090,6 +1094,17 @@ Precio: $${data.valor || 0}`);
 const fecha = new Date();
 console.log(fecha);
 
+await TEMPLATE_confirmacion_paseo_cliente('573023835142', {
+            nombreCliente: String("juan"),
+            nombrePerrito: String("juan"),
+            calle: String("juan"),
+            colonia: String("juan"),
+            fecha: String("juan"),
+            hora: String("juan"),
+            duracion: String("juan"),
+            precio: String("juan"),
+            pawwer: String("juan"),
+          });
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
 
