@@ -513,7 +513,7 @@ const init = addKeyword(EVENTS.WELCOME)
               const celularCliente = paseo.fields.Celular;
               const nombrePerrito = paseo.fields.Perro || "tu perrito";
 
-              await sendText(celularCliente, "(Este mensaje no es plantilla). El paseador ha enviado el siguiente lin de Strava: " + linkRecibido);
+              await sendText(celularCliente, "(Este mensaje no es plantilla). El paseador ha enviado el siguiente link de Strava: " + linkRecibido);
 
               await TEMPLATE_link_strava_cliente(celularCliente, {
                 nombreCliente,
