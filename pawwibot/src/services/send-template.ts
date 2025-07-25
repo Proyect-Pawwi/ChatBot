@@ -1019,7 +1019,7 @@ export async function TEMPLATE_link_strava_cliente(
     type: "template",
     template: {
       name: "link_strava_cliente",
-      language: { code: "es" },
+      language: { code: "es_CO" },
       components: [
         {
           type: "body",

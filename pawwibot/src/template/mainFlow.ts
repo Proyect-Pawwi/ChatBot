@@ -860,19 +860,24 @@ const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
 
     if (diaSeleccionado == "Hoy" || diaSeleccionado == "Mañana") {
       
-      const fecha = new Date();
+      const zonaColombia = "America/Bogota";
 
+      // Obtener fecha actual en hora Colombia
+      let fecha = DateTime.now().setZone(zonaColombia);
+
+      // Si el usuario eligió "Mañana", sumamos un día
       if (diaSeleccionado === "Mañana") {
-        fecha.setDate(fecha.getDate() + 1);
+        fecha = fecha.plus({ days: 1 });
       }
 
-      if (fecha instanceof Date && !isNaN(fecha.getTime())) {
-        // Guardar en texto como formato mm/dd
-        const diaFormateado = `${fecha.getMonth() + 1}/${fecha.getDate()}`;
+      // Validar que la fecha sea válida
+      if (fecha.isValid) {
+        // Formatear como dd/MM con ceros
+        const diaFormateado = fecha.toFormat("dd/LL"); // LL es mes con cero
         console.log("✅ Día formateado:", diaFormateado);
         usuarioData[ctx.from].diaSeleccionado = diaFormateado;
       } else {
-        console.error("❌ 'fecha' no es un objeto Date válido:", fecha);
+        console.error("❌ 'fecha' no es válida:", fecha.invalidExplanation);
       }
     }
     else {
@@ -1007,9 +1012,6 @@ Precio: $${data.valor || 0}`);
       return gotoFlow(agendarResumenPaseo);
     }
   });
-
-await sendText('573212393957', `Si lees esto, es porque te lo estoy enviando desde mi PC, pero sin el webhook registrado en meta .`);
-await sendText('573023835142', `Si lees esto, es porque te lo estoy enviando desde mi PC, pero sin el webhook registrado en meta .`);
 
 const fecha = new Date();
 console.log(fecha);
