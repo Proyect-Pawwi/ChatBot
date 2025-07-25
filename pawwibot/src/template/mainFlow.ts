@@ -515,6 +515,7 @@ const init = addKeyword(EVENTS.WELCOME)
 
               await TEMPLATE_link_strava_cliente(celularCliente, {
                 nombreCliente,
+                nombrePerrito,
                 linkStrava: linkRecibido,
               });
 
