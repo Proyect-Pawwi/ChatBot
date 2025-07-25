@@ -1181,7 +1181,7 @@ export async function TEMPLATE_recordatorio_pago_cliente(
     type: "template",
     template: {
       name: "recordatorio_pago_cliente",
-      language: { code: "es" },
+      language: { code: "es_CO" },
       components: [
         {
           type: "body",

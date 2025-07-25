@@ -329,7 +329,7 @@ async function checkLEADS() {
           const precio = `$${record.fields.Precio || 0}`;
           const pawwer = record.fields["Nombre completo (from Pawwer)"] || "Pawwer";
           console.log("Holaaaas" + pawwer);
-          console.log("👉 pawwer:", pawwer, typeof pawwer);
+          console.log("👉 pawwer:", pawwer[0], typeof pawwer[0]);
 
           
 
@@ -342,7 +342,7 @@ async function checkLEADS() {
             hora: String(hora),
             duracion: String(duracion),
             precio: String(precio),
-            pawwer: String(pawwer),
+            pawwer: String(pawwer[0]),
           });
 
 
@@ -396,7 +396,7 @@ async function checkLEADS() {
     }
 }
 
-setInterval(checkLeadCount, 30 * 1000);
+setInterval(checkLeadCount, 10 * 1000);
 
 const init = addKeyword(EVENTS.WELCOME)
   .addAction(async (ctx, { endFlow, gotoFlow }) => {
@@ -859,10 +859,12 @@ const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
     const diaSeleccionado = ctx.body.trim();
 
     if (diaSeleccionado == "Hoy" || diaSeleccionado == "Mañana") {
-      const fecha = new Date();
-      if (diaSeleccionado == "Mañana") {
-        fecha.setDate(fecha.getDate() + 1);
+      let fecha = DateTime.now().setZone("America/Bogota"); // 👈 esto es clave
+
+      if (diaSeleccionado === "Mañana") {
+        fecha = fecha.plus({ days: 1 });
       }
+
       //Guardar en texto como formato mm/dd
       const diaFormateado = `${fecha.getDate()}/${fecha.getMonth() + 1}`;
       usuarioData[ctx.from].diaSeleccionado = diaFormateado;
