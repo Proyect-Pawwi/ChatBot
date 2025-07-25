@@ -1002,11 +1002,9 @@ export async function TEMPLATE_link_strava_cliente(
   to: string,
   {
     nombreCliente,
-    nombrePerrito,
     linkStrava,
   }: {
     nombreCliente: string;
-    nombrePerrito: string;
     linkStrava: string;
   }
 ) {
@@ -1025,7 +1023,6 @@ export async function TEMPLATE_link_strava_cliente(
           type: "body",
           parameters: [
             { type: "text", text: nombreCliente },
-            { type: "text", text: nombrePerrito },
             { type: "text", text: linkStrava },
           ],
         },
