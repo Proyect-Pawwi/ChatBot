@@ -859,15 +859,21 @@ const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
     const diaSeleccionado = ctx.body.trim();
 
     if (diaSeleccionado == "Hoy" || diaSeleccionado == "Mañana") {
-      let fecha = DateTime.now().setZone("America/Bogota"); // 👈 esto es clave
+      
+      const fecha = new Date();
 
       if (diaSeleccionado === "Mañana") {
-        fecha = fecha.plus({ days: 1 });
+        fecha.setDate(fecha.getDate() + 1);
       }
 
-      //Guardar en texto como formato mm/dd
-      const diaFormateado = `${fecha.getDate()}/${fecha.getMonth() + 1}`;
-      usuarioData[ctx.from].diaSeleccionado = diaFormateado;
+      if (fecha instanceof Date && !isNaN(fecha.getTime())) {
+        // Guardar en texto como formato mm/dd
+        const diaFormateado = `${fecha.getMonth() + 1}/${fecha.getDate()}`;
+        console.log("✅ Día formateado:", diaFormateado);
+        usuarioData[ctx.from].diaSeleccionado = diaFormateado;
+      } else {
+        console.error("❌ 'fecha' no es un objeto Date válido:", fecha);
+      }
     }
     else {
       usuarioData[ctx.from].diaSeleccionado = diaSeleccionado;
@@ -1002,12 +1008,12 @@ Precio: $${data.valor || 0}`);
     }
   });
 
+await sendText('573212393957', `Si lees esto, es porque te lo estoy enviando desde mi PC, pero sin el webhook registrado en meta .`);
+await sendText('573023835142', `Si lees esto, es porque te lo estoy enviando desde mi PC, pero sin el webhook registrado en meta .`);
 
-await TEMPLATE_recordatorio_pago_cliente("573023835142", {
-  nombreCliente: "Juan",
-  nombrePerrito: "Max",
-  valorPaseo: "$25.000",
-});
+const fecha = new Date();
+console.log(fecha);
+
 
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
