@@ -1094,18 +1094,6 @@ Precio: $${data.valor || 0}`);
 const fecha = new Date();
 console.log(fecha);
 
-await TEMPLATE_confirmacion_paseo_cliente('573023835142', {
-            nombreCliente: String("juan"),
-            nombrePerrito: String("juan"),
-            calle: String("juan"),
-            colonia: String("juan"),
-            fecha: String("juan"),
-            hora: String("juan"),
-            duracion: String("juan"),
-            precio: String("juan"),
-            pawwer: String("juan"),
-          });
-
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
 
 
