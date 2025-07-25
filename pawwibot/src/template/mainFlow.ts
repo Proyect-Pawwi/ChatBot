@@ -821,15 +821,15 @@ const agendarTiempoPaseo = addKeyword('agendarTiempoPaseo')
     switch (payloadBoton) {
       case 'FLASH_15_MIN':
         agendamiento = '15 minutos';
-        precio = 7500;
+        precio = 9000;
         break;
       case 'CHILL_30_MIN':
         agendamiento = '30 minutos';
-        precio = 10000;
+        precio = 15000;
         break;
       case 'ADVENTURE_1_HORA':
         agendamiento = '60 minutos';
-        precio = 17000;
+        precio = 23000;
         break;
       default:
         await sendText(ctx.from, 'Por favor, selecciona una opción válida usando los botones.');
