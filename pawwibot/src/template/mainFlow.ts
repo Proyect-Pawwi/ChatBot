@@ -494,7 +494,7 @@ const init = addKeyword(EVENTS.WELCOME)
             console.log("Link recibido:", linkRecibido);
 
             // Validar link Strava simple (https://www.strava.com/activities/ seguido de números)
-            const regexStrava = /^https:\/\/(www\.)?strava\.com\/activities\/\d+$/;
+            const regexStrava = /^https:\/\/(www\.)?strava\.com\/beacon\/\d+$/;
 
             if (!regexStrava.test(linkRecibido)) {
               await sendText(ctx.from, "Por favor, envía un link válido de Strava que tenga este formato:\nhttps://www.strava.com/activities/123456789");
