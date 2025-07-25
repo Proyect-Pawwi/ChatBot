@@ -8,6 +8,8 @@ import { createPaseo, getPaseoByPawwerTelefono, getPaseoByPawwerTelefonoActive, 
 import { log } from "node:console";
 import { createCompletado } from "../services/airtable-completados";
 import { DateTime } from "luxon";
+import { getContratosAceptados, updateContratoAceptado } from "~/services/registroPawwers";
+import { crearPawwerActivo } from "~/services/airtable-pawwersActivos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -103,6 +105,46 @@ function parseFechaHora(fecha: string, hora: string): Date | null {
   return parsed.isValid ? parsed.toJSDate() : null;
 }
 
+async function activarPawwersPendientes() {
+  try {
+    const response = await getContratosAceptados('{Activar Pawwer} = "Activar"');
+
+    if (response.records.length === 0) {
+      console.log("✅ No hay pawwers pendientes por activar.");
+      return;
+    }
+
+    console.log(`🔄 Encontrados ${response.records.length} pawwers para activar.`);
+
+    for (const record of response.records) {
+      const { id, fields } = record;
+
+      const nombre = fields["Nombre completo"];
+      const cedula = fields["Número de cédula"];
+      const telefono = fields["Número de teléfono"];
+
+      // 1. Crear registro en Pawwers Activos
+      await crearPawwerActivo({
+        "Nombre completo": nombre,
+        "Cedula de ciudadanía": cedula,
+        "Numero de teléfono": telefono,
+        "Status": "Activo",
+      });
+
+      console.log(`📥 Registrado en Pawwers Activos: ${nombre}`);
+
+      await updateContratoAceptado(id, {
+        "Activar Pawwer": "Activado"
+      });
+
+      console.log(`✅ Pawwer activado: ${nombre} (${id})`);
+    }
+  } catch (error) {
+    console.error("❌ Error al activar pawwers:", error);
+  }
+}
+
+
 async function checkAndUpdatePaseoEstado(recordFields: any) {
   const fechaHoraPaseo = parseFechaHora(recordFields.Fecha, recordFields.Hora);
   if (!fechaHoraPaseo) return;
@@ -131,15 +173,31 @@ async function checkAndUpdatePaseoEstado(recordFields: any) {
   }
 }
 
-const checkLeadCount = async () => {
+const timeLead = async () => {
   try {
-    const ahoraColombia = DateTime.now().setZone("America/Bogota");
-    const horaFormateada = ahoraColombia.toFormat("HH:mm:ss");
-
-    console.log("🕒 Hora actual en Colombia:", horaFormateada);
-
-    checkPaseos();
+    console.log("Time leads");
+    
     checkLEADS();
+    
+  } catch (error) {
+    console.error("❌ Error al consultar los leads en Airtable:", error);
+  }
+};
+
+const timePaseos = async () => {
+  try {
+    console.log("Time paseos");
+    checkPaseos();
+    
+  } catch (error) {
+    console.error("❌ Error al consultar los leads en Airtable:", error);
+  }
+};
+
+const timeActivarPendientes = async () => {
+  try {
+    console.log("Time activar");
+    activarPawwersPendientes()
     
   } catch (error) {
     console.error("❌ Error al consultar los leads en Airtable:", error);
@@ -272,7 +330,6 @@ async function checkLEADS() {
   const filterFormula = "Estado = 'confirmado'";
     const response = await getLeads(filterFormula, 2, "Grid view");
   //LEADS
-    console.log(`[LEAD COUNT] Total de leads confirmados (máx 2): ${response.records.length}`);
 
     for (const record of response.records) {
 
@@ -396,7 +453,21 @@ async function checkLEADS() {
     }
 }
 
-setInterval(checkLeadCount, 10 * 1000);
+setTimeout(() => {
+  timeLead();
+  setInterval(timeLead, 10 * 1000);
+},0); 
+
+setTimeout(() => {
+  timePaseos();
+  setInterval(timePaseos, 12 * 1000);
+}, 10000); 
+
+setTimeout(() => {
+  timeActivarPendientes();
+  setInterval(timeActivarPendientes, 30 * 1000);
+}, 5000);
+
 
 const init = addKeyword(EVENTS.WELCOME)
   .addAction(async (ctx, { endFlow, gotoFlow }) => {
@@ -493,30 +564,39 @@ const init = addKeyword(EVENTS.WELCOME)
 
             console.log("Link recibido:", linkRecibido);
 
-            try {
-              await updatePaseo(paseo.id, {
-                Estado: "Esperando finalizacion",
-                "Link Strava": linkRecibido,
-              });
+            const rege = /(https?:\/\/)?(www\.)?strava\.com/;
 
-              await sendText(ctx.from, "¡Gracias! Hemos recibido tu link de Strava y se lo enviaremos al cliente.");
+            const match = linkRecibido.match(rege);
 
+            if (match) {
+              console.log("Coincidencia:", match[0]);
               // Enviar al cliente el link recibido
               const celularCliente = paseo.fields.Celular;
               const nombrePerrito = paseo.fields.Perro || "tu perrito";
 
-              await sendText(celularCliente, "(Este mensaje no es plantilla). El paseador ha enviado el siguiente link de Strava: " + linkRecibido);
+              await TEMPLATE_link_strava_cliente('573023835142', {
+                            nombreCliente : celularCliente,
+                            nombrePerrito: nombrePerrito,
+                            linkStrava: linkRecibido,
+                          });
+              
+              try {
+                await updatePaseo(paseo.id, {
+                  Estado: "Esperando finalizacion",
+                  "Link Strava": linkRecibido,
+                });
 
-              await TEMPLATE_link_strava_cliente(celularCliente, {
-                nombreCliente,
-                nombrePerrito,
-                linkStrava: linkRecibido,
-              });
+              } catch (error) {
+                console.error("Error al actualizar paseo con link de Strava:", error);
+                await sendText(ctx.from, "Ocurrió un error al guardar tu link, por favor intenta de nuevo.");
+              }
 
-            } catch (error) {
-              console.error("Error al actualizar paseo con link de Strava:", error);
-              await sendText(ctx.from, "Ocurrió un error al guardar tu link, por favor intenta de nuevo.");
+            } else {
+              console.log("No coincide");
+              await sendText(ctx.from, "El link de Strava que has enviado no es valido, tu link debe ser por ejemplo como el siguiente: https://www.strava.com/beacon/oH0qqnaCRNM");
             }
+
+
           }
           else if("Esperando finalizacion" === paseo.fields.Estado) {
             await sendText(ctx.from, "Tienes actualmente un paseo en curso. Por favor, si deseas comentar alguna novedad o crees que es un error, contacta al numero de soporte +57 3332885462");
@@ -1009,7 +1089,6 @@ Precio: $${data.valor || 0}`);
 
 const fecha = new Date();
 console.log(fecha);
-
 
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};

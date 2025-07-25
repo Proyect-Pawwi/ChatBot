@@ -1026,6 +1026,13 @@ export async function TEMPLATE_link_strava_cliente(
           parameters: [
             { type: "text", text: nombreCliente },
             { type: "text", text: nombrePerrito },
+          ],
+        },
+        {
+          type: "button",
+          sub_type: "url",
+          index: "0",
+          parameters: [
             { type: "text", text: linkStrava },
           ],
         },
@@ -1053,6 +1060,7 @@ export async function TEMPLATE_link_strava_cliente(
     );
   }
 }
+
 
 export async function TEMPLATE_finalizar_paseo_pawwer(
   to: string,
