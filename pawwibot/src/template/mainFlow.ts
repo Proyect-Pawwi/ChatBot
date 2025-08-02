@@ -6,7 +6,7 @@ import { getMongoClient } from '../services/mongo';
 import { createLead, deleteLead, getLeads, updateLead } from "../services/airtable-leads";
 import { createPaseo, getPaseoByPawwerTelefono, getPaseoByPawwerTelefonoActive, getPaseos, updatePaseo } from "../services/airtable-paseos";
 import { log } from "node:console";
-import { createCompletado } from "../services/airtable-completados";
+import { createCompletado, getCompletados } from "../services/airtable-completados";
 import { DateTime } from "luxon";
 import { getContratosAceptados, updateContratoAceptado } from "~/services/registroPawwers";
 import { crearPawwerActivo } from "~/services/airtable-pawwersActivos";
@@ -46,6 +46,34 @@ interface Usuario {
   valor?: number;
   Direccion?: string;
   agendamientoSeleccionado?: string;
+}
+
+function parseNumero(value: unknown): number {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const cleaned = value.replace(/[,]+/g, '').trim();
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+  return 0;
+}
+
+export async function sumarCampoPorCelular(celular: string, campo: string): Promise<number> {
+  let total = 0;
+  let offset: string | undefined = undefined;
+  const formula = `{Celular} = "${celular}"`;
+
+  do {
+    const response = await getCompletados(formula, 100, 'Grid view', offset);
+    for (const record of response.records) {
+      // Accedemos dinámicamente al campo. TS no sabe su forma exacta, así que lo tratamos como any.
+      const raw = (record.fields as any)[campo];
+      total += parseNumero(raw);
+    }
+    offset = response.offset;
+  } while (offset);
+
+  return total;
 }
 
 const createLeadMongo = async (leadData) => {
@@ -518,7 +546,9 @@ const init = addKeyword(EVENTS.WELCOME)
           const paseo = await getPaseoByPawwerTelefonoActive(ctx.from);
 
           if (!paseo) {
-            await sendText(ctx.from, "No tienes paseos activos en este momento. Por favor, contacta al soporte si crees que es un error.");
+            const campo = 'Ganancia Pawwer';
+            const gananciasPawwer = await sumarCampoPorCelular(ctx.from, campo);
+            await sendText(ctx.from, `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias. Si crees que es un error, por favor contacta al soporte.`);
             console.log('❌ No se encontró ningún paseo para este Pawwer con estado "Esperando Pawwer"');
             return;
           }
@@ -567,6 +597,8 @@ const init = addKeyword(EVENTS.WELCOME)
             const linkRecibido = ctx.body.trim();
 
             console.log("Link recibido:", linkRecibido);
+
+            //TODO: beacon/
 
             const rege = /(https?:\/\/)?(www\.)?strava\.com/;
 
@@ -1091,8 +1123,6 @@ Precio: $${data.valor || 0}`);
     }
   });
 
-const fecha = new Date();
-console.log(fecha);
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
 
