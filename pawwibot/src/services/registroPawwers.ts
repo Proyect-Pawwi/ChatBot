@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-const AIRTABLE_BASE_CONTRATOS = 'https://api.airtable.com/v0/appisenIghjPCcECl/Contratos%20aceptados';
+const AIRTABLE_BASE_CONTRATOS = 'https://api.airtable.com/v0/appZrLlSY1XfOq4xs/Paso%201';
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.airtableApiKey;
 
 interface ContratoFields {

@@ -225,7 +225,7 @@ const timePaseos = async () => {
 const timeActivarPendientes = async () => {
   try {
     console.log("Time activar");
-    activarPawwersPendientes()
+    //activarPawwersPendientes()
     
   } catch (error) {
     console.error("❌ Error al consultar los leads en Airtable:", error);
@@ -495,9 +495,10 @@ setTimeout(() => {
   setInterval(timePaseos, 15 * 1000);
 }, 10000); 
 
+
 setTimeout(() => {
   timeActivarPendientes();
-  setInterval(timeActivarPendientes, 60 * 1000);
+  setInterval(timeActivarPendientes, 10 * 1000);
 }, 5000);
 
 
