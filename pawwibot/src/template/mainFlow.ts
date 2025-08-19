@@ -113,25 +113,29 @@ function parseFechaHora(fecha: string, hora: string): Date | null {
   const [dayStr, monthStr] = fecha.split('/');
   const [hourStr, minStr] = hora.split(':');
 
-  const now = DateTime.now().setZone("America/Bogota"); // UTC-5 zona horaria
-
-  const year = now.year;
   const day = parseInt(dayStr, 10);
   const month = parseInt(monthStr, 10);
+  const hour = parseInt(hourStr, 10);
+  const minute = parseInt(minStr, 10);
+
+  if (
+    isNaN(day) || isNaN(month) || isNaN(hour) || isNaN(minute) ||
+    day <= 0 || day > 31 || month <= 0 || month > 12
+  ) {
+    console.warn(`parseFechaHora: valores inválidos -> fecha=${fecha}, hora=${hora}`);
+    return null;
+  }
+
+  const year = DateTime.now().setZone("America/Bogota").year;
 
   const parsed = DateTime.fromObject(
-    {
-      year,
-      month,
-      day,
-      hour: parseInt(hourStr, 10),
-      minute: parseInt(minStr, 10),
-    },
-    { zone: "America/Bogota" } // <- fuerza a usar zona horaria GMT-5
+    { year, month, day, hour, minute },
+    { zone: "America/Bogota" }
   );
 
   return parsed.isValid ? parsed.toJSDate() : null;
 }
+
 
 async function activarPawwersPendientes() {
   try {
@@ -500,7 +504,7 @@ setTimeout(() => {
 
 setTimeout(() => {
   timeActivarPendientes();
-  setInterval(timeActivarPendientes, 10 * 1000);
+  setInterval(timeActivarPendientes, 60 * 1000);
 }, 5000);
 
 
@@ -634,7 +638,6 @@ const init = addKeyword(EVENTS.WELCOME)
               console.log("No coincide");
               await sendText(ctx.from, "El link de Strava que has enviado no es valido, tu link debe ser por ejemplo como el siguiente: https://www.strava.com/beacon/oH0qqnaCRNM");
             }
-
 
           }
           else if("Esperando finalizacion" === paseo.fields.Estado) {
