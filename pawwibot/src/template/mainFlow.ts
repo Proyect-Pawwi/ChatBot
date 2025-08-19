@@ -235,9 +235,11 @@ const timeActivarPendientes = async () => {
 
 async function checkPaseos() {
   const paseos = await getPaseos();
+  console.log(`🔄 Verificando ${paseos.records.length} paseos...`);
 
     //PASEOS
     for (const paseo of paseos.records) {
+      
 
       const fechaPaseo = parseFechaHora(paseo.fields.Fecha, paseo.fields.Hora);
       

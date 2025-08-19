@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-const AIRTABLE_BASE_PAWWERS = 'https://api.airtable.com/v0/appZrLlSY1XfOq4xs/Paso%201';
+const AIRTABLE_BASE_PAWWERS = 'https://api.airtable.com/v0/appSUDxkkNiojRXta/Pawwers%20Activos';
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.airtableApiKey;
 
 interface PawwerActivoFields {
