@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-const AIRTABLE_BASE = 'https://api.airtable.com/v0/appOceFmbxh8PfLKT/Completados';
+const AIRTABLE_BASE = 'https://api.airtable.com/v0/appSUDxkkNiojRXta/Completados';
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.airtableApiKey;
 
 export interface CompletadoFields {
