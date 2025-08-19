@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 
-const AIRTABLE_BASE_PASEOS = 'https://api.airtable.com/v0/appSUDxkkNiojRXta/Control%20de%20paseos';
+const AIRTABLE_BASE_PASEOS = 'https://api.airtable.com/v0/appZrLlSY1XfOq4xs/Paso%201';
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.airtableApiKey;
 
 interface PaseoFields {
