@@ -613,7 +613,7 @@ const init = addKeyword(EVENTS.WELCOME)
               const celularCliente = paseo.fields.Celular;
               const nombrePerrito = paseo.fields.Perro || "tu perrito";
 
-              await TEMPLATE_link_strava_cliente('573023835142', {
+              await TEMPLATE_link_strava_cliente(celularCliente, {
                             nombreCliente : celularCliente,
                             nombrePerrito: nombrePerrito,
                             linkStrava: linkRecibido,
