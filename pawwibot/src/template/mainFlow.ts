@@ -8,8 +8,8 @@ import { createPaseo, getPaseoByPawwerTelefono, getPaseoByPawwerTelefonoActive, 
 import { log } from "node:console";
 import { createCompletado, getCompletados } from "../services/airtable-completados";
 import { DateTime } from "luxon";
-import { getContratosAceptados, updateContratoAceptado } from "~/services/registroPawwers";
 import { crearPawwerActivo } from "~/services/airtable-pawwersActivos";
+import { getPaso4, updatePaso4 } from "~/services/registroPawwers";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -137,25 +137,26 @@ function parseFechaHora(fecha: string, hora: string): Date | null {
 }
 
 
-async function activarPawwersPendientes() {
+async function activarPawwersPendientesPaso4() {
   try {
-    const response = await getContratosAceptados('{Activar Pawwer} = "Activar"');
+    // 🔍 Buscar registros en Paso 4 con condición personalizada
+    const response = await getPaso4('{Activar} = "Activar"'); // <-- o el campo que uses de bandera
 
     if (response.records.length === 0) {
-      console.log("✅ No hay pawwers pendientes por activar.");
+      console.log("✅ No hay pawwers pendientes por activar en Paso 4.");
       return;
     }
 
-    console.log(`🔄 Encontrados ${response.records.length} pawwers para activar.`);
+    console.log(`🔄 Encontrados ${response.records.length} pawwers en Paso 4 para activar.`);
 
     for (const record of response.records) {
       const { id, fields } = record;
 
-      const nombre = fields["Nombre completo"];
-      const cedula = fields["Número de cédula"];
-      const telefono = fields["Número de teléfono"];
+      const nombre = fields["Nombre"];
+      const cedula = fields["Cedula"];
+      const telefono = fields["Telefono"];
 
-      // 1. Crear registro en Pawwers Activos
+      // 1. Crear registro en Pawwers Activos (ajusta los nombres a esa tabla)
       await crearPawwerActivo({
         "Nombre completo": nombre,
         "Cedula de ciudadanía": cedula,
@@ -165,16 +166,18 @@ async function activarPawwersPendientes() {
 
       console.log(`📥 Registrado en Pawwers Activos: ${nombre}`);
 
-      await updateContratoAceptado(id, {
-        "Activar Pawwer": "Activado"
+      // 2. Actualizar el registro en Paso 4 para marcarlo como activado
+      await updatePaso4(id, {
+        "Activar": "Activado", // <-- asegúrate que exista este campo en Paso 4
       });
 
-      console.log(`✅ Pawwer activado: ${nombre} (${id})`);
+      console.log(`✅ Pawwer activado en Paso 4: ${nombre} (${id})`);
     }
   } catch (error) {
-    console.error("❌ Error al activar pawwers:", error);
+    console.error("❌ Error al activar pawwers desde Paso 4:", error);
   }
 }
+
 
 
 async function checkAndUpdatePaseoEstado(recordFields: any) {
@@ -229,7 +232,7 @@ const timePaseos = async () => {
 const timeActivarPendientes = async () => {
   try {
     console.log("Time activar");
-    //activarPawwersPendientes()
+    activarPawwersPendientesPaso4()
     
   } catch (error) {
     console.error("❌ Error al consultar los leads en Airtable:", error);
@@ -504,7 +507,7 @@ setTimeout(() => {
 
 setTimeout(() => {
   timeActivarPendientes();
-  setInterval(timeActivarPendientes, 60 * 1000);
+  setInterval(timeActivarPendientes, 120 * 1000);
 }, 5000);
 
 

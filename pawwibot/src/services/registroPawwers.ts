@@ -1,28 +1,27 @@
 import fetch from 'node-fetch';
 
-const AIRTABLE_BASE_CONTRATOS = 'https://api.airtable.com/v0/appZrLlSY1XfOq4xs/Paso%201';
+const AIRTABLE_BASE_PASO4 = 'https://api.airtable.com/v0/appZrLlSY1XfOq4xs/Paso%204';
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.airtableApiKey;
 
-interface ContratoFields {
-  "Nombre completo": string;
-  "Número de cédula": number;
-  "Correo electrónico": string;
-  "Número de teléfono": string;
+interface Paso4Fields {
+  "Nombre": string;
+  "Correo": string;
+  "Telefono": string;
+  "Cedula": number;
   "¿Aceptas los términos y condiciones establecidos en el contrato?": boolean;
   "¿Autorizas el tratamiento de tus datos personales según la Ley 1581 de 2012?": boolean;
   "¿Has leído y entendido el contrato civil de prestación de servicios?": boolean;
-  "Última modificación"?: string;
-  "Activar Pawwer"?: string;
+  "Activar"?: string;
 }
 
-interface AirtableRecord {
+interface AirtableRecordPaso4 {
   id: string;
   createdTime: string;
-  fields: ContratoFields;
+  fields: Paso4Fields;
 }
 
-interface AirtableResponse {
-  records: AirtableRecord[];
+interface AirtableResponsePaso4 {
+  records: AirtableRecordPaso4[];
   offset?: string;
 }
 
@@ -31,9 +30,9 @@ interface AirtableDeleteResponse {
   deleted: boolean;
 }
 
-// ✅ Crear Contrato
-export async function createContratoAceptado(fields: ContratoFields): Promise<AirtableResponse> {
-  const res = await fetch(AIRTABLE_BASE_CONTRATOS, {
+// ✅ Crear registro en Paso 4
+export async function createPaso4(fields: Paso4Fields): Promise<AirtableResponsePaso4> {
+  const res = await fetch(AIRTABLE_BASE_PASO4, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${AIRTABLE_TOKEN}`,
@@ -49,16 +48,16 @@ export async function createContratoAceptado(fields: ContratoFields): Promise<Ai
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableResponse>;
+  return res.json() as Promise<AirtableResponsePaso4>;
 }
 
-// ✅ Obtener Contratos (con filtro opcional)
-export async function getContratosAceptados(
+// ✅ Obtener registros de Paso 4 (con filtro opcional)
+export async function getPaso4(
   filterByFormula?: string,
   maxRecords = 100,
   view = 'Grid view',
   offset?: string
-): Promise<AirtableResponse> {
+): Promise<AirtableResponsePaso4> {
   const params = new URLSearchParams({
     maxRecords: maxRecords.toString(),
     view,
@@ -66,7 +65,7 @@ export async function getContratosAceptados(
   if (filterByFormula) params.append('filterByFormula', filterByFormula);
   if (offset) params.append('offset', offset);
 
-  const url = `${AIRTABLE_BASE_CONTRATOS}?${params.toString()}`;
+  const url = `${AIRTABLE_BASE_PASO4}?${params.toString()}`;
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${AIRTABLE_TOKEN}`,
@@ -79,12 +78,12 @@ export async function getContratosAceptados(
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableResponse>;
+  return res.json() as Promise<AirtableResponsePaso4>;
 }
 
-// ✅ Obtener Contrato por ID
-export async function getContratoById(recordId: string): Promise<AirtableRecord> {
-  const url = `${AIRTABLE_BASE_CONTRATOS}/${recordId}`;
+// ✅ Obtener registro de Paso 4 por ID
+export async function getPaso4ById(recordId: string): Promise<AirtableRecordPaso4> {
+  const url = `${AIRTABLE_BASE_PASO4}/${recordId}`;
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${AIRTABLE_TOKEN}`,
@@ -97,12 +96,12 @@ export async function getContratoById(recordId: string): Promise<AirtableRecord>
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableRecord>;
+  return res.json() as Promise<AirtableRecordPaso4>;
 }
 
-// ✅ Actualizar Contrato
-export async function updateContratoAceptado(recordId: string, fields: Partial<ContratoFields>): Promise<AirtableResponse> {
-  const res = await fetch(AIRTABLE_BASE_CONTRATOS, {
+// ✅ Actualizar registro de Paso 4
+export async function updatePaso4(recordId: string, fields: Partial<Paso4Fields>): Promise<AirtableResponsePaso4> {
+  const res = await fetch(AIRTABLE_BASE_PASO4, {
     method: 'PATCH',
     headers: {
       Authorization: `Bearer ${AIRTABLE_TOKEN}`,
@@ -118,12 +117,12 @@ export async function updateContratoAceptado(recordId: string, fields: Partial<C
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableResponse>;
+  return res.json() as Promise<AirtableResponsePaso4>;
 }
 
-// ✅ Eliminar Contrato
-export async function deleteContratoAceptado(recordId: string): Promise<AirtableDeleteResponse> {
-  const url = `${AIRTABLE_BASE_CONTRATOS}/${recordId}`;
+// ✅ Eliminar registro de Paso 4
+export async function deletePaso4(recordId: string): Promise<AirtableDeleteResponse> {
+  const url = `${AIRTABLE_BASE_PASO4}/${recordId}`;
   const res = await fetch(url, {
     method: 'DELETE',
     headers: {
