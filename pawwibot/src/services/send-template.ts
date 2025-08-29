@@ -1223,3 +1223,59 @@ export async function TEMPLATE_recordatorio_pago_cliente(
     );
   }
 }
+
+export async function TEMPLATE_recibir_perro_pawwer(
+  to: string,
+  {
+    nombrePerrito,
+  }: {
+    nombrePerrito: string;
+  }
+) {
+  const token = process.env.jwtToken;
+  const phone_number_id = process.env.numberId;
+
+  const body = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: "recibir_perro_pawwer", // nombre EXACTO de la plantilla en Meta
+      language: { code: "es_CO" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: nombrePerrito }, // reemplaza {{perro}}
+          ],
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: "0",
+          parameters: [{ type: "payload", payload: "INICIAR_PASEO" }], // acción asociada al botón
+        },
+      ],
+    },
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v19.0/${phone_number_id}/messages`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("✅ Plantilla 'recibir_perro_pawwer' enviada:", res.data);
+  } catch (err: any) {
+    console.error(
+      "❌ Error al enviar plantilla 'recibir_perro_pawwer':",
+      err.response?.data || err.message
+    );
+  }
+}
