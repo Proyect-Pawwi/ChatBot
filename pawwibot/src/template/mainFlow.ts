@@ -722,10 +722,10 @@ const init = addKeyword(EVENTS.WELCOME)
       for (const paseo of paseoAgendado.records) {
         console.log(paseo.fields.Celular == ctx.from);
         
-        if (paseo.fields.Celular == ctx.from) {
+        if (paseo.fields.Celular == ctx.from && paseo.fields.Estado != "Cancelado") {
           await updatePaseo(paseo.id, { Estado: "Cancelado" });
           await sendText('573332885462', `El usuario ${ctx.from} ha cancelado su paseo agendado.`);
-          await sendText(paseo.fields["Numero de teléfono (from Pawwer)"]?.[0] || "", `El usuario ${ctx.from} ha cancelado su paseo agendado.`);
+          await sendText(paseo.fields["Numero de teléfono (from Pawwer)"]?.[0] || "", `El dueño de ${paseo.fields.Perro} ha cancelado su paseo agendado.`);
           console.log(`✅ Paseo cancelado para el usuario ${ctx.from}`);
         }
       }
