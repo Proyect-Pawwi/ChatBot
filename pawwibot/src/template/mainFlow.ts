@@ -325,7 +325,8 @@ async function checkPaseos() {
 
         // Calcular el tiempo transcurrido solo si horaInicio existe y es válida
         if (horaInicio) {
-          const inicio = DateTime.fromISO(horaInicio, { zone: "America/Bogota" });
+          // Adaptar el parseo al formato "yyyy-MM-dd HH:mm:ss"
+          const inicio = DateTime.fromFormat(horaInicio, "yyyy-MM-dd HH:mm:ss", { zone: "America/Bogota" });
           if (inicio.isValid) {
             const diff = horaActual.diff(inicio, ["hours", "minutes", "seconds"]).toObject();
             console.log(
@@ -333,17 +334,26 @@ async function checkPaseos() {
             );
 
             const minutosTranscurridos = (diff.hours ?? 0) * 60 + (diff.minutes ?? 0);
-            if ((minutosTranscurridos > 15 && (paseo.fields.TiempoServicio === "15 minutos"))||
-                (minutosTranscurridos > 30 && (paseo.fields.TiempoServicio === "30 minutos"))||
-                (minutosTranscurridos > 60 && (paseo.fields.TiempoServicio === "60 minutos"))) {
-                  await updatePaseo(paseo.id, { Estado: "Esperando finalizacion de Pawwer" });
-                    console.log(`✅ Estado actualizado a "Esperando finalizacion" para paseo ID ${paseo.id}`);
-                    await TEMPLATE_finalizar_paseo_pawwer(
-                      Array.isArray(paseo.fields["Numero de teléfono (from Pawwer)"]) ? paseo.fields["Numero de teléfono (from Pawwer)"][0] : paseo.fields["Numero de teléfono (from Pawwer)"],
-                      { nombrePawwer: paseo.fields["Nombre pawwer"], nombrePerrito: paseo.fields.Perro }
-                    );
+
+            // Ejemplo: imprimir si son más de 15 minutos y el servicio es de 15 minutos
+            if (minutosTranscurridos > 15 && paseo.fields.TiempoServicio === "15 minutos") {
+              console.log("⏰ El paseo de 15 minutos ya superó los 15 minutos.");
             }
 
+            if (
+              (minutosTranscurridos > 15 && paseo.fields.TiempoServicio === "15 minutos") ||
+              (minutosTranscurridos > 30 && paseo.fields.TiempoServicio === "30 minutos") ||
+              (minutosTranscurridos > 60 && paseo.fields.TiempoServicio === "60 minutos")
+            ) {
+              await updatePaseo(paseo.id, { Estado: "Esperando finalizacion de Pawwer" });
+              console.log(`✅ Estado actualizado a "Esperando finalizacion" para paseo ID ${paseo.id}`);
+              await TEMPLATE_finalizar_paseo_pawwer(
+                Array.isArray(paseo.fields["Numero de teléfono (from Pawwer)"])
+                  ? paseo.fields["Numero de teléfono (from Pawwer)"][0]
+                  : paseo.fields["Numero de teléfono (from Pawwer)"],
+                { nombrePawwer: paseo.fields["Nombre pawwer"], nombrePerrito: paseo.fields.Perro }
+              );
+            }
           } else {
             console.log("horaInicio no es una fecha válida:", horaInicio);
           }
