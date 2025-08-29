@@ -289,8 +289,6 @@ async function checkPaseos() {
           const minutos = Math.floor(diferenciaMs / (1000 * 60)) % 60;
           const horas = Math.floor(diferenciaMs / (1000 * 60 * 60));
 
-          console.log(`⏳ Faltan ${horas}h ${minutos}m para el paseo.`);
-
           const totalMinutos = Math.floor(diferenciaMs / (1000 * 60));
 
           //EN MENOS DE UN HORA
@@ -587,7 +585,7 @@ const init = addKeyword(EVENTS.WELCOME)
             log(`Pawwer ${usuario.nombre} ha confirmado su llegada.`);
 
             // 1. Actualizar estado a "Esperando Strava"
-            await updatePaseo(paseoId, { Estado: 'Esperando Strava' });
+            await updatePaseo(paseoId, { Estado: 'Esperando perro' });
             console.log(`✅ Estado del paseo ${paseoId} actualizado a "Esperando Strava"`);
 
             // 2. Enviar plantilla al cliente (dueño del perrito)
@@ -602,6 +600,17 @@ const init = addKeyword(EVENTS.WELCOME)
               duracion,
             });
 
+            //Mensaje de dale click al boton cuando recibas al perro
+            await sendText(ctx.from, "Por favor, espera a que el cliente te entregue al perrito antes de confirmar tu llegada. Escribe \"Recibido\" cuando tengas al perrito contigo.");
+            return endFlow();
+          }
+          else if (paseo.fields.Estado === "Esperando perro") {
+            if (ctx.payload !== "Recibido") {
+              await sendText(ctx.from, "Por favor, espera a que el cliente te entregue al perrito antes de confirmar tu llegada. Escribe \"Recibido\" cuando tengas al perrito contigo.");
+              return endFlow();
+            }
+            await updatePaseo(paseoId, { Estado: 'Esperando Strava' });
+            
             await TEMPLATE_strava_recordatorio_pawwer(ctx.from, {
               nombrePawwer,
               nombrePerrito,
