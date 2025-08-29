@@ -10,6 +10,7 @@ import { createCompletado, getCompletados } from "../services/airtable-completad
 import { DateTime } from "luxon";
 import { crearPawwerActivo } from "~/services/airtable-pawwersActivos";
 import { getPaso4, updatePaso4 } from "~/services/registroPawwers";
+import { send } from "node:process";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -452,6 +453,7 @@ async function checkLEADS() {
           if (pawwerNumero) {
             const mensajePawwer = `¡Hola ${pawwerName}! 🐾\nTienes una nueva solicitud asignada para el ${Fecha} a las ${Hora}.`;
             await sendText(pawwerNumero, mensajePawwer);
+            await sendText(record.fields.Celular, `Tu paseo ha sido confirmado y un Pawwer ha sido asignado. \nNombre del paseador: ${pawwerName}\nFecha:${Fecha}\n${Hora}\n\nSi quieres modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
             console.log(`📤 Mensaje enviado al Pawwer ${pawwerNumero}`);
           } else {
             console.warn(`⚠️ No se pudo enviar mensaje al Pawwer: número no disponible`);
@@ -722,6 +724,8 @@ const init = addKeyword(EVENTS.WELCOME)
         
         if (paseo.fields.Celular == ctx.from) {
           await updatePaseo(paseo.id, { Estado: "Cancelado" });
+          await sendText('573332885462', `El usuario ${ctx.from} ha cancelado su paseo agendado.`);
+          await sendText(paseo.fields["Numero de teléfono (from Pawwer)"]?.[0] || "", `El usuario ${ctx.from} ha cancelado su paseo agendado.`);
           console.log(`✅ Paseo cancelado para el usuario ${ctx.from}`);
         }
       }
@@ -1122,7 +1126,7 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
         });
 
         await sendText(ctx.from, `En unos instantes nuestro Equipo de Pawwi se estará comunicando contigo para confirmar el paseo 🐶
-Si tienes dudas con tu servicio, o quieres comentar una novedad, contáctate con nuestro Pawwer de soporte +57 3023835152`);
+Si tienes dudas con tu servicio, o quieres comentar una novedad, contáctate con nuestro Pawwer de soporte +57 3332885462`);
         await sendText('573332885462', `🔔 Lead nuevo registrado desde el bot.
           
 Nombre: ${ctx.pushName || 'Usuario'} 
