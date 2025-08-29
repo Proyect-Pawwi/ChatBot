@@ -273,7 +273,6 @@ async function checkPaseos() {
               fecha: paseo.fields.Fecha || "No definida",
               hora: paseo.fields.Hora || "No definida",
               calle: (paseo.fields.Direccion || "").split(" – ")[0] || "No definida",
-              colonia: (paseo.fields.Direccion || "").split(" – ")[1] || "No definida",
               duracion: paseo.fields.TiempoServicio || "No definido",
             });
 
@@ -284,7 +283,6 @@ async function checkPaseos() {
               nombrePawwer: paseo.fields["Nombre pawwer"] || "Pawwer",
               nombrePerrito: paseo.fields.Perro || "tu perrito",
               calle,
-              colonia,
               fecha: paseo.fields.Fecha || "No definida",
               hora: paseo.fields.Hora || "No definida",
               duracion: paseo.fields.TiempoServicio || "No definido",
@@ -1179,7 +1177,6 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
     await TEMPLATE_agendar_resumen_paseo(ctx.from, {
       dogName: selectedDog?.nombre || 'No definido', // Use .nombre
       calle: data.Direccion?.split(' – ')[0] || 'No definida',
-      colonia: data.Direccion?.split(' – ')[1] || 'No definida',
       fecha: data.diaSeleccionado || 'No definida',
       hora: data.horaSeleccionada || 'No definida',
       tipoPaseo: data.agendamientoSeleccionado || 'No definido',

@@ -686,7 +686,6 @@ export async function TEMPLATE_recordatorio_paseo_cliente(
     fecha,
     hora,
     calle,
-    colonia,
     duracion,
   }: {
     nombreCliente: string;
@@ -694,7 +693,6 @@ export async function TEMPLATE_recordatorio_paseo_cliente(
     fecha: string;
     hora: string;
     calle: string;
-    colonia: string;
     duracion: string;
   }
 ) {
@@ -717,7 +715,6 @@ export async function TEMPLATE_recordatorio_paseo_cliente(
             { type: "text", text: fecha },
             { type: "text", text: hora },
             { type: "text", text: calle },
-            { type: "text", text: colonia },
             { type: "text", text: duracion },
           ],
         },
@@ -759,7 +756,6 @@ export async function TEMPLATE_recordatorio_paseo_pawwer(
     nombrePawwer,
     nombrePerrito,
     calle,
-    colonia,
     fecha,
     hora,
     duracion,
@@ -767,7 +763,6 @@ export async function TEMPLATE_recordatorio_paseo_pawwer(
     nombrePawwer: string;
     nombrePerrito: string;
     calle: string;
-    colonia: string;
     fecha: string;
     hora: string;
     duracion: string;
@@ -790,7 +785,6 @@ export async function TEMPLATE_recordatorio_paseo_pawwer(
             { type: "text", text: nombrePawwer },
             { type: "text", text: nombrePerrito },
             { type: "text", text: calle },
-            { type: "text", text: colonia },
             { type: "text", text: fecha },
             { type: "text", text: hora },
             { type: "text", text: duracion },
