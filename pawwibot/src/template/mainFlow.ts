@@ -412,6 +412,7 @@ async function checkLEADS() {
         try {
           // Cambiar estado a "validando"
           await updateLead(record.id, { Estado: "validando" });
+          
           console.log(`🔄 Estado actualizado a 'validando' para ID: ${record.id}`);
 
           const nombreCliente = record.fields["Nombre cliente"]; // Si tienes el nombre real, úsalo aquí
@@ -432,6 +433,9 @@ async function checkLEADS() {
             pawwerNombre = pawwerField;
           }
 
+          await sendText(record.fields.Celular, `Tu paseo ha sido confirmado y un Pawwer ha sido asignado. \nNombre del paseador: ${pawwerNombre}\nFecha:${Fecha}\n${Hora}\n\nSi quieres modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
+          
+
           await TEMPLATE_confirmacion_paseo_cliente(record.fields.Celular, {
             nombreCliente: String(nombreCliente),
             nombrePerrito: String(nombrePerrito),
@@ -450,10 +454,14 @@ async function checkLEADS() {
           const pawwerName = record.fields['Nombre completo (from Pawwer)'] || 'Pawwer';
           const pawwerNumero = Array.isArray(pawwerNumeros) ? pawwerNumeros[0] : null;
 
+          
+          console.log(pawwerNumero);
+          
+
           if (pawwerNumero) {
             const mensajePawwer = `¡Hola ${pawwerName}! 🐾\nTienes una nueva solicitud asignada para el ${Fecha} a las ${Hora}.`;
             await sendText(pawwerNumero, mensajePawwer);
-            await sendText(record.fields.Celular, `Tu paseo ha sido confirmado y un Pawwer ha sido asignado. \nNombre del paseador: ${pawwerName}\nFecha:${Fecha}\n${Hora}\n\nSi quieres modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
+            
             console.log(`📤 Mensaje enviado al Pawwer ${pawwerNumero}`);
           } else {
             console.warn(`⚠️ No se pudo enviar mensaje al Pawwer: número no disponible`);
