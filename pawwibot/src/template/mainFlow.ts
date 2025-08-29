@@ -685,7 +685,7 @@ const init = addKeyword(EVENTS.WELCOME)
               return endFlow();
             }
             //actualuizar horaInicio y estado a esperando strava
-            const horaInicio = DateTime.now().setZone("America/Bogota").toISO().toFormat("HH:mm");
+            const horaInicio = DateTime.now().setZone("America/Bogota").toFormat("yyyy-MM-dd HH:mm:ss");
 
             await updatePaseo(paseoId, { HoraInicio: horaInicio, Estado: 'Esperando Strava' });
             console.log(`✅ Hora de inicio y estado del paseo ${paseoId} actualizados`);
