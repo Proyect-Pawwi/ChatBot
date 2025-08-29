@@ -711,6 +711,23 @@ const init = addKeyword(EVENTS.WELCOME)
       console.error("❌ Error al manejar usuario desde Mongo:", e.message);
     }
 
+    if (payloadBoton == 'Confirmar') {
+      return endFlow();
+    }
+    else if (payloadBoton == 'Cancelar') {
+      //Cobtener el primer paseo donde el celular sea igual y el estado sea agendado
+      const paseoAgendado = await getPaseos();
+      for (const paseo of paseoAgendado.records) {
+        if (paseo.fields.Celular == ctx.fro) {
+          await updatePaseo(paseo.id, { Estado: "Cancelado" });
+          console.log(`✅ Paseo cancelado para el usuario ${ctx.from}`);
+        }
+      }
+
+      await sendText(ctx.from, "Has cancelado el agendamiento. Si deseas agendar otro paseo, por favor inicia de nuevo.");
+      return endFlow();
+    }
+
     await TEMPLATE_bienvenida_pawwi(ctx.from, nombre);
   })
 
