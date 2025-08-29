@@ -347,11 +347,15 @@ async function checkPaseos() {
             ) {
               await updatePaseo(paseo.id, { Estado: "Esperando finalizacion de Pawwer" });
               console.log(`✅ Estado actualizado a "Esperando finalizacion" para paseo ID ${paseo.id}`);
+
               await TEMPLATE_finalizar_paseo_pawwer(
                 Array.isArray(paseo.fields["Numero de teléfono (from Pawwer)"])
                   ? paseo.fields["Numero de teléfono (from Pawwer)"][0]
                   : paseo.fields["Numero de teléfono (from Pawwer)"],
-                { nombrePawwer: paseo.fields["Nombre pawwer"], nombrePerrito: paseo.fields.Perro }
+                {
+                  nombrePawwer: paseo.fields["Nombre pawwer"] || "Pawwer",
+                  nombrePerrito: paseo.fields.Perro || "tu perrito"
+                }
               );
             }
           } else {
@@ -645,7 +649,7 @@ const init = addKeyword(EVENTS.WELCOME)
           if (!paseo) {
             const campo = 'Ganancia Pawwer';
             const gananciasPawwer = await sumarCampoPorCelular(ctx.from, campo);
-            await sendText(ctx.from, `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias. Si crees que es un error, por favor contacta al soporte.`);
+            await sendText(ctx.from, `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias. Si crees que es un error, por favor contacta al soporte. +57 3332885462`);
             console.log('❌ No se encontró ningún paseo para este Pawwer con estado "Esperando Pawwer"');
             return;
           }
