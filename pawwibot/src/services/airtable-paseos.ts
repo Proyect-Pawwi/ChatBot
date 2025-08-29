@@ -16,6 +16,8 @@ interface PaseoFields {
   Estado?: string;
   Pawwer?: string[];
   Hora: string;
+  HoraInicio: string;
+  HoraFin: string;
   "metodo Pago"?: string;
   "Numero de teléfono (from Pawwer)"?: string[];
   "Link Strava"?: string;

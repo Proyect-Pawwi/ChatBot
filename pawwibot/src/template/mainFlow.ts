@@ -469,6 +469,8 @@ async function checkLEADS() {
             TiempoServicio: record.fields.TiempoServicio,
             Fecha: record.fields.Fecha,
             Hora: record.fields.Hora,
+            HoraInicio: "",
+            HoraFin: "",
             Precio: record.fields.Precio,
             Estado: "Por realizarse",
             Pawwer: Array.isArray(record.fields.Pawwer)
@@ -609,8 +611,10 @@ const init = addKeyword(EVENTS.WELCOME)
               await sendText(ctx.from, "Por favor, espera a que el cliente te entregue al perrito antes de confirmar tu llegada. Escribe \"Recibido\" cuando tengas al perrito contigo.");
               return endFlow();
             }
-            await updatePaseo(paseoId, { Estado: 'Esperando Strava' });
-            
+            //actualuizar horaInicio y estado a esperando strava
+            const horaInicio = DateTime.now().setZone("America/Bogota").toISO();
+            await updatePaseo(paseoId, { HoraInicio: horaInicio, Estado: 'Esperando Strava' });
+            console.log(`✅ Hora de inicio y estado del paseo ${paseoId} actualizados`);
             await TEMPLATE_strava_recordatorio_pawwer(ctx.from, {
               nombrePawwer,
               nombrePerrito,
