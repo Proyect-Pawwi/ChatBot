@@ -13,6 +13,8 @@ export interface CompletadoFields {
   TiempoServicio: string;
   Fecha: string;
   Hora: string;
+  HoraInicio: string;
+  HoraFin: string;
   Precio: number;
   Estado?: string;
   Pawwer?: string[];

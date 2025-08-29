@@ -247,117 +247,88 @@ async function checkPaseos() {
 
     //PASEOS
     for (const paseo of paseos.records) {
+
+      if (paseo.fields.Estado === "Por realizarse" || paseo.fields.Estado === "Por realizarse en 1 hora") {
+        const fechaPaseo = parseFechaHora(paseo.fields.Fecha, paseo.fields.Hora);
       
-
-      const fechaPaseo = parseFechaHora(paseo.fields.Fecha, paseo.fields.Hora);
-      
-      if (fechaPaseo) {
-        const ahora = new Date();
-        const diferenciaMs = fechaPaseo.getTime() - ahora.getTime();
-
-        if (diferenciaMs <= 0) {
-          console.log(`⏱️ El paseo ya ocurrió o está ocurriendo ahora.`);
-          //Validar que no este atrazado
-
-          let tiempoServicioMinutos = 15;
-
-          if (paseo.fields.TiempoServicio === "30 minutos") {
-            tiempoServicioMinutos = 30;
-          } else if (paseo.fields.TiempoServicio === "60 minutos") {
-            tiempoServicioMinutos = 60;
-          }
-
+        if (fechaPaseo) {
           const ahora = new Date();
-          const finPaseo = new Date(fechaPaseo.getTime() + tiempoServicioMinutos * 60000);
-          const tiempoRestanteMs = finPaseo.getTime() - ahora.getTime();
+          const diferenciaMs = fechaPaseo.getTime() - ahora.getTime();
 
-          if (tiempoRestanteMs <= 0 && paseo.fields.Estado == "Esperando finalizacion") {
-            console.log(`✅ El paseo ya terminó hace ${Math.abs(Math.floor(tiempoRestanteMs / 60000))} minutos.`);
-            await updatePaseo(paseo.id, { Estado: "Esperando finalizacion de Pawwer" });
-            await TEMPLATE_finalizar_paseo_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"][0], {
-              nombrePawwer: paseo.fields["Nombre pawwer"] || "Pawwer",
-              nombrePerrito: paseo.fields.Perro || "tu perrito",
-            });
-          } else {
-            console.log(`🕒 El paseo está en curso. Faltan ${Math.ceil(tiempoRestanteMs / 60000)} minutos para que termine.`);
-          }
+          if (diferenciaMs < 0) {
+            const minutos = Math.floor(diferenciaMs / (1000 * 60)) % 60;
+            const horas = Math.floor(diferenciaMs / (1000 * 60 * 60));
 
-          console.log("🗓️ Tiempo del paseo " + paseo.id + ": " + tiempoServicioMinutos + " minutos");
-        }
+            const totalMinutos = Math.floor(diferenciaMs / (1000 * 60));
 
-        else {
-          const minutos = Math.floor(diferenciaMs / (1000 * 60)) % 60;
-          const horas = Math.floor(diferenciaMs / (1000 * 60 * 60));
+            //EN MENOS DE UN HORA
+            if (totalMinutos <= 60 && paseo.fields.Estado == "Por realizarse") {
+              try {
+                await updatePaseo(paseo.id, { Estado: "Por realizarse en 1 hora" });
+                console.log(`Cliente ${paseo.fields.Celular}`);
+                console.log(`Pawwer ${paseo.fields['Numero de teléfono (from Pawwer)'][0]}`);
 
-          const totalMinutos = Math.floor(diferenciaMs / (1000 * 60));
+                //Plantilla de recordatorio cliente
+                await TEMPLATE_recordatorio_paseo_cliente(paseo.fields.Celular, {
+                  nombreCliente: paseo.fields["Nombre cliente"] || "Cliente",
+                  nombrePerrito: paseo.fields.Perro || "tu perrito",
+                  fecha: paseo.fields.Fecha || "No definida",
+                  hora: paseo.fields.Hora || "No definida",
+                  calle: (paseo.fields.Direccion || "").split(" – ")[0] || "No definida",
+                  colonia: (paseo.fields.Direccion || "").split(" – ")[1] || "No definida",
+                  duracion: paseo.fields.TiempoServicio || "No definido",
+                });
 
-          //EN MENOS DE UN HORA
-          if (totalMinutos <= 60 && paseo.fields.Estado == "Por realizarse") {
-            try {
-              await updatePaseo(paseo.id, { Estado: "Por realizarse en 1 hora" });
-              console.log(`Cliente ${paseo.fields.Celular}`);
-              console.log(`Pawwer ${paseo.fields['Numero de teléfono (from Pawwer)'][0]}`);
+                //Plantilla de recordatorio pawwer
+                const [calle = "No definida", colonia = "No definida"] = (paseo.fields.Direccion || "").split(" – ");
 
-              //Plantilla de recordatorio cliente
-              await TEMPLATE_recordatorio_paseo_cliente(paseo.fields.Celular, {
-                nombreCliente: paseo.fields["Nombre cliente"] || "Cliente",
-                nombrePerrito: paseo.fields.Perro || "tu perrito",
-                fecha: paseo.fields.Fecha || "No definida",
-                hora: paseo.fields.Hora || "No definida",
-                calle: (paseo.fields.Direccion || "").split(" – ")[0] || "No definida",
-                colonia: (paseo.fields.Direccion || "").split(" – ")[1] || "No definida",
-                duracion: paseo.fields.TiempoServicio || "No definido",
-              });
+                await TEMPLATE_recordatorio_paseo_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"]?.[0] || "", {
+                  nombrePawwer: paseo.fields["Nombre pawwer"] || "Pawwer",
+                  nombrePerrito: paseo.fields.Perro || "tu perrito",
+                  calle,
+                  colonia,
+                  fecha: paseo.fields.Fecha || "No definida",
+                  hora: paseo.fields.Hora || "No definida",
+                  duracion: paseo.fields.TiempoServicio || "No definido",
+                });
 
-              //Plantilla de recordatorio pawwer
-              const [calle = "No definida", colonia = "No definida"] = (paseo.fields.Direccion || "").split(" – ");
-
-              await TEMPLATE_recordatorio_paseo_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"]?.[0] || "", {
-                nombrePawwer: paseo.fields["Nombre pawwer"] || "Pawwer",
-                nombrePerrito: paseo.fields.Perro || "tu perrito",
-                calle,
-                colonia,
-                fecha: paseo.fields.Fecha || "No definida",
-                hora: paseo.fields.Hora || "No definida",
-                duracion: paseo.fields.TiempoServicio || "No definido",
-              });
-
-              
-              console.log(`⏰ Estado actualizado a "En menos de 1 hora" para paseo ID ${paseo.id}`);
-            } 
-            catch (error) {
-              console.error(`❌ Error al actualizar estado del paseo ${paseo.id}:`, error);
-            }
-          }
-
-          //YA VA A LLEGAR
-          else if (totalMinutos <= 10 && paseo.fields.Estado == "Por realizarse en 1 hora") {
-            try {
-              await updatePaseo(paseo.id, { Estado: "Esperando Pawwer" });
-              console.log(`⏳ Estado actualizado a "Esperando Pawwer" para paseo ID ${paseo.id}`);
-
-              const pawwerTelefono = Array.isArray(paseo.fields.Pawwer) && paseo.fields.Pawwer.length > 0
-              ? paseo.fields.Pawwer[0]
-              : null;
-
-              const nombrePawwer = "Pawwer";
-              const nombrePerrito = paseo.fields.Perro || "tu perrito";
-
-              if (pawwerTelefono) {
-                await TEMPLATE_llegada_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"][0], { nombrePawwer, nombrePerrito });
-                console.log(`✅ Plantilla llegada_pawwer enviada a Pawwer ${pawwerTelefono}`);
-              } else {
-                console.warn(`⚠️ No se encontró teléfono del Pawwer para paseo ID ${paseo.id}`);
+                
+                console.log(`⏰ Estado actualizado a "En menos de 1 hora" para paseo ID ${paseo.id}`);
+              } 
+              catch (error) {
+                console.error(`❌ Error al actualizar estado del paseo ${paseo.id}:`, error);
               }
-            } catch (error) {
-              console.error(`❌ Error al actualizar estado o enviar plantilla llegada_pawwer:`, error);
+            }
+
+            //YA VA A LLEGAR
+            else if (totalMinutos <= 10 && paseo.fields.Estado == "Por realizarse en 1 hora") {
+              try {
+                await updatePaseo(paseo.id, { Estado: "Esperando Pawwer" });
+                console.log(`⏳ Estado actualizado a "Esperando Pawwer" para paseo ID ${paseo.id}`);
+
+                const pawwerTelefono = Array.isArray(paseo.fields.Pawwer) && paseo.fields.Pawwer.length > 0
+                ? paseo.fields.Pawwer[0]
+                : null;
+
+                const nombrePawwer = "Pawwer";
+                const nombrePerrito = paseo.fields.Perro || "tu perrito";
+
+                if (pawwerTelefono) {
+                  await TEMPLATE_llegada_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"][0], { nombrePawwer, nombrePerrito });
+                  console.log(`✅ Plantilla llegada_pawwer enviada a Pawwer ${pawwerTelefono}`);
+                } else {
+                  console.warn(`⚠️ No se encontró teléfono del Pawwer para paseo ID ${paseo.id}`);
+                }
+              } catch (error) {
+                console.error(`❌ Error al actualizar estado o enviar plantilla llegada_pawwer:`, error);
+              }
             }
           }
-
-
         }
-      } else {
-        console.warn(`⚠️ No se pudo interpretar la fecha/hora del paseo.`);
+        
+      }
+      else if (paseo.fields.Estado === "Esperando finalizacion de Pawwer") {
+        console.log(`Paseo ${paseo.id} está en estado "Esperando finalizacion de Pawwer", no se requiere acción inmediata.`);
       }
     }
 }
@@ -692,6 +663,8 @@ const init = addKeyword(EVENTS.WELCOME)
                 TiempoServicio: paseo.fields.TiempoServicio,
                 Fecha: paseo.fields.Fecha,
                 Hora: paseo.fields.Hora,
+                HoraInicio: paseo.fields.HoraInicio,
+                HoraFin: DateTime.now().setZone("America/Bogota").toISO(),
                 Precio: paseo.fields.Precio,
                 Estado: "Finalizado",
                 Pawwer: paseo.fields.Pawwer,
