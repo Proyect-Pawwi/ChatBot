@@ -424,6 +424,10 @@ async function checkLEADS() {
           const duracion = record.fields.TiempoServicio || "No definido";
           const precio = `$${record.fields.Precio || 0}`;
 
+          const pawwerNumeros = record.fields['Numero de teléfono (from Pawwer)'];
+          const pawwerName = record.fields['Nombre completo (from Pawwer)'] || 'Pawwer';
+          const pawwerNumero = Array.isArray(pawwerNumeros) ? pawwerNumeros[0] : null;
+
           let pawwerNombre = "Pawwer"; // valor por defecto
 
           const pawwerField = record.fields["Nombre completo (from Pawwer)"];
@@ -433,8 +437,8 @@ async function checkLEADS() {
             pawwerNombre = pawwerField;
           }
 
-          await sendText(record.fields.Celular, `Tu paseo ha sido confirmado y un Pawwer ha sido asignado. \nNombre del paseador: ${pawwerNombre}\nFecha:${Fecha}\n${Hora}\n\nSi quieres modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
-          
+          await sendText(record.fields.Celular, `Tu paseo ha sido confirmado y un Pawwer ha sido asignado. \nFecha:${Fecha}\nHora: ${Hora}\n\nSi quieres modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
+          await sendText(pawwerNumero, `Tienes una nueva solicitud de paseo asignada para el ${Fecha} a las ${Hora}. Por favor, revisa los detalles y prepárate para brindar un excelente servicio. ¡Gracias por ser parte de nuestro equipo! 🐾`);
 
           await TEMPLATE_confirmacion_paseo_cliente(record.fields.Celular, {
             nombreCliente: String(nombreCliente),
@@ -447,16 +451,6 @@ async function checkLEADS() {
             precio: String(precio),
             pawwer: String(pawwerNombre),
           });
-
-
-          // Obtener número del Pawwer desde el campo correcto
-          const pawwerNumeros = record.fields['Numero de teléfono (from Pawwer)'];
-          const pawwerName = record.fields['Nombre completo (from Pawwer)'] || 'Pawwer';
-          const pawwerNumero = Array.isArray(pawwerNumeros) ? pawwerNumeros[0] : null;
-
-          
-          console.log(pawwerNumero);
-          
 
           if (pawwerNumero) {
             const mensajePawwer = `¡Hola ${pawwerName}! 🐾\nTienes una nueva solicitud asignada para el ${Fecha} a las ${Hora}.`;
