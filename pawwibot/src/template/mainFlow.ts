@@ -718,7 +718,9 @@ const init = addKeyword(EVENTS.WELCOME)
       //Cobtener el primer paseo donde el celular sea igual y el estado sea agendado
       const paseoAgendado = await getPaseos();
       for (const paseo of paseoAgendado.records) {
-        if (paseo.fields.Celular == ctx.fro) {
+        console.log(paseo.fields.Celular == ctx.from);
+        
+        if (paseo.fields.Celular == ctx.from) {
           await updatePaseo(paseo.id, { Estado: "Cancelado" });
           console.log(`✅ Paseo cancelado para el usuario ${ctx.from}`);
         }
