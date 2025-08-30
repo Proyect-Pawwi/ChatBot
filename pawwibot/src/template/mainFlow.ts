@@ -9,8 +9,8 @@ import { log } from "node:console";
 import { createCompletado, getCompletados } from "../services/airtable-completados";
 import { DateTime } from "luxon";
 import { crearPawwerActivo } from "~/services/airtable-pawwersActivos";
-import { getPaso4, updatePaso4 } from "~/services/registroPawwers";
 import { send } from "node:process";
+import { getContrato, updateContrato } from "~/services/registroPawwers";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -162,17 +162,18 @@ function esPasado(fechaDDMM: string, horaHHmm: string): boolean {
 }
 
 
-async function activarPawwersPendientesPaso4() {
+async function activarPawwersPendientesContrato() {
   try {
-    // 🔍 Buscar registros en Paso 4 con condición personalizada
-    const response = await getPaso4('{Activar} = "Activar"'); // <-- o el campo que uses de bandera
+    // 🔍 Buscar registros en Contrato donde Activar = "activar"
+    const formula = '{Activar}="Activar"';
+    const response = await getContrato(formula);
 
     if (response.records.length === 0) {
-      console.log("✅ No hay pawwers pendientes por activar en Paso 4.");
+      console.log("✅ No hay pawwers con Activar = 'activar' en Contrato.");
       return;
     }
 
-    console.log(`🔄 Encontrados ${response.records.length} pawwers en Paso 4 para activar.`);
+    console.log(`🔄 Encontrados ${response.records.length} pawwers en Contrato para activar.`);
 
     for (const record of response.records) {
       const { id, fields } = record;
@@ -181,7 +182,7 @@ async function activarPawwersPendientesPaso4() {
       const cedula = fields["Cedula"];
       const telefono = fields["Telefono"];
 
-      // 1. Crear registro en Pawwers Activos (ajusta los nombres a esa tabla)
+      // 1. Crear registro en Pawwers Activos
       await crearPawwerActivo({
         "Nombre completo": nombre,
         "Cedula de ciudadanía": cedula,
@@ -191,17 +192,19 @@ async function activarPawwersPendientesPaso4() {
 
       console.log(`📥 Registrado en Pawwers Activos: ${nombre}`);
 
-      // 2. Actualizar el registro en Paso 4 para marcarlo como activado
-      await updatePaso4(id, {
-        "Activar": "Activado", // <-- asegúrate que exista este campo en Paso 4
+      // 2. Actualizar el registro en Contrato → marcar como "Activado"
+      await updateContrato(id, {
+        Activar: "Activado",
       });
 
-      console.log(`✅ Pawwer activado en Paso 4: ${nombre} (${id})`);
+      console.log(`✅ Pawwer activado en Contrato: ${nombre} (${id})`);
     }
   } catch (error) {
-    console.error("❌ Error al activar pawwers desde Paso 4:", error);
+    console.error("❌ Error al activar pawwers automáticamente desde Contrato:", error);
   }
 }
+
+
 
 
 
@@ -257,7 +260,7 @@ const timePaseos = async () => {
 const timeActivarPendientes = async () => {
   try {
     console.log("Time activar");
-    activarPawwersPendientesPaso4()
+    activarPawwersPendientesContrato()
     
   } catch (error) {
     console.error("❌ Error al consultar los leads en Airtable:", error);
@@ -388,87 +391,6 @@ async function checkPaseos() {
         }
       }
     }
-
-
-          /*
-          if (diferenciaMs < 0) {
-            const minutos = Math.floor(diferenciaMs / (1000 * 60)) % 60;
-            const horas = Math.floor(diferenciaMs / (1000 * 60 * 60));
-
-            const totalMinutos = Math.floor(diferenciaMs / (1000 * 60));
-
-            //EN MENOS DE UN HORA
-            if (totalMinutos <= 60 && paseo.fields.Estado == "Por realizarse") {
-              try {
-                await updatePaseo(paseo.id, { Estado: "Por realizarse en 1 hora" });
-                console.log(`Cliente ${paseo.fields.Celular}`);
-                console.log(`Pawwer ${paseo.fields['Numero de teléfono (from Pawwer)'][0]}`);
-
-                //Plantilla de recordatorio cliente
-                await TEMPLATE_recordatorio_paseo_cliente(paseo.fields.Celular, {
-                  nombreCliente: paseo.fields["Nombre cliente"] || "Cliente",
-                  nombrePerrito: paseo.fields.Perro || "tu perrito",
-                  fecha: paseo.fields.Fecha || "No definida",
-                  hora: paseo.fields.Hora || "No definida",
-                  calle: (paseo.fields.Direccion || "").split(" – ")[0] || "No definida",
-                  colonia: (paseo.fields.Direccion || "").split(" – ")[1] || "No definida",
-                  duracion: paseo.fields.TiempoServicio || "No definido",
-                });
-
-                //Plantilla de recordatorio pawwer
-                const [calle = "No definida", colonia = "No definida"] = (paseo.fields.Direccion || "").split(" – ");
-
-                await TEMPLATE_recordatorio_paseo_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"]?.[0] || "", {
-                  nombrePawwer: paseo.fields["Nombre pawwer"] || "Pawwer",
-                  nombrePerrito: paseo.fields.Perro || "tu perrito",
-                  calle,
-                  colonia,
-                  fecha: paseo.fields.Fecha || "No definida",
-                  hora: paseo.fields.Hora || "No definida",
-                  duracion: paseo.fields.TiempoServicio || "No definido",
-                });
-
-                
-                console.log(`⏰ Estado actualizado a "En menos de 1 hora" para paseo ID ${paseo.id}`);
-              } 
-              catch (error) {
-                console.error(`❌ Error al actualizar estado del paseo ${paseo.id}:`, error);
-              }
-            }
-
-            //YA VA A LLEGAR
-            else if (totalMinutos <= 10 && paseo.fields.Estado == "Por realizarse en 1 hora") {
-              try {
-                await updatePaseo(paseo.id, { Estado: "Esperando Pawwer" });
-                console.log(`⏳ Estado actualizado a "Esperando Pawwer" para paseo ID ${paseo.id}`);
-
-                const pawwerTelefono = Array.isArray(paseo.fields.Pawwer) && paseo.fields.Pawwer.length > 0
-                ? paseo.fields.Pawwer[0]
-                : null;
-
-                const nombrePawwer = "Pawwer";
-                const nombrePerrito = paseo.fields.Perro || "tu perrito";
-
-                if (pawwerTelefono) {
-                  await TEMPLATE_llegada_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"][0], { nombrePawwer, nombrePerrito });
-                  console.log(`✅ Plantilla llegada_pawwer enviada a Pawwer ${pawwerTelefono}`);
-                } else {
-                  console.warn(`⚠️ No se encontró teléfono del Pawwer para paseo ID ${paseo.id}`);
-                }
-              } catch (error) {
-                console.error(`❌ Error al actualizar estado o enviar plantilla llegada_pawwer:`, error);
-              }
-            }
-          }
-        }
-        
-      }
-      //Este campo revisara la hora de inicio, y marcara esperando finalizacion de pawwer considerando el tiempo del servicio
-      else if (paseo.fields.Estado === "Esperando finalizacion") {
-        console.log(`Paseo ${paseo.id} está en estado "Esperando finalizacion de Pawwer", no se requiere acción inmediata.`);
-      }
-    }
-      */
 }
 
 async function checkLEADS() {
@@ -612,18 +534,17 @@ async function checkLEADS() {
 
 setTimeout(() => {
   timeLead();
-  setInterval(timeLead, 12 * 1000);
+  setInterval(timeLead, 17 * 1000);
 },0); 
 
 setTimeout(() => {
   timePaseos();
-  setInterval(timePaseos, 15 * 1000);
+  setInterval(timePaseos, 19 * 1000);
 }, 10000); 
-
 
 setTimeout(() => {
   timeActivarPendientes();
-  setInterval(timeActivarPendientes, 120 * 1000);
+  setInterval(timeActivarPendientes, 300 * 1000);
 }, 5000);
 
 
