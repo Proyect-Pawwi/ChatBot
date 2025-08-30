@@ -520,6 +520,11 @@ async function checkLEADS() {
             pawwerNombre = pawwerField;
           }
 
+          console.log("Numeros del pawwer");
+          console.log(pawwerNumeros);
+          
+          
+
           await sendText(record.fields.Celular, `Tu paseo ha sido confirmado y un Pawwer ha sido asignado. \nFecha:${Fecha}\nHora: ${Hora}\n\nSi quieres modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
           await sendText(pawwerNumero, `Tienes una nueva solicitud de paseo asignada para el ${Fecha} a las ${Hora}. Por favor, revisa los detalles y prepárate para brindar un excelente servicio. ¡Gracias por ser parte de nuestro equipo! 🐾`);
 
