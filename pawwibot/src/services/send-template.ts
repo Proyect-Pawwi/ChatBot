@@ -508,7 +508,6 @@ export async function TEMPLATE_agendar_resumen_paseo(
   {
     dogName = 'tu perrito',
     calle = 'Calle no especificada',
-    colonia = 'Colonia no especificada',
     fecha = 'Fecha no definida',
     hora = 'Hora no definida',
     tipoPaseo = 'Tipo no definido',
@@ -532,7 +531,6 @@ export async function TEMPLATE_agendar_resumen_paseo(
           parameters: [
             { type: "text", text: dogName },
             { type: "text", text: calle },
-            { type: "text", text: colonia },
             { type: "text", text: fecha },
             { type: "text", text: hora },
             { type: "text", text: tipoPaseo },
