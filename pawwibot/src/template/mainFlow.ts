@@ -4,7 +4,7 @@ import { sendText, sendButtons } from "../services/send-text";
 
 import { getMongoClient } from '../services/mongo';
 import { createLead, deleteLead, getLeads, updateLead } from "../services/airtable-leads";
-import { createPaseo, getPaseoByPawwerTelefono, getPaseoByPawwerTelefonoActive, getPaseos, updatePaseo } from "../services/airtable-paseos";
+import { createPaseo, getPaseoByPawwerTelefono, getPaseoByPawwerTelefonoActive, getPaseoByClienteTelefonoActive, getPaseos, updatePaseo } from "../services/airtable-paseos";
 import { log } from "node:console";
 import { createCompletado, getCompletados } from "../services/airtable-completados";
 import { DateTime } from "luxon";
@@ -571,15 +571,6 @@ async function checkLEADS() {
             pawwer: String(pawwerNombre),
           });
 
-          if (pawwerNumero) {
-            const mensajePawwer = `¡Hola ${pawwerName}! 🐾\nTienes una nueva solicitud asignada para el ${Fecha} a las ${Hora}.`;
-            await sendText(pawwerNumero, mensajePawwer);
-            
-            console.log(`📤 Mensaje enviado al Pawwer ${pawwerNumero}`);
-          } else {
-            console.warn(`⚠️ No se pudo enviar mensaje al Pawwer: número no disponible`);
-          }
-
           const nuevoPaseoData = {
             FechaCreacion: new Date().toISOString(),
             Celular: record.fields.Celular,
@@ -839,6 +830,15 @@ const init = addKeyword(EVENTS.WELCOME)
         else if (usuario.tipoUsuario == "support") {
           await sendText(ctx.from, `Hola ${nombre}, si lees esto es porque eres de soporte`);
           return endFlow();
+        }
+        else if(usuario.tipoUsuario == "cliente") {
+          const paseo = await getPaseoByClienteTelefonoActive(ctx.from);
+
+          if (paseo) {
+            await sendText(ctx.from, `Tienes un paseo agendado para el ${paseo.fields.Fecha} a las ${paseo.fields.Hora}. Si deseas modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
+            console.log('❌ No se encontró ningún paseo para este Pawwer con estado "Esperando Pawwer"');
+            return;
+          }
         }
       }
 

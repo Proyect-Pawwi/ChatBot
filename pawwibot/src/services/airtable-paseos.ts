@@ -131,6 +131,30 @@ export async function getPaseoByPawwerTelefonoActive(pawwerTelefono: string): Pr
   return paseo;
 }
 
+export async function getPaseoByClienteTelefonoActive(pawwerTelefono: string): Promise<AirtableRecordPaseo | null> {
+  // La fórmula Airtable para buscar registros donde:
+  // - El número está en "Numero de teléfono (from Pawwer)"
+  // - El Estado NO es "Finalizado"
+  // - El Estado NO es "Cancelado"
+  // Es decir, los paseos activos o en proceso.
+  const formula = `AND(
+    SEARCH('${pawwerTelefono}', ARRAYJOIN({Celular})),
+    NOT({Estado} = 'Finalizado'),
+    NOT({Estado} = 'Cancelado')
+  )`;
+
+  const res = await getPaseos(formula, 1); // Solo uno, el primero que cumpla
+
+  if (res.records.length === 0) {
+    console.log("❌ No se encontró un paseo activo para ese Pawwer");
+    return null;
+  }
+
+  const paseo = res.records[0];
+  console.log("✅ Paseo activo encontrado:", paseo.id);
+  return paseo;
+}
+
 
 
 // Obtener Paseo por ID
