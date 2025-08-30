@@ -696,6 +696,7 @@ const init = addKeyword(EVENTS.WELCOME)
           else if (paseo.fields.Estado === "Esperando perro") {
             if (ctx.body !== "Recibido") {
               await sendText(ctx.from, "Por favor, espera a que el cliente te entregue al perrito antes de confirmar tu llegada. Escribe \"Recibido\" cuando tengas al perrito contigo.");
+              await TEMPLATE_recibir_perro_pawwer(ctx.from, { nombrePerrito });
               return endFlow();
             }
             //actualuizar horaInicio y estado a esperando strava
