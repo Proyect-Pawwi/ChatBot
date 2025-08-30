@@ -137,6 +137,30 @@ function parseFechaHora(fecha: string, hora: string): Date | null {
   return parsed.isValid ? parsed.toJSDate() : null;
 }
 
+function esPasado(fechaDDMM: string, horaHHmm: string): boolean {
+  const [dia, mes] = fechaDDMM.split("/").map(Number);
+  const [hora, minuto] = horaHHmm.split(":").map(Number);
+
+  // Construyo la fecha con año actual
+  const ahora = DateTime.now().setZone("America/Bogota");
+  const fechaInput = DateTime.fromObject(
+    {
+      year: ahora.year,
+      month: mes,
+      day: dia,
+      hour: hora,
+      minute: minuto,
+    },
+    { zone: "America/Bogota" }
+  );
+
+  if (fechaInput < ahora) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 
 async function activarPawwersPendientesPaso4() {
   try {
@@ -461,6 +485,10 @@ async function checkLEADS() {
       
 
       const errores: string[] = [];
+
+      if(esPasado(Fecha, Hora)) {
+        errores.push("La fecha y hora ya han pasado");
+      }
 
       // Validar Fecha: formato DD/MM
       if (!/^\d{1,2}\/\d{1,2}$/.test(Fecha)) {
@@ -1267,6 +1295,8 @@ Precio: $${data.valor || 0}`);
       return gotoFlow(agendarResumenPaseo);
     }
   });
+
+
 
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
