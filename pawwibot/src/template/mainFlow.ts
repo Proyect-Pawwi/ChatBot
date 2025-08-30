@@ -534,17 +534,17 @@ async function checkLEADS() {
 
 setTimeout(() => {
   timeLead();
-  setInterval(timeLead, 17 * 1000);
+  setInterval(timeLead, 29 * 1000);
 },0); 
 
 setTimeout(() => {
   timePaseos();
-  setInterval(timePaseos, 19 * 1000);
+  setInterval(timePaseos, 60 * 1000);
 }, 10000); 
 
 setTimeout(() => {
   timeActivarPendientes();
-  setInterval(timeActivarPendientes, 300 * 1000);
+  setInterval(timeActivarPendientes, 6000 * 1000);
 }, 5000);
 
 
