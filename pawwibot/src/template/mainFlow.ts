@@ -694,10 +694,7 @@ const init = addKeyword(EVENTS.WELCOME)
             return endFlow();
           }
           else if (paseo.fields.Estado === "Esperando perro") {
-            console.log(ctx.payload);
-            console.log(ctx.body);
-            
-            if (ctx.body !== "Recibido") {
+            if (ctx.payload !== "INICIAR_PASEO") {
               await TEMPLATE_recibir_perro_pawwer(ctx.from, { nombrePerrito });
               return endFlow();
             }
