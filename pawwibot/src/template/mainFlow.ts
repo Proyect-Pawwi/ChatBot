@@ -477,6 +477,11 @@ async function checkLEADS() {
         errores.push("No hay Pawwer asignado");
       }
 
+      //Si la fecha y la hora ya pasaron
+      if (new Date(`${Fecha} ${Hora}`) < new Date()) {
+        errores.push("La fecha y hora ya han pasado");
+      }
+
       if (errores.length > 0) {
         console.warn(`⚠️ Registro inválido (ID: ${record.id}) para celular ${Celular}`); //TODO
         errores.forEach((e) => console.warn(` - ${e}`));
@@ -524,7 +529,7 @@ async function checkLEADS() {
             pawwerNombre = pawwerField;
           }
 
-          await sendText(record.fields.Celular, `Tu paseo ha sido confirmado y un Pawwer ha sido asignado. \nFecha:${Fecha}\nHora: ${Hora}\n\nSi quieres modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
+          //await sendText(record.fields.Celular, `Tu paseo ha sido confirmado y un Pawwer ha sido asignado. \nFecha:${Fecha}\nHora: ${Hora}\n\nSi quieres modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
           await sendText(pawwerNumero, `Tienes una nueva solicitud de paseo asignada para el ${Fecha} a las ${Hora}. Por favor, revisa los detalles y prepárate para brindar un excelente servicio. ¡Gracias por ser parte de nuestro equipo! 🐾`);
 
           await TEMPLATE_confirmacion_paseo_cliente(record.fields.Celular, {
