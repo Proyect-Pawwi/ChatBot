@@ -1253,7 +1253,7 @@ Precio: $${data.valor || 0}`);
       await sendText(ctx.from, `Por favor, vuelve a intentar agendar el paseo.`);
       return gotoFlow(init);
     } else {
-      await sendText(ctx.from, `Por favor, selecciona una opción válida.`);
+      await sendText(ctx.from, `Por favor, selecciona una opción válida. Si necesitas ayuda, contáctanos al numero de soporte +57 3332885462`);
       return gotoFlow(agendarResumenPaseo);
     }
   });
