@@ -619,16 +619,6 @@ const init = addKeyword(EVENTS.WELCOME)
     
     try {
 
-      await TEMPLATE_agendar_resumen_paseo(ctx.from, {
-      dogName:'No definido',     // {{1}}
-      calle:  'No definida', // {{2}}
-      fecha:  'No definida',    // {{3}}
-      hora: 'No definida',   // {{4}}
-      tipoPaseo: 'No definido', // {{5}}
-      precio: `$`,                    // {{6}}
-      metodoPago: 'No definido'          // {{7}}
-    });
-
       const client = await getMongoClient();
       const db = client.db("pawwi_bot");
       const usuarios = db.collection("usuarios");
