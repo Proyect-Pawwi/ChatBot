@@ -1,7 +1,21 @@
 import fetch from 'node-fetch';
+import { MongoClient, ObjectId } from 'mongodb';
 
 const AIRTABLE_BASE = 'https://api.airtable.com/v0/appSUDxkkNiojRXta/Leads';
 const AIRTABLE_TOKEN = process.env.AIRTABLE_TOKEN || process.env.airtableApiKey;
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017";
+const MONGO_DB = process.env.MONGO_DB || "pawwi";
+const MONGO_COLLECTION = "leads";
+
+// 🔗 Conexión MongoDB
+let client: MongoClient;
+async function getMongoCollection() {
+  if (!client) {
+    client = new MongoClient(MONGO_URI);
+    await client.connect();
+  }
+  return client.db(MONGO_DB).collection(MONGO_COLLECTION);
+}
 
 interface LeadFields {
   FechaCreacion: string;
@@ -40,6 +54,7 @@ interface AirtableDeleteResponse {
 
 // ✅ Crear Lead
 export async function createLead(fields: LeadFields): Promise<AirtableResponse> {
+  // 1) Crear en Airtable
   const res = await fetch(AIRTABLE_BASE, {
     method: 'POST',
     headers: {
@@ -55,11 +70,22 @@ export async function createLead(fields: LeadFields): Promise<AirtableResponse> 
     const error = await res.text();
     throw new Error(`Airtable error: ${error}`);
   }
+  const airtableResponse = await res.json() as AirtableResponse;
 
-  return res.json() as Promise<AirtableResponse>;
+  // 2) Guardar en MongoDB
+  const collection = await getMongoCollection();
+  for (const record of airtableResponse.records) {
+    await collection.updateOne(
+      { airtableId: record.id },
+      { $set: { airtableId: record.id, ...record.fields, createdTime: record.createdTime } },
+      { upsert: true }
+    );
+  }
+
+  return airtableResponse;
 }
 
-// ✅ Obtener Leads (con filtro opcional)
+// ✅ Obtener Leads
 export async function getLeads(
   filterByFormula?: string,
   maxRecords = 100,
@@ -86,10 +112,22 @@ export async function getLeads(
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableResponse>;
+  const airtableResponse = await res.json() as AirtableResponse;
+
+  // 🔄 Sincronizar en Mongo
+  const collection = await getMongoCollection();
+  for (const record of airtableResponse.records) {
+    await collection.updateOne(
+      { airtableId: record.id },
+      { $set: { airtableId: record.id, ...record.fields, createdTime: record.createdTime } },
+      { upsert: true }
+    );
+  }
+
+  return airtableResponse;
 }
 
-// ✅ Obtener Lead por ID (nuevo)
+// ✅ Obtener Lead por ID
 export async function getLeadById(recordId: string): Promise<AirtableRecord> {
   const url = `${AIRTABLE_BASE}/${recordId}`;
   const res = await fetch(url, {
@@ -104,7 +142,17 @@ export async function getLeadById(recordId: string): Promise<AirtableRecord> {
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableRecord>;
+  const record = await res.json() as AirtableRecord;
+
+  // 🔄 Guardar en Mongo
+  const collection = await getMongoCollection();
+  await collection.updateOne(
+    { airtableId: record.id },
+    { $set: { airtableId: record.id, ...record.fields, createdTime: record.createdTime } },
+    { upsert: true }
+  );
+
+  return record;
 }
 
 // ✅ Actualizar Lead
@@ -125,7 +173,18 @@ export async function updateLead(recordId: string, fields: Partial<LeadFields>):
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableResponse>;
+  const airtableResponse = await res.json() as AirtableResponse;
+
+  // 🔄 Actualizar en Mongo
+  const collection = await getMongoCollection();
+  for (const record of airtableResponse.records) {
+    await collection.updateOne(
+      { airtableId: record.id },
+      { $set: { ...record.fields } }
+    );
+  }
+
+  return airtableResponse;
 }
 
 // ✅ Eliminar Lead
@@ -144,5 +203,11 @@ export async function deleteLead(recordId: string): Promise<AirtableDeleteRespon
     throw new Error(`Airtable error: ${error}`);
   }
 
-  return res.json() as Promise<AirtableDeleteResponse>;
+  const airtableResponse = await res.json() as AirtableDeleteResponse;
+
+  // 🔄 Eliminar en Mongo
+  const collection = await getMongoCollection();
+  await collection.deleteOne({ airtableId: recordId });
+
+  return airtableResponse;
 }
