@@ -694,8 +694,10 @@ const init = addKeyword(EVENTS.WELCOME)
             return endFlow();
           }
           else if (paseo.fields.Estado === "Esperando perro") {
+            console.log(ctx.payload);
+            console.log(ctx.body);
+            
             if (ctx.body !== "Recibido") {
-              await sendText(ctx.from, "Por favor, espera a que el cliente te entregue al perrito antes de confirmar tu llegada. Escribe \"Recibido\" cuando tengas al perrito contigo.");
               await TEMPLATE_recibir_perro_pawwer(ctx.from, { nombrePerrito });
               return endFlow();
             }
