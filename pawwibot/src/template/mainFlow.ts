@@ -1175,14 +1175,15 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
     const selectedDog = data.perroSeleccionado; // Get the selected dog object for easier access
 
     await TEMPLATE_agendar_resumen_paseo(ctx.from, {
-      dogName: selectedDog?.nombre || 'No definido', // Use .nombre
-      calle: data.Direccion?.split(' – ')[0] || 'No definida',
-      fecha: data.diaSeleccionado || 'No definida',
-      hora: data.horaSeleccionada || 'No definida',
-      tipoPaseo: data.agendamientoSeleccionado || 'No definido',
-      precio: `$${data.valor || 0}`,
-      metodoPago: data.metodoPago || 'No definido'
+      dogName: selectedDog?.nombre || 'No definido',     // {{1}}
+      calle: data.Direccion?.split(' – ')[0] || 'No definida', // {{2}}
+      fecha: data.diaSeleccionado || 'No definida',    // {{3}}
+      hora: data.horaSeleccionada || 'No definida',   // {{4}}
+      tipoPaseo: data.agendamientoSeleccionado || 'No definido', // {{5}}
+      precio: `$${data.valor || 0}`,                    // {{6}}
+      metodoPago: data.metodoPago || 'No definido'          // {{7}}
     });
+
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { endFlow, gotoFlow }) => {
