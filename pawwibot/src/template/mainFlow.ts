@@ -534,7 +534,7 @@ async function checkLEADS() {
 
 setTimeout(() => {
   timeLead();
-  setInterval(timeLead, 29 * 1000);
+  setInterval(timeLead, 55 * 1000);
 },0); 
 
 setTimeout(() => {
