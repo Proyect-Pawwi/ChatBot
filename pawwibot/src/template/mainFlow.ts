@@ -553,12 +553,15 @@ setTimeout(() => {
 */
 
 const init = addKeyword(EVENTS.WELCOME)
+
   .addAction(async (ctx, { endFlow, gotoFlow }) => {
     if (!ctx.body || typeof ctx.body !== "string") {
       console.log(`[IGNORADO] Mensaje inválido o sin texto. Tipo: ${ctx.messageType}`);
       return endFlow();
     }
 
+    console.log(`[MENSAJE] Contenido recibido: "${ctx.body}"`);
+    
     const nombre = ctx.pushName || "Usuario";
     console.log(`[INIT] Usuario ${nombre} ha iniciado el flujo. Número: ${ctx.from}`);
     const textoBoton = ctx.body;
@@ -598,12 +601,15 @@ const init = addKeyword(EVENTS.WELCOME)
           //Mongo
           const paseosMongo = getPaseosPorPawwer(parseInt(ctx.from));
           console.log("Paseos en Mongo:", paseosMongo);
+          console.log("Usuario es Pawwer, revisando paseos activos...");
+          
           
 
           //Airtable
           const paseo = await getPaseoByPawwerTelefonoActive(ctx.from);
 
           if (!paseo) {
+            console.log("Paseos en Mongo:", paseosMongo);
             const campo = 'Ganancia Pawwer';
             const gananciasPawwer = await sumarCampoPorCelular(ctx.from, campo);
             await sendText(ctx.from, `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias. Si crees que es un error, por favor contacta al soporte. +57 3332885462`);
@@ -1251,7 +1257,7 @@ const checkLeadsMongo = async () => {
   }
 };
 
-/*
+
 setTimeout(() => {
   setInterval(checkLeadsMongo, 5 * 1000);
 }, 5000);
@@ -1263,5 +1269,5 @@ setTimeout(() => {
 setTimeout(() => {
   setInterval(revisarFinalizacionPaseos, 8 * 1000);
 }, 5000);
-*/
+
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
