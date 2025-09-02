@@ -370,6 +370,7 @@ export async function cancelarPaseosPorCelular(celular: number) {
       );
     }
   }
+  await sendText(celular.toString(), "Has cancelado el agendamiento. Si deseas agendar otro paseo, por favor inicia de nuevo.");
 
   console.log(`✅ ${result.modifiedCount} paseo(s) cancelado(s) para el celular ${celular}`);
   return result.modifiedCount;

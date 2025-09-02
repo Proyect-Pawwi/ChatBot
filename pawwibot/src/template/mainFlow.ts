@@ -806,10 +806,11 @@ const init = addKeyword(EVENTS.WELCOME)
           await updatePaseo(paseo.id, { Estado: "Cancelado" });
           await sendText('573332885462', `El usuario ${ctx.from} ha cancelado su paseo agendado.`);
           await sendText(paseo.fields["Numero de teléfono (from Pawwer)"]?.[0] || "", `El dueño de ${paseo.fields.Perro} ha cancelado su paseo agendado.`);
+          await sendText(ctx.from, "Has cancelado el agendamiento. Si deseas agendar otro paseo, por favor inicia de nuevo.");
           console.log(`✅ Paseo cancelado para el usuario ${ctx.from}`);
         }
       }
-      await sendText(ctx.from, "Has cancelado el agendamiento. Si deseas agendar otro paseo, por favor inicia de nuevo.");
+      
       return endFlow();
     }
 
