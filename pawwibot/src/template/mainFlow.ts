@@ -598,15 +598,30 @@ const init = addKeyword(EVENTS.WELCOME)
         console.log("✅ Usuario recuperado de Mongo:", usuario);
 
         if (usuario.tipoUsuario == "pawwer") {
-          //Mongo
-          (async () => {
-            const paseosMongo = await revisarPaseosPawwer(ctx.from);
-            console.log("Paseos en Mongo:", paseosMongo);
-            console.log("Usuario es Pawwer, revisando paseos activos...");
-          })();
 
           //Airtable
           const paseo = await getPaseoByPawwerTelefonoActive(ctx.from);
+          
+          (async () => {
+            const pawwerCtx = {
+              from: "573023835142"
+            };
+
+            // Revisar paseos en Mongo
+            const paseosMongo = await getPaseosPorPawwer(parseInt("573023835142"));
+
+            if ((paseosMongo.length === 0) && !paseo) {
+              const campo = 'Ganancia Pawwer';
+              const gananciasPawwer = await sumarCampoPorCelular("573023835142", campo);
+
+              await sendText(
+                "573023835142",
+                `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias. Si crees que es un error, por favor contacta al soporte. +57 3332885462`
+              );
+              console.log('❌ No se encontró ningún paseo para este Pawwer en Mongo ni en Airtable');
+              return;
+            }
+          })();
 
           if (!paseo) {
             const campo = 'Ganancia Pawwer';
@@ -1268,5 +1283,8 @@ setTimeout(() => {
 setTimeout(() => {
   setInterval(revisarFinalizacionPaseos, 8 * 1000);
 }, 5000);
+
+
+
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};

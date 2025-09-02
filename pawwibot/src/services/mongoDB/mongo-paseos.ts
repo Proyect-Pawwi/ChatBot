@@ -380,6 +380,8 @@ export async function cancelarPaseosPorCelular(celular: number) {
 
 // ---------- FUNCIÓN: Obtener todos los paseos de un pawwer ----------
 export async function getPaseosPorPawwer(celularPawwer: number) {
+  console.log("Obteniendo paseos para el pawwer con celular:", celularPawwer);
+  
   const col = await connect(paseosCollection);
 
   // Buscar todos los paseos donde CelularPawwer coincida
