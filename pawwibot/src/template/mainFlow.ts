@@ -1241,15 +1241,15 @@ const checkLeadsMongo = async () => {
 };
 
 setTimeout(() => {
-  setInterval(checkLeadsMongo, 5 * 1000);
+  setInterval(checkLeadsMongo, 50 * 1000);
 }, 5000);
 
 setTimeout(() => {
-  setInterval(actualizarEstadoPaseosProximos, 5 * 1000);
+  setInterval(actualizarEstadoPaseosProximos, 56 * 1000);
 }, 5000);
 
 setTimeout(() => {
-  setInterval(revisarFinalizacionPaseos, 5 * 1000);
+  setInterval(revisarFinalizacionPaseos, 60 * 1000);
 }, 5000);
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};

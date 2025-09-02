@@ -2,6 +2,7 @@ import { MongoClient, ObjectId, Collection } from "mongodb";
 import dotenv from "dotenv";
 import { Lead } from "./mongo-leads"; // importa la interfaz Lead
 import { getPawwerById } from "./mongo-pawwersActivos";
+import { TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
 
 dotenv.config();
 
@@ -130,15 +131,36 @@ export async function actualizarEstadoPaseosProximos() {
 
     let nuevoEstado = null;
 
-    if (diffMinutes <= 10 && diffMinutes > 0) {
+    if (diffMinutes <= 10 && diffMinutes > 0 && paseo.Estado !== "Falta 1 hora") {
       nuevoEstado = "Esperando Pawwer";
-    } else if (diffMinutes <= 60 && diffMinutes > 10) {
-      nuevoEstado = "Falta 1 hora";
+    } 
+    else if (diffMinutes <= 60 && diffMinutes > 10 && paseo.Estado !== "Por realizarse") {
+        nuevoEstado = "Falta 1 hora";
+        await TEMPLATE_recordatorio_paseo_cliente(paseo.Celular, {
+            nombreCliente: paseo.Nombre,
+            nombrePerrito: paseo.Perro || "tu perrito",
+            fecha: paseo.Fecha || "No definida",
+            hora: paseo.Hora || "No definida",
+            calle: paseo.Direccion,
+            duracion: paseo.TiempoServicio + " minutos",
+        });
+
+        const pawwerActivoCol = await connect("pawwers_activos");
+        const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(paseo.pawwer) });
+
+        await TEMPLATE_recordatorio_paseo_pawwer(paseo.CelularPawwer, {
+            nombrePawwer: pawwerActivo?.Nombre || "Pawwer",
+            nombrePerrito: paseo.Perro || "tu perrito",
+            calle: paseo.Direccion,
+            fecha: paseo.Fecha || "No definida",
+            hora: paseo.Hora || "No definida",
+            duracion: paseo.TiempoServicio || "No definido",
+        });
     }
 
     if (nuevoEstado && paseo.Estado !== nuevoEstado) {
-      await col.updateOne({ _id: paseo._id }, { $set: { Estado: nuevoEstado } });
-      console.log(`Paseo ${paseo._id} actualizado a "${nuevoEstado}"`);
+        await col.updateOne({ _id: paseo._id }, { $set: { Estado: nuevoEstado } });
+        console.log(`Paseo ${paseo._id} actualizado a "${nuevoEstado}"`);
     }
   }
 }

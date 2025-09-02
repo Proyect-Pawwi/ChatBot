@@ -3,7 +3,7 @@ import { MongoClient, ObjectId, Collection } from "mongodb";
 import dotenv from "dotenv";
 import { crearPaseoDesdeLead } from "./mongo-paseos"; // importamos la función para crear paseo
 import { sendText } from "../send-text";
-import { TEMPLATE_confirmacion_paseo_cliente } from "../send-template";
+import { TEMPLATE_confirmacion_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
 
 dotenv.config();
 
@@ -104,7 +104,7 @@ export async function confirmarLeads() {
       hora: String(lead.hora),
       duracion: String(lead.tiempoServicio),
       precio: String(lead.precio),
-      pawwer: String(lead.pawwer),
+      pawwer: String(pawwerActivo.Nombre),
     });
 
     createdCount++;
