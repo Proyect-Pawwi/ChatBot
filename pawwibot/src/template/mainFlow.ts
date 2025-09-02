@@ -11,6 +11,9 @@ import { DateTime } from "luxon";
 import { crearPawwerActivo } from "~/services/airtable-pawwersActivos";
 import { send } from "node:process";
 import { getContrato, updateContrato } from "~/services/registroPawwers";
+import { confirmarLeads, createLead_Mongo, Lead } from "~/services/mongoDB/mongo-leads";
+import { createPawwer } from "~/services/mongoDB/mongo-pawwersActivos";
+import { actualizarEstadoEsperandoPawwer, actualizarEstadoEsperandoPerro, actualizarEstadoPaseosProximos, actualizarStravaPaseo, completarPaseoYActualizarPawwer, revisarFinalizacionPaseos } from "~/services/mongoDB/mongo-paseos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -532,6 +535,7 @@ async function checkLEADS() {
     }
 }
 
+/*
 setTimeout(() => {
   timeLead();
   setInterval(timeLead, 55 * 1000);
@@ -546,7 +550,7 @@ setTimeout(() => {
   timeActivarPendientes();
   setInterval(timeActivarPendientes, 6000 * 1000);
 }, 5000);
-
+*/
 
 const init = addKeyword(EVENTS.WELCOME)
   .addAction(async (ctx, { endFlow, gotoFlow }) => {
@@ -1178,21 +1182,20 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
         });
 
 
-        await createLeadMongo({
-          celular: ctx.from,
-          perro: selectedDog?.nombre || 'No definido', // Ensure .nombre is used
-          // --- MODIFICATION HERE: Use lowercase properties and add nullish coalescing ---
+        await createLead_Mongo({
+          celular: parseInt(ctx.from),
+          nombre: ctx.pushName || 'Usuario',
+          perro: selectedDog?.nombre || 'No definido',
           anotaciones: `Raza: ${selectedDog?.raza || 'No definida'}, Edad: ${selectedDog?.edad || 'No definida'}, Consideraciones: ${selectedDog?.consideraciones || 'No definidas'}, Vacunas: ${selectedDog?.vacunas !== undefined ? (selectedDog.vacunas ? 'Sí' : 'No') : 'No definida'}`,
-          // --- END MODIFICATION ---
-          direccion: data.Direccion || 'No definida', // Add fallback
+          direccion: data.Direccion || 'No definida',
           tipoServicio: 'paseo',
-          tiempoServicio: data.agendamientoSeleccionado || 'No definido', // Add fallback
-          fecha: data.diaSeleccionado || 'No definida', // Add fallback
-          hora: data.horaSeleccionada || 'No definida', // Add fallback
-          precio: data.valor || 0, // Add fallback
+          tiempoServicio: data.agendamientoSeleccionado || 'No definido',
+          fecha: data.diaSeleccionado || 'No definida',
+          hora: data.horaSeleccionada || 'No definida',
+          precio: data.valor || 0,
           estado: 'Pendiente',
           pawwer: 'No asignado',
-          metodoPago: data.metodoPago || 'No especificado' // Add fallback
+          metodoPago: data.metodoPago || 'No especificado' 
         });
 
         await sendText(ctx.from, `En unos instantes nuestro Equipo de Pawwi se estará comunicando contigo para confirmar el paseo 🐶
@@ -1225,16 +1228,26 @@ Precio: $${data.valor || 0}`);
     }
   });
 
+const checkLeadsMongo = async () => {
+  try {
+    console.log("mongo checkLeadsMongo ejecutado");
+    confirmarLeads()
+    
+  } catch (error) {
+    console.error("❌ Error al consultar los leads en Airtable:", error);
+  }
+};
 
+setTimeout(() => {
+  setInterval(checkLeadsMongo, 5 * 1000);
+}, 5000);
 
+setTimeout(() => {
+  setInterval(actualizarEstadoPaseosProximos, 5 * 1000);
+}, 5000);
+
+setTimeout(() => {
+  setInterval(revisarFinalizacionPaseos, 5 * 1000);
+}, 5000);
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
-
-
-//TODO: Revisar BDD para enviar confirmacion a cliente y a paseador
-
-//TODO: Revisar BDD para enviar recordatorio 1 hora antes del paseo
-
-//TODO: Flujo de pawwer dividido con el del cliente
-
-//Notas:
