@@ -393,3 +393,31 @@ export async function getPaseosPorPawwer(celularPawwer: number) {
 
   return paseos;
 }
+
+// Supongamos que esto está dentro de un handler de mensajes
+export async function revisarPaseosPawwer(ctx: any) {
+  try {
+    const celularPawwer = parseInt(ctx.from);
+
+    // Obtener los paseos activos
+    const paseosMongo = await getPaseosPorPawwer(celularPawwer);
+
+    if (paseosMongo.length === 0) {
+      console.log(`⚠️ El pawwer ${celularPawwer} no tiene paseos activos.`);
+      await sendText(celularPawwer.toString(), "No tienes paseos activos por el momento.");
+      return;
+    }
+
+    console.log("Paseos en Mongo:", paseosMongo);
+
+    // Aquí puedes iterar sobre los paseos y enviar mensajes o hacer otras acciones
+    for (const paseo of paseosMongo) {
+      await sendText(
+        celularPawwer.toString(),
+        `Tienes un paseo pendiente con ${paseo.Nombre} y su perrito ${paseo.Perro} el ${paseo.Fecha} a las ${paseo.Hora}. Estado actual: ${paseo.Estado}`
+      );
+    }
+  } catch (error) {
+    console.error("Error al revisar paseos del pawwer:", error);
+  }
+}

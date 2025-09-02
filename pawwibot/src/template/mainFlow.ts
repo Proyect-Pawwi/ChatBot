@@ -13,7 +13,7 @@ import { send } from "node:process";
 import { getContrato, updateContrato } from "~/services/registroPawwers";
 import { confirmarLeads, createLead_Mongo, Lead } from "~/services/mongoDB/mongo-leads";
 import { createPawwer } from "~/services/mongoDB/mongo-pawwersActivos";
-import { actualizarEstadoEsperandoPawwer, actualizarEstadoEsperandoPerro, actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos } from "~/services/mongoDB/mongo-paseos";
+import { actualizarEstadoEsperandoPawwer, actualizarEstadoEsperandoPerro, actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos, revisarPaseosPawwer } from "~/services/mongoDB/mongo-paseos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -599,17 +599,16 @@ const init = addKeyword(EVENTS.WELCOME)
 
         if (usuario.tipoUsuario == "pawwer") {
           //Mongo
-          const paseosMongo = getPaseosPorPawwer(parseInt(ctx.from));
-          console.log("Paseos en Mongo:", paseosMongo);
-          console.log("Usuario es Pawwer, revisando paseos activos...");
-          
-          
+          (async () => {
+            const paseosMongo = await revisarPaseosPawwer(ctx.from);
+            console.log("Paseos en Mongo:", paseosMongo);
+            console.log("Usuario es Pawwer, revisando paseos activos...");
+          })();
 
           //Airtable
           const paseo = await getPaseoByPawwerTelefonoActive(ctx.from);
 
           if (!paseo) {
-            console.log("Paseos en Mongo:", paseosMongo);
             const campo = 'Ganancia Pawwer';
             const gananciasPawwer = await sumarCampoPorCelular(ctx.from, campo);
             await sendText(ctx.from, `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias. Si crees que es un error, por favor contacta al soporte. +57 3332885462`);
