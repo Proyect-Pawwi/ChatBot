@@ -131,10 +131,10 @@ export async function actualizarEstadoPaseosProximos() {
 
     let nuevoEstado = null;
 
-    if (diffMinutes <= 10 && diffMinutes > 0 && paseo.Estado !== "Falta 1 hora") {
+    if (diffMinutes <= 10 && diffMinutes > 0 && paseo.Estado == "Falta 1 hora") {
       nuevoEstado = "Esperando Pawwer";
     } 
-    else if (diffMinutes <= 60 && diffMinutes > 10 && paseo.Estado !== "Por realizarse") {
+    else if (diffMinutes <= 60 && diffMinutes > 10 && paseo.Estado == "Por realizarse") {
         nuevoEstado = "Falta 1 hora";
         await TEMPLATE_recordatorio_paseo_cliente(paseo.Celular, {
             nombreCliente: paseo.Nombre,
