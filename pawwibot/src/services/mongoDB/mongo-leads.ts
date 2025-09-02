@@ -85,7 +85,7 @@ export async function confirmarLeads() {
     // ----------------- VALIDACIÓN PAWWER -----------------
     if (!ObjectId.isValid(lead.pawwer)) {
       await sendText(
-        "NUMERO_SOporte",
+        "573332885462",
         `⚠️ No se puede completar el lead ${lead._id}. Pawwer inválido: ${lead.pawwer}`
       );
       continue; // saltar al siguiente lead
@@ -94,7 +94,7 @@ export async function confirmarLeads() {
     const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(lead.pawwer) });
     if (!pawwerActivo) {
       await sendText(
-        "NUMERO_SOporte",
+        "573332885462",
         `⚠️ No se puede completar el lead ${lead._id}. No hay pawwer activo con ID: ${lead.pawwer}`
       );
       continue; // saltar al siguiente lead
@@ -111,7 +111,7 @@ export async function confirmarLeads() {
 
     if (!leadDateTime.isValid) {
       await sendText(
-        "NUMERO_SOporte",
+        "573332885462",
         `⚠️ No se puede completar el lead ${lead._id}. La fecha u hora (${lead.fecha} ${lead.hora}) tienen un formato inválido.`
       );
       continue;
@@ -119,7 +119,7 @@ export async function confirmarLeads() {
 
     if (leadDateTime < now) {
       await sendText(
-        "NUMERO_SOporte",
+        "573332885462",
         `⚠️ No se puede completar el lead ${lead._id}. La fecha y hora (${lead.fecha} ${lead.hora}) ya pasaron.`
       );
       continue;
