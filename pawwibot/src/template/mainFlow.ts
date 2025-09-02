@@ -13,7 +13,7 @@ import { send } from "node:process";
 import { getContrato, updateContrato } from "~/services/registroPawwers";
 import { confirmarLeads, createLead_Mongo, Lead } from "~/services/mongoDB/mongo-leads";
 import { createPawwer } from "~/services/mongoDB/mongo-pawwersActivos";
-import { actualizarEstadoEsperandoPawwer, actualizarEstadoEsperandoPerro, actualizarEstadoPaseosProximos, actualizarStravaPaseo, completarPaseoYActualizarPawwer, revisarFinalizacionPaseos } from "~/services/mongoDB/mongo-paseos";
+import { actualizarEstadoEsperandoPawwer, actualizarEstadoEsperandoPerro, actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, revisarFinalizacionPaseos } from "~/services/mongoDB/mongo-paseos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -795,6 +795,8 @@ const init = addKeyword(EVENTS.WELCOME)
     else if (payloadBoton == 'Cancelar') {
       //Cobtener el primer paseo donde el celular sea igual y el estado sea agendado
       const paseoAgendado = await getPaseos();
+      console.log("Cancelando paseo para el usuario:", ctx.from);
+
       for (const paseo of paseoAgendado.records) {
         console.log(paseo.fields.Celular == ctx.from);
         
@@ -805,7 +807,6 @@ const init = addKeyword(EVENTS.WELCOME)
           console.log(`✅ Paseo cancelado para el usuario ${ctx.from}`);
         }
       }
-
       await sendText(ctx.from, "Has cancelado el agendamiento. Si deseas agendar otro paseo, por favor inicia de nuevo.");
       return endFlow();
     }
@@ -1240,9 +1241,9 @@ const checkLeadsMongo = async () => {
   }
 };
 
-/*
+
 setTimeout(() => {
-  setInterval(checkLeadsMongo, 50 * 1000);
+  setInterval(checkLeadsMongo, 5 * 1000);
 }, 5000);
 
 setTimeout(() => {
@@ -1252,5 +1253,5 @@ setTimeout(() => {
 setTimeout(() => {
   setInterval(revisarFinalizacionPaseos, 8 * 1000);
 }, 5000);
-*/
+
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};

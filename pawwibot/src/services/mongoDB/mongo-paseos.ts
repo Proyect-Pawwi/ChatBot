@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import { Lead } from "./mongo-leads"; // importa la interfaz Lead
 import { getPawwerById } from "./mongo-pawwersActivos";
 import { TEMPLATE_llegada_pawwer, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
+import { sendText } from "../send-text";
+import { log } from "node:console";
 
 dotenv.config();
 
@@ -110,6 +112,7 @@ export async function crearPaseoDesdeLead(lead: Lead) {
 }
 // ---------- FUNCIÓN: Actualizar estado de paseos próximos ----------
 export async function actualizarEstadoPaseosProximos() {
+  log("Actualizando estados de paseos próximos...");
   const col = await connect(paseosCollection);
 
   const paseos = await col.find({}).toArray();
@@ -134,6 +137,9 @@ export async function actualizarEstadoPaseosProximos() {
     const pawwerActivoCol = await connect("pawwers_activos");
     const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(paseo.pawwer) });
 
+    if(paseo.Estado === "Cancelado" || paseo.Estado === "Completado") {
+      continue; // saltar paseos cancelados o completados
+    }
     if (diffMinutes <= 10 && diffMinutes > 0 && paseo.Estado == "Falta 1 hora") {
       nuevoEstado = "Esperando Pawwer";
       await TEMPLATE_llegada_pawwer(paseo.CelularPawwer, { nombrePawwer: pawwerActivo?.Nombre || "Pawwer", nombrePerrito: paseo.Perro });
@@ -331,3 +337,41 @@ export async function completarPaseoYActualizarPawwer(celularPawwer: number) {
   console.log(`✅ Paseo ${paseo._id} completado, registrado en "completados" y actualizado en pawwer`);
   return true;
 }
+
+// ---------- FUNCIÓN: Cancelar paseos por celular ----------
+export async function cancelarPaseosPorCelular(celular: number) {
+  console.log("Cancelando paseos para el celular:", celular);
+  
+  const col = await connect(paseosCollection);
+
+  // Buscar los paseos que coinciden con el celular
+  const paseos = await col.find({ Celular: celular }).toArray();
+
+  if (paseos.length === 0) {
+    console.log(`⚠️ No se encontraron paseos para el celular ${celular}`);
+    return 0;
+  }
+
+  // Actualizar todos los paseos a "Cancelado"
+  const result = await col.updateMany(
+    { Celular: celular },
+    { $set: { Estado: "Cancelado" } }
+  );
+
+  // Notificar a soporte
+  await sendText('573332885462', `Mongo: El usuario ${celular} ha cancelado su(s) paseo(s) agendado(s).`);
+
+  // Notificar a cada pawwer involucrado
+  for (const paseo of paseos) {
+    if (paseo.CelularPawwer) {
+      await sendText(
+        paseo.CelularPawwer,
+        `Mongo: El dueño de ${paseo.Perro} ha cancelado su paseo agendado.`
+      );
+    }
+  }
+
+  console.log(`✅ ${result.modifiedCount} paseo(s) cancelado(s) para el celular ${celular}`);
+  return result.modifiedCount;
+}
+

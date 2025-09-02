@@ -88,6 +88,7 @@ export async function confirmarLeads() {
         "573332885462",
         `⚠️ No se puede completar el lead ${lead._id}. Pawwer inválido: ${lead.pawwer}`
       );
+      await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Cambiar" } });
       continue; // saltar al siguiente lead
     }
 
@@ -97,6 +98,8 @@ export async function confirmarLeads() {
         "573332885462",
         `⚠️ No se puede completar el lead ${lead._id}. No hay pawwer activo con ID: ${lead.pawwer}`
       );
+      console.log("573332885462",`⚠️ No se puede completar el lead ${lead._id}. No hay pawwer activo con ID: ${lead.pawwer}`);
+      await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Cambiar" } });
       continue; // saltar al siguiente lead
     }
 
@@ -114,6 +117,11 @@ export async function confirmarLeads() {
         "573332885462",
         `⚠️ No se puede completar el lead ${lead._id}. La fecha u hora (${lead.fecha} ${lead.hora}) tienen un formato inválido.`
       );
+      console.log(
+        "573332885462",
+        `⚠️ No se puede completar el lead ${lead._id}. La fecha u hora (${lead.fecha} ${lead.hora}) tienen un formato inválido.`
+      );
+      await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Cambiar" } });
       continue;
     }
 
@@ -122,7 +130,12 @@ export async function confirmarLeads() {
         "573332885462",
         `⚠️ No se puede completar el lead ${lead._id}. La fecha y hora (${lead.fecha} ${lead.hora}) ya pasaron.`
       );
-      continue;
+      console.log(
+        "573332885462",
+        `⚠️ No se puede completar el lead ${lead._id}. La fecha y hora (${lead.fecha} ${lead.hora}) ya pasaron.`
+      );
+      await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Cambiar" } });
+      continue; // saltar al siguiente lead
     }
 
     // ----------------- PROCESAR LEAD -----------------
