@@ -89,7 +89,12 @@ export async function confirmarLeads() {
     // Eliminar el lead original
     await colLeads.deleteOne({ _id: lead._id });
 
-    await sendText(lead.pawwer, `Tienes una nueva solicitud de paseo asignada para el ${lead.fecha} a las ${lead.hora}. Por favor, revisa los detalles y prepárate para brindar un excelente servicio. ¡Gracias por ser parte de nuestro equipo! 🐾`);
+    const pawwerActivoCol = await connect("pawwers_activos");
+    const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(lead.pawwer) });
+
+    if (pawwerActivo) {
+        await sendText(pawwerActivo.NumeroTelefono, `Tienes una nueva solicitud de paseo asignada para el ${lead.fecha} a las ${lead.hora}. Por favor, revisa los detalles y prepárate para brindar un excelente servicio. ¡Gracias por ser parte de nuestro equipo! 🐾`);
+    }
 
     await TEMPLATE_confirmacion_paseo_cliente(lead.celular, {
       nombreCliente: String(lead.nombre),
