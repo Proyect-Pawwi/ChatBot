@@ -797,6 +797,8 @@ const init = addKeyword(EVENTS.WELCOME)
       const paseoAgendado = await getPaseos();
       console.log("Cancelando paseo para el usuario:", ctx.from);
 
+      cancelarPaseosPorCelular(parseInt(ctx.from));
+
       for (const paseo of paseoAgendado.records) {
         console.log(paseo.fields.Celular == ctx.from);
         
