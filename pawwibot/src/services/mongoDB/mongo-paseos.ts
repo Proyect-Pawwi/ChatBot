@@ -2,7 +2,7 @@ import { MongoClient, ObjectId, Collection } from "mongodb";
 import dotenv from "dotenv";
 import { Lead } from "./mongo-leads"; // importa la interfaz Lead
 import { getPawwerById } from "./mongo-pawwersActivos";
-import { TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
+import { TEMPLATE_llegada_pawwer, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
 
 dotenv.config();
 
@@ -131,8 +131,12 @@ export async function actualizarEstadoPaseosProximos() {
 
     let nuevoEstado = null;
 
+    const pawwerActivoCol = await connect("pawwers_activos");
+    const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(paseo.pawwer) });
+
     if (diffMinutes <= 10 && diffMinutes > 0 && paseo.Estado == "Falta 1 hora") {
       nuevoEstado = "Esperando Pawwer";
+      await TEMPLATE_llegada_pawwer(paseo.CelularPawwer, { nombrePawwer: pawwerActivo?.Nombre || "Pawwer", nombrePerrito: paseo.Perro });
     } 
     else if (diffMinutes <= 60 && diffMinutes > 10 && paseo.Estado == "Por realizarse") {
         nuevoEstado = "Falta 1 hora";
@@ -144,9 +148,6 @@ export async function actualizarEstadoPaseosProximos() {
             calle: paseo.Direccion,
             duracion: paseo.TiempoServicio + " minutos",
         });
-
-        const pawwerActivoCol = await connect("pawwers_activos");
-        const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(paseo.pawwer) });
 
         await TEMPLATE_recordatorio_paseo_pawwer(paseo.CelularPawwer, {
             nombrePawwer: pawwerActivo?.Nombre || "Pawwer",
