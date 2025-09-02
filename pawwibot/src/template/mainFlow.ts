@@ -797,7 +797,8 @@ const init = addKeyword(EVENTS.WELCOME)
       const paseoAgendado = await getPaseos();
       console.log("Cancelando paseo para el usuario:", ctx.from);
 
-      cancelarPaseosPorCelular(parseInt(ctx.from));
+      //APD: Cuando se active mongoDB, descomentar la siguiente linea
+      //cancelarPaseosPorCelular(parseInt(ctx.from));
 
       for (const paseo of paseoAgendado.records) {
         console.log(paseo.fields.Celular == ctx.from);
@@ -1244,7 +1245,7 @@ const checkLeadsMongo = async () => {
   }
 };
 
-
+/*
 setTimeout(() => {
   setInterval(checkLeadsMongo, 5 * 1000);
 }, 5000);
@@ -1256,5 +1257,5 @@ setTimeout(() => {
 setTimeout(() => {
   setInterval(revisarFinalizacionPaseos, 8 * 1000);
 }, 5000);
-
+*/
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};

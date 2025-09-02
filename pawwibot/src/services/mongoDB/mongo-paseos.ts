@@ -359,7 +359,7 @@ export async function cancelarPaseosPorCelular(celular: number) {
   );
 
   // Notificar a soporte
-  await sendText('573332885462', `Mongo: El usuario ${celular} ha cancelado su(s) paseo(s) agendado(s).`);
+  await sendText('573332885462', `El usuario ${celular} ha cancelado su paseo agendado.`);
 
   // Notificar a cada pawwer involucrado
   for (const paseo of paseos) {
