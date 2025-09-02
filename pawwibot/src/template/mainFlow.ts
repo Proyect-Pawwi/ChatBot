@@ -1251,7 +1251,7 @@ const checkLeadsMongo = async () => {
   }
 };
 
-
+/*
 setTimeout(() => {
   setInterval(checkLeadsMongo, 5 * 1000);
 }, 5000);
@@ -1263,5 +1263,5 @@ setTimeout(() => {
 setTimeout(() => {
   setInterval(revisarFinalizacionPaseos, 8 * 1000);
 }, 5000);
-
+*/
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};

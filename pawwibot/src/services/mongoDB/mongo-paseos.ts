@@ -122,7 +122,6 @@ export async function actualizarEstadoPaseosProximos() {
 
   for (const paseo of paseos) {
     // Paseo.fecha: "DD/MM", paseo.hora: "HH:mm"
-    console.log(paseo);
     
     if (!paseo.Fecha || !paseo.Hora) continue;
 
@@ -138,8 +137,6 @@ export async function actualizarEstadoPaseosProximos() {
 
     const pawwerActivoCol = await connect("pawwers_activos");
     const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(paseo.pawwer) });
-
-    console.log(`Paseo ${paseo._id} en ${diffMinutes.toFixed(2)} minutos, estado actual: ${paseo.Estado}`);
     
 
     if(paseo.Estado === "Cancelado" || paseo.Estado === "Completado") {
