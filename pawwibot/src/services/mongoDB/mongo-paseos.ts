@@ -122,6 +122,8 @@ export async function actualizarEstadoPaseosProximos() {
 
   for (const paseo of paseos) {
     // Paseo.fecha: "DD/MM", paseo.hora: "HH:mm"
+    console.log(paseo);
+    
     if (!paseo.Fecha || !paseo.Hora) continue;
 
     const [dia, mes] = paseo.Fecha.split("/").map(Number);
@@ -137,6 +139,9 @@ export async function actualizarEstadoPaseosProximos() {
     const pawwerActivoCol = await connect("pawwers_activos");
     const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(paseo.pawwer) });
 
+    console.log(`Paseo ${paseo._id} en ${diffMinutes.toFixed(2)} minutos, estado actual: ${paseo.Estado}`);
+    
+
     if(paseo.Estado === "Cancelado" || paseo.Estado === "Completado") {
       continue; // saltar paseos cancelados o completados
     }
@@ -144,7 +149,7 @@ export async function actualizarEstadoPaseosProximos() {
       nuevoEstado = "Esperando Pawwer";
       await TEMPLATE_llegada_pawwer(paseo.CelularPawwer, { nombrePawwer: pawwerActivo?.Nombre || "Pawwer", nombrePerrito: paseo.Perro });
     } 
-    else if (diffMinutes <= 60 && diffMinutes > 10 && paseo.Estado == "Por realizarse") {
+    else if (diffMinutes <= 60 && paseo.Estado == "Por realizarse") {
         nuevoEstado = "Falta 1 hora";
         await TEMPLATE_recordatorio_paseo_cliente(paseo.Celular, {
             nombreCliente: paseo.Nombre,
@@ -376,3 +381,18 @@ export async function cancelarPaseosPorCelular(celular: number) {
   return result.modifiedCount;
 }
 
+// ---------- FUNCIÓN: Obtener todos los paseos de un pawwer ----------
+export async function getPaseosPorPawwer(celularPawwer: number) {
+  const col = await connect(paseosCollection);
+
+  // Buscar todos los paseos donde CelularPawwer coincida
+  const paseos = await col.find({ CelularPawwer: celularPawwer }).toArray();
+
+  if (paseos.length === 0) {
+    console.log(`⚠️ No se encontraron paseos para el pawwer con celular ${celularPawwer}`);
+  } else {
+    console.log(`✅ Se encontraron ${paseos.length} paseo(s) para el pawwer ${celularPawwer}`);
+  }
+
+  return paseos;
+}

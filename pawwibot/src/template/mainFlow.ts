@@ -13,7 +13,7 @@ import { send } from "node:process";
 import { getContrato, updateContrato } from "~/services/registroPawwers";
 import { confirmarLeads, createLead_Mongo, Lead } from "~/services/mongoDB/mongo-leads";
 import { createPawwer } from "~/services/mongoDB/mongo-pawwersActivos";
-import { actualizarEstadoEsperandoPawwer, actualizarEstadoEsperandoPerro, actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, revisarFinalizacionPaseos } from "~/services/mongoDB/mongo-paseos";
+import { actualizarEstadoEsperandoPawwer, actualizarEstadoEsperandoPerro, actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos } from "~/services/mongoDB/mongo-paseos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -535,7 +535,7 @@ async function checkLEADS() {
     }
 }
 
-
+/*
 setTimeout(() => {
   timeLead();
   setInterval(timeLead, 55 * 1000);
@@ -550,7 +550,7 @@ setTimeout(() => {
   timeActivarPendientes();
   setInterval(timeActivarPendientes, 6000 * 1000);
 }, 5000);
-
+*/
 
 const init = addKeyword(EVENTS.WELCOME)
   .addAction(async (ctx, { endFlow, gotoFlow }) => {
@@ -595,6 +595,12 @@ const init = addKeyword(EVENTS.WELCOME)
         console.log("✅ Usuario recuperado de Mongo:", usuario);
 
         if (usuario.tipoUsuario == "pawwer") {
+          //Mongo
+          const paseosMongo = getPaseosPorPawwer(parseInt(ctx.from));
+          console.log("Paseos en Mongo:", paseosMongo);
+          
+
+          //Airtable
           const paseo = await getPaseoByPawwerTelefonoActive(ctx.from);
 
           if (!paseo) {
