@@ -34,7 +34,7 @@ export interface Paseo {
   hora: string;
   horaInicio: string;
   precio: number;
-  estado: string;
+  Estado: string;
   metodoPago: string;
   strava: string;
   idPawwer: ObjectId | null;
@@ -57,7 +57,7 @@ export async function getPaseoById(id: string) {
   return await col.findOne({ _id: new ObjectId(id) });
 }
 
-export async function updatePaseo(id: string, data: Partial<Paseo>) {
+export async function updatePaseoMongo(id: string, data: Partial<Paseo>) {
   const col = await connect(paseosCollection);
   return await col.updateOne({ _id: new ObjectId(id) }, { $set: data });
 }

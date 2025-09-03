@@ -12,8 +12,8 @@ import { crearPawwerActivo } from "~/services/airtable-pawwersActivos";
 import { send } from "node:process";
 import { getContrato, updateContrato } from "~/services/registroPawwers";
 import { confirmarLeads, createLead_Mongo, Lead } from "~/services/mongoDB/mongo-leads";
-import { createPawwer } from "~/services/mongoDB/mongo-pawwersActivos";
-import { actualizarEstadoEsperandoPawwer, actualizarEstadoEsperandoPerro, actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos, revisarPaseosPawwer } from "~/services/mongoDB/mongo-paseos";
+import { createPawwer, getPawwerById } from "~/services/mongoDB/mongo-pawwersActivos";
+import { actualizarEstadoEsperandoPawwer, actualizarEstadoEsperandoPerro, actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos, revisarPaseosPawwer, updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -601,35 +601,63 @@ const init = addKeyword(EVENTS.WELCOME)
 
           //Airtable
           const paseo = await getPaseoByPawwerTelefonoActive(ctx.from);
-          
+
           (async () => {
-            const pawwerCtx = {
-              from: "573023835142"
-            };
+            const celularPawwer = ctx.from;
 
             // Revisar paseos en Mongo
-            const paseosMongo = await getPaseosPorPawwer(parseInt("573023835142"));
+            const paseosMongo = await getPaseosPorPawwer(parseInt(celularPawwer));
+            console.log("Paseos en Mongo:", paseosMongo.length);
 
-            if ((paseosMongo.length === 0) && !paseo) {
-              const campo = 'Ganancia Pawwer';
-              const gananciasPawwer = await sumarCampoPorCelular("573023835142", campo);
+            if (paseosMongo.length === 0) {
+              const campo = "Ganancia Pawwer";
+              const gananciasPawwer = await sumarCampoPorCelular(celularPawwer, campo);
 
               await sendText(
-                "573023835142",
-                `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias. Si crees que es un error, por favor contacta al soporte. +57 3332885462`
+                celularPawwer,
+                `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias. 
+          Si crees que es un error, por favor contacta al soporte. +57 3332885462`
               );
-              console.log('❌ No se encontró ningún paseo para este Pawwer en Mongo ni en Airtable');
+
+              console.log("❌ No se encontró ningún paseo para este Pawwer en Mongo ni en Airtable");
               return;
+            }
+
+            const paseo = paseosMongo[0];
+
+            const pawwer = await getPawwerById(paseo.IdPawwer.toString());
+
+            if (paseo.Estado == "Esperando Pawwer") {
+              if (ctx.payload !== "confirmar_llegada") {
+                await TEMPLATE_llegada_pawwer(paseo.fields["Numero de teléfono (from Pawwer)"][0], { nombrePawwer, nombrePerrito });
+                return endFlow();
+              }
+              
+
+              const cambios = { Estado: "Esperando perro" };
+              const result = await updatePaseoMongo(paseo._id.toString(), cambios);
+
+              if (result.modifiedCount > 0) { console.log(`✅ Paseo ${paseo._id.toString()} actualizado correctamente`);} 
+              else {console.log(`⚠️ No se encontró el paseo con id ${paseo._id.toString()} o no hubo cambios`);}
+
+              await TEMPLATE_pawwer_llego_cliente(paseo.Celular, {
+                nombreCliente: paseo.Nombre,
+                nombrePawwer: pawwer.Nombre,
+                nombrePerrito: paseo.Perro,
+                calle: paseo.Direccion,
+                colonia: "Bogota",
+                fecha: paseo.Fecha,
+                hora: paseo.Hora,
+                duracion: paseo.TiempoServicio,
+              });
+
+              //Mensaje de dale click al boton cuando recibas al perro
+              await TEMPLATE_recibir_perro_pawwer(pawwer.NumeroTelefono, { nombrePerrito: paseo.Perro });
+              return endFlow();
             }
           })();
 
-          if (!paseo) {
-            const campo = 'Ganancia Pawwer';
-            const gananciasPawwer = await sumarCampoPorCelular(ctx.from, campo);
-            await sendText(ctx.from, `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias. Si crees que es un error, por favor contacta al soporte. +57 3332885462`);
-            console.log('❌ No se encontró ningún paseo para este Pawwer con estado "Esperando Pawwer"');
-            return;
-          }
+          
 
           const paseoId = paseo.id;
           const fields = paseo.fields;
@@ -1285,6 +1313,8 @@ setTimeout(() => {
 setTimeout(() => {
   setInterval(revisarFinalizacionPaseos, 8 * 1000);
 }, 5000);
+
+
 
 
 
