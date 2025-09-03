@@ -629,7 +629,7 @@ const init = addKeyword(EVENTS.WELCOME)
 
             if (paseo.Estado == "Esperando Pawwer") {
               if (ctx.payload !== "confirmar_llegada") {
-                await TEMPLATE_llegada_pawwer(ctx.from, { nombrePawwer:pawwer.Nombre, nombrePerrito });
+                await TEMPLATE_llegada_pawwer(ctx.from, { nombrePawwer:pawwer.Nombre, nombrePerrito:paseo.Perro });
                 return endFlow();
               }
               
