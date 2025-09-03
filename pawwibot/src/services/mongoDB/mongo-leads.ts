@@ -34,7 +34,7 @@ export interface Lead {
   hora: string; // formato HH:mm
   precio: number;
   metodoPago: string;
-  pawwer: number; // Id del pawwer
+  pawwer: string; // Id del pawwer
   estado: string;
 }
 
@@ -45,7 +45,7 @@ export async function createLead_Mongo(data: Lead) {
   const leadDataToInsert = {
     ...data,
     estado: "Pendiente",
-    pawwer: 0, // inicializamos pawwer en 0
+    pawwer: "Numero del pawwer", // inicializamos pawwer en 0
     fechaCreacion: new Date() // opcional: fecha de creación
   };
 

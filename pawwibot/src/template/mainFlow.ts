@@ -1,19 +1,14 @@
 import { addKeyword, EVENTS } from "@builderbot/bot";
 import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito, TEMPLATE_agendar_tipo_paseo, TEMPLATE_agendar_fecha_paseo, TEMPLATE_ragendar_hora_paseo, TEMPLATE_agendar_metodo_pago, TEMPLATE_agendar_resumen_paseo, TEMPLATE_confirmacion_paseo_cliente, TEMPLATE_llegada_pawwer, TEMPLATE_pawwer_llego_cliente, TEMPLATE_strava_recordatorio_pawwer, TEMPLATE_link_strava_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer, TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_paseo_finalizado_cliente, TEMPLATE_recordatorio_pago_cliente, TEMPLATE_recibir_perro_pawwer } from "../services/send-template";
 import { sendText, sendButtons } from "../services/send-text";
-
 import { getMongoClient } from '../services/mongo';
-import { createLead, deleteLead, getLeads, updateLead } from "../services/airtable-leads";
-import { createPaseo, getPaseoByPawwerTelefono, getPaseoByPawwerTelefonoActive, getPaseoByClienteTelefonoActive, getPaseos, updatePaseo } from "../services/airtable-paseos";
-import { log } from "node:console";
-import { createCompletado, getCompletados } from "../services/airtable-completados";
+import { createLead } from "../services/airtable-leads";
+import { getPaseoByClienteTelefonoActive, getPaseos, updatePaseo } from "../services/airtable-paseos";
+import { getCompletados } from "../services/airtable-completados";
 import { DateTime } from "luxon";
-import { crearPawwerActivo } from "~/services/airtable-pawwersActivos";
-import { send } from "node:process";
-import { getContrato, updateContrato } from "~/services/registroPawwers";
 import { confirmarLeads, createLead_Mongo, Lead } from "~/services/mongoDB/mongo-leads";
-import { createPawwer, getPawwerById } from "~/services/mongoDB/mongo-pawwersActivos";
-import { actualizarEstadoEsperandoPawwer, actualizarEstadoEsperandoPerro, actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos, revisarPaseosPawwer, updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
+import { getPawwerById } from "~/services/mongoDB/mongo-pawwersActivos";
+import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos, revisarPaseosPawwer, updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -715,7 +710,7 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
           hora: data.horaSeleccionada || 'No definida',
           precio: data.valor || 0,
           estado: 'Pendiente',
-          pawwer: 0,
+          pawwer: 'Numero del pawwer',
           metodoPago: data.metodoPago || 'No especificado' 
         });
 
