@@ -34,7 +34,7 @@ export interface Lead {
   hora: string; // formato HH:mm
   precio: number;
   metodoPago: string;
-  pawwer: string; // Id del pawwer
+  pawwer: number; // Id del pawwer
   estado: string;
 }
 
@@ -82,7 +82,7 @@ export async function confirmarLeads() {
 
   for (const lead of leads) {
     // ----------------- VALIDACIÓN PAWWER -----------------
-    const pawwerActivo = await getUsuarioByCelular(lead.pawwer);
+    const pawwerActivo = await getUsuarioByCelular(lead.pawwer.toString());
     if (!pawwerActivo) {
       console.log("573332885462",`⚠️ No se puede completar el lead ${lead._id}. No hay pawwer activo con telefono: ${lead.pawwer}`);
       await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Cambiar" } });

@@ -715,7 +715,7 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
           hora: data.horaSeleccionada || 'No definida',
           precio: data.valor || 0,
           estado: 'Pendiente',
-          pawwer: 'No asignado',
+          pawwer: 0,
           metodoPago: data.metodoPago || 'No especificado' 
         });
 
