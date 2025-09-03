@@ -327,30 +327,33 @@ export async function actualizarStravaPaseo(
 ) {
   const prefix = "https://www.strava.com/beacon/";
   // Validar que la URL comience con el prefijo requerido
+  console.log("Actualizando Strava para el pawwer:", celularPawwer, "con URL:", stravaUrl);
+  
   if (!stravaUrl.startsWith(prefix)) {
     console.log(`❌ La URL no es válida: debe iniciar con prefixo ${prefix}`);
     return false;
   }
+  else {
+    const col = await connect(paseosCollection);
 
-  const col = await connect(paseosCollection);
+    // Buscar el primer paseo que coincida con el pawwer y estado "Esperando Strava"
+    const paseo = await col.findOne({
+      CelularPawwer: celularPawwer,
+      Estado: "Esperando Strava"
+    });
 
-  // Buscar el primer paseo que coincida con el pawwer y estado "Esperando Strava"
-  const paseo = await col.findOne({
-    CelularPawwer: celularPawwer,
-    Estado: "Esperando Strava"
-  });
+    if (paseo) {
+      await col.updateOne(
+        { _id: paseo._id },
+        { $set: { Strava: stravaUrl.replace(prefix, "").trim(), Estado: "Esperando finalizacion" } }
+      );
 
-  if (paseo) {
-    await col.updateOne(
-      { _id: paseo._id },
-      { $set: { Strava: stravaUrl.replace(prefix, "").trim(), Estado: "Esperando finalizacion" } }
-    );
-
-    console.log(`✅ Paseo ${paseo._id} actualizado con Strava y estado "Esperando finalizacion"`);
-    return true;
-  } else {
-    console.log(`⚠️ No se encontró paseo para el pawwer ${celularPawwer} con estado "Esperando Strava"`);
-    return false;
+      console.log(`✅ Paseo ${paseo._id} actualizado con Strava y estado "Esperando finalizacion"`);
+      return true;
+    } else {
+      console.log(`⚠️ No se encontró paseo para el pawwer ${celularPawwer} con estado "Esperando Strava"`);
+      return false;
+    }
   }
 }
 
