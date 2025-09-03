@@ -596,6 +596,8 @@ const init = addKeyword(EVENTS.WELCOME)
         console.log("✅ Usuario nuevo creado en Mongo");
       } else {
         console.log("✅ Usuario recuperado de Mongo:", usuario);
+        console.log(`Tipo de usuario: ${usuario.tipoUsuario}`);
+        
 
         if (usuario.tipoUsuario == "pawwer") {
 
