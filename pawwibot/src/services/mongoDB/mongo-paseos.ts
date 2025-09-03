@@ -2,7 +2,7 @@ import { MongoClient, ObjectId, Collection } from "mongodb";
 import dotenv from "dotenv";
 import { Lead } from "./mongo-leads"; // importa la interfaz Lead
 import { getPawwerById } from "./mongo-pawwersActivos";
-import { TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_llegada_pawwer, TEMPLATE_recordatorio_pago_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
+import { TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_link_strava_cliente, TEMPLATE_llegada_pawwer, TEMPLATE_recordatorio_pago_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
 import { sendText } from "../send-text";
 import { log } from "node:console";
 import { DateTime } from "luxon";
@@ -330,6 +330,7 @@ export async function actualizarStravaPaseo(
   console.log("Actualizando Strava para el pawwer:", celularPawwer, "con URL:", stravaUrl);
   
   if (!stravaUrl.startsWith(prefix)) {
+    sendText(celularPawwer.toString(), "El link de Strava que has enviado no es valido, tu link debe ser por ejemplo como el siguiente: https://www.strava.com/beacon/oH0qqnaCRNM");
     console.log(`❌ La URL no es válida: debe iniciar con prefixo ${prefix}`);
     return false;
   }
@@ -338,7 +339,7 @@ export async function actualizarStravaPaseo(
 
     // Buscar el primer paseo que coincida con el pawwer y estado "Esperando Strava"
     const paseo = await col.findOne({
-      CelularPawwer: celularPawwer,
+      CelularPawwer: celularPawwer.toString(),
       Estado: "Esperando Strava"
     });
 
@@ -347,6 +348,12 @@ export async function actualizarStravaPaseo(
         { _id: paseo._id },
         { $set: { Strava: stravaUrl.replace(prefix, "").trim(), Estado: "Esperando finalizacion" } }
       );
+
+      await TEMPLATE_link_strava_cliente(paseo.Celular, {
+        nombreCliente : paseo.Nombre,
+        nombrePerrito: paseo.Perro || "tu perrito",
+        linkStrava: stravaUrl.replace("https://www.strava.com/beacon/", "").trim(),
+      });
 
       console.log(`✅ Paseo ${paseo._id} actualizado con Strava y estado "Esperando finalizacion"`);
       return true;

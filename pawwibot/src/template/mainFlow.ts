@@ -221,17 +221,7 @@ const init = addKeyword(EVENTS.WELCOME)
             }
             else if (paseo.Estado === "Esperando Strava") {
               const linkRecibido = ctx.body.trim();
-
-              if (actualizarStravaPaseo(parseInt(celularPawwer), linkRecibido)) {
-                await TEMPLATE_link_strava_cliente(paseo.Celular, {
-                  nombreCliente : paseo.Nombre,
-                  nombrePerrito: paseo.Perro || "tu perrito",
-                  linkStrava: linkRecibido.replace("https://www.strava.com/beacon/", "").trim(),
-                });
-              } else {
-                console.log("No coincide");
-                await sendText(celularPawwer, "El link de Strava que has enviado no es valido, tu link debe ser por ejemplo como el siguiente: https://www.strava.com/beacon/oH0qqnaCRNM");
-              }
+              actualizarStravaPaseo(parseInt(celularPawwer), linkRecibido)
             }
             else if("Esperando finalizacion" === paseo.Estado) {
               await sendText(celularPawwer, "Tienes actualmente un paseo en curso. Por favor, si deseas comentar alguna novedad o crees que es un error, contacta al numero de soporte +57 3332885462");
