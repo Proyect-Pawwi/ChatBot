@@ -8,7 +8,7 @@ import { getCompletados } from "../services/airtable-completados";
 import { DateTime } from "luxon";
 import { confirmarLeads, createLead_Mongo, Lead } from "~/services/mongoDB/mongo-leads";
 import { getPawwerById } from "~/services/mongoDB/mongo-pawwersActivos";
-import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosByCelularPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos, revisarPaseosPawwer, updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
+import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosByCelular, getPaseosByCelularPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos, revisarPaseosPawwer, updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -140,6 +140,8 @@ const init = addKeyword(EVENTS.WELCOME)
         
 
         if (usuario.tipoUsuario == "pawwer") {
+          console.log("Pawwer ha iniciado sesion");
+          console.log("Celular Pawwer:", ctx.from);
 
           (async () => {
             const celularPawwer = ctx.from;
