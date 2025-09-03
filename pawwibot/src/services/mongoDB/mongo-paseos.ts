@@ -27,7 +27,9 @@ export interface Paseo {
   _id?: ObjectId;
   fechaCreacion: Date;
   celular: number;
+  CelularPawwer: string;
   nombre: string;
+  NombrePawwer: string;
   perro: string;
   anotaciones: string;
   direccion: string;
@@ -59,6 +61,16 @@ export async function getPaseos() {
 export async function getPaseoById(id: string) {
   const col = await connect(paseosCollection);
   return await col.findOne({ _id: new ObjectId(id) });
+}
+
+export async function getPaseosByCelularPawwer(celularPawwer: string) {
+  const col = await connect(paseosCollection);
+  return await col.find({ CelularPawwer: celularPawwer }).toArray();
+}
+
+export async function getPaseosByCelular(celular: string | number) {
+  const col = await connect(paseosCollection);
+  return await col.find({ celular: Number(celular) }).toArray();
 }
 
 export async function updatePaseoMongo(id: string, data: Partial<Paseo>) {
@@ -148,7 +160,9 @@ export async function actualizarEstadoPaseosProximos() {
           _id: paseo._id,
           fechaCreacion: paseo.FechaCreacion ?? paseo.fechaCreacion ?? new Date(),
           celular: paseo.Celular ?? paseo.celular ?? 0,
+          CelularPawwer: paseo.CelularPawwer ?? paseo.celularPawwer ?? "",
           nombre: paseo.Nombre ?? paseo.nombre ?? "",
+          NombrePawwer: paseo.NombrePawwer ?? paseo.nombrePawwer ?? "",
           perro: paseo.Perro ?? paseo.perro ?? "",
           anotaciones: paseo.Anotaciones ?? paseo.anotaciones ?? "",
           direccion: paseo.Direccion ?? paseo.direccion ?? "",

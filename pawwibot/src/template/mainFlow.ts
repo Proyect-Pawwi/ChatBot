@@ -8,7 +8,7 @@ import { getCompletados } from "../services/airtable-completados";
 import { DateTime } from "luxon";
 import { confirmarLeads, createLead_Mongo, Lead } from "~/services/mongoDB/mongo-leads";
 import { getPawwerById } from "~/services/mongoDB/mongo-pawwersActivos";
-import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos, revisarPaseosPawwer, updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
+import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosByCelularPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos, revisarPaseosPawwer, updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -146,7 +146,7 @@ const init = addKeyword(EVENTS.WELCOME)
             const payload: string = ctx.payload ;
 
             // Revisar paseos en Mongo
-            const paseosMongo = await getPaseosPorPawwer(parseInt(celularPawwer));
+            const paseosMongo = await getPaseosByCelularPawwer(celularPawwer);
             console.log("Paseos en Mongo:", paseosMongo.length);
             console.log(paseosMongo[0]);
             
@@ -285,7 +285,6 @@ const init = addKeyword(EVENTS.WELCOME)
         return;
       }
       
-
       usuarioData[ctx.from] = usuario;
 
       // Cargar los perros (si existen) en perritoData
@@ -445,7 +444,6 @@ const RegistrarVacunasPerrito = addKeyword('RegistrarVacunasPerrito')
         await sendText(ctx.from, `Por favor, selecciona una opción válida.`);
         return gotoFlow(RegistrarVacunasPerrito);
       }
-      
   });
 
 const RegistrarDireccion = addKeyword('RegistrarDireccion')
@@ -488,7 +486,6 @@ const RegistrarPerro = addKeyword('RegistrarPerro')
     usuarioData[ctx.from].perroSeleccionado = perritoData[ctx.from];
     return gotoFlow(agendarTiempoPaseo);
   });
-
 
 const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
   .addAction(async (ctx) => {
@@ -696,7 +693,6 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
           Pawwer: '',
           "metodo Pago": data.metodoPago ?? 'No especificado'
         });
-
 
         await createLead_Mongo({
           celular: parseInt(ctx.from),
