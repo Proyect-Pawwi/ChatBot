@@ -6,6 +6,7 @@ import { TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_llegada_pawwer, TEMPLATE_reco
 import { sendText } from "../send-text";
 import { log } from "node:console";
 import { DateTime } from "luxon";
+import { getUsuarioById } from "./mongo-usuarios";
 
 dotenv.config();
 
@@ -82,7 +83,7 @@ export async function crearPaseoDesdeLead(lead: Lead) {
   // Obtener celular del pawwer si existe
   let celularPawwer: number | null = null;
   if (lead.pawwer) {
-    const pawwer = await getPawwerById(lead.pawwer);
+    const pawwer = await getUsuarioById(lead.pawwer);
     if (pawwer) {
       celularPawwer = pawwer.NumeroTelefono || null;
     }
