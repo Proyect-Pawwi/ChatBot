@@ -167,14 +167,15 @@ const init = addKeyword(EVENTS.WELCOME)
             }
 
             const paseo = paseosMongo[0];
-
-            const pawwer = await getPawwerById(paseo.IdPawwer.toString());
-            console.log(pawwer);
             
+            if (paseo.Estado == "Falta 1 hora" || paseo.Estado == "Por realizarse") {
+              await sendText(celularPawwer, `⚠️ El paseo de ${paseo.Perro} comenzará en un rato. Por favor, prepárate. Si tienes alguna duda, contacta al soporte +57 3332885462`); 
+              return endFlow();
+            }
 
             if (paseo.Estado == "Esperando Pawwer") {
               if (payload !== "confirmar_llegada") {
-                await TEMPLATE_llegada_pawwer(celularPawwer, { nombrePawwer:pawwer.Nombre, nombrePerrito:paseo.Perro });
+                await TEMPLATE_llegada_pawwer(paseo.CelularPawwer, { nombrePawwer:paseo.NombrePawwer, nombrePerrito:paseo.Perro });
                 return endFlow();
               }
 
@@ -186,7 +187,7 @@ const init = addKeyword(EVENTS.WELCOME)
 
               await TEMPLATE_pawwer_llego_cliente(paseo.Celular, {
                 nombreCliente: paseo.Nombre,
-                nombrePawwer: pawwer.Nombre,
+                nombrePawwer: paseo.NombrePawwer,
                 nombrePerrito: paseo.Perro,
                 calle: paseo.Direccion,
                 colonia: "Bogota",
@@ -196,12 +197,12 @@ const init = addKeyword(EVENTS.WELCOME)
               });
 
               //Mensaje de dale click al boton cuando recibas al perro
-              await TEMPLATE_recibir_perro_pawwer(pawwer.NumeroTelefono, { nombrePerrito: paseo.Perro });
+              await TEMPLATE_recibir_perro_pawwer(paseo.CelularPawwer, { nombrePerrito: paseo.Perro });
               return endFlow();
             }
             else if (paseo.Estado === "Esperando perro") {
               if (payload !== "INICIAR_PASEO") {
-                await TEMPLATE_recibir_perro_pawwer(celularPawwer, { nombrePerrito: paseo.Perro });
+                await TEMPLATE_recibir_perro_pawwer(paseo.CelularPawwer, { nombrePerrito: paseo.Perro });
                 return endFlow();
               }
               //actualuizar horaInicio y estado a esperando strava
@@ -213,8 +214,8 @@ const init = addKeyword(EVENTS.WELCOME)
               if (result.modifiedCount > 0) { console.log(`✅ Paseo ${paseo._id.toString()} actualizado correctamente`);} 
               else {console.log(`⚠️ No se encontró el paseo con id ${paseo._id.toString()} o no hubo cambios`);}
 
-              await TEMPLATE_strava_recordatorio_pawwer(celularPawwer, {
-                nombrePawwer: pawwer.Nombre,
+              await TEMPLATE_strava_recordatorio_pawwer(paseo.CelularPawwer, {
+                nombrePawwer: paseo.NombrePawwer,
                 nombrePerrito: paseo.Perro,
               });
             }
@@ -240,7 +241,7 @@ const init = addKeyword(EVENTS.WELCOME)
               
               if (payload !== "Finalizar paseo") {
                 await TEMPLATE_finalizar_paseo_pawwer(celularPawwer, {
-                  nombrePawwer: pawwer.Nombre,
+                  nombrePawwer: paseo.NombrePawwer,
                   nombrePerrito: paseo.Perro
                 });
                 return endFlow();
