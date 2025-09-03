@@ -601,25 +601,15 @@ const init = addKeyword(EVENTS.WELCOME)
 
         if (usuario.tipoUsuario == "pawwer") {
 
-          //Airtable
-          const paseo = await getPaseoByPawwerTelefonoActive(ctx.from);
-
-          if (!paseo) {
-            console.log("❌ No se encontró paseo activo en Airtable para este Pawwer");
-            await sendText(ctx.from, "No tienes paseos activos en este momento.");
-            return endFlow();
-          }
-
-          const paseoId = paseo.id;
-          const fields = paseo.fields;
-
-
           (async () => {
             const celularPawwer = ctx.from;
+            const payload: string = ctx.payload ;
 
             // Revisar paseos en Mongo
             const paseosMongo = await getPaseosPorPawwer(parseInt(celularPawwer));
             console.log("Paseos en Mongo:", paseosMongo.length);
+            console.log(paseosMongo[0]);
+            
 
             if (paseosMongo.length === 0) {
               const campo = "Ganancia Pawwer";
@@ -638,13 +628,14 @@ const init = addKeyword(EVENTS.WELCOME)
             const paseo = paseosMongo[0];
 
             const pawwer = await getPawwerById(paseo.IdPawwer.toString());
+            console.log(pawwer);
+            
 
             if (paseo.Estado == "Esperando Pawwer") {
-              if (ctx.payload !== "confirmar_llegada") {
-                await TEMPLATE_llegada_pawwer(ctx.from, { nombrePawwer:pawwer.Nombre, nombrePerrito:paseo.Perro });
-                return endFlow();
+              if (payload !== "confirmar_llegada") {
+                await TEMPLATE_llegada_pawwer(celularPawwer, { nombrePawwer:pawwer.Nombre, nombrePerrito:paseo.Perro });
+                //return endFlow();
               }
-              
 
               const cambios = { Estado: "Esperando perro" };
               const result = await updatePaseoMongo(paseo._id.toString(), cambios);
@@ -665,8 +656,70 @@ const init = addKeyword(EVENTS.WELCOME)
 
               //Mensaje de dale click al boton cuando recibas al perro
               await TEMPLATE_recibir_perro_pawwer(pawwer.NumeroTelefono, { nombrePerrito: paseo.Perro });
-              return endFlow();
+              //return endFlow();
             }
+            else if (paseo.Estado === "Esperando perro") {
+              if (payload !== "INICIAR_PASEO") {
+                await TEMPLATE_recibir_perro_pawwer(celularPawwer, { nombrePerrito: paseo.Perro });
+                //return endFlow();
+              }
+              //actualuizar horaInicio y estado a esperando strava
+              const horaInicio = DateTime.now().setZone("America/Bogota").toFormat("yyyy-MM-dd HH:mm:ss");
+
+              const cambios = { Estado: "Esperando Strava", HoraInicio: horaInicio };
+              const result = await updatePaseoMongo(paseo._id.toString(), cambios);
+
+              if (result.modifiedCount > 0) { console.log(`✅ Paseo ${paseo._id.toString()} actualizado correctamente`);} 
+              else {console.log(`⚠️ No se encontró el paseo con id ${paseo._id.toString()} o no hubo cambios`);}
+
+              await TEMPLATE_strava_recordatorio_pawwer(celularPawwer, {
+                nombrePawwer: pawwer.Nombre,
+                nombrePerrito: paseo.Perro,
+              });
+            }
+            else if (paseo.Estado === "Esperando Strava") {
+              const linkRecibido = ctx.body.trim();
+
+              if (actualizarStravaPaseo(parseInt(celularPawwer), linkRecibido)) {
+                await TEMPLATE_link_strava_cliente(paseo.Celular, {
+                  nombreCliente : paseo.Nombre,
+                  nombrePerrito: paseo.Perro || "tu perrito",
+                  linkStrava: linkRecibido,
+                });
+              } else {
+                console.log("No coincide");
+                await sendText(celularPawwer, "El link de Strava que has enviado no es valido, tu link debe ser por ejemplo como el siguiente: https://www.strava.com/beacon/oH0qqnaCRNM");
+              }
+            }
+            else if("Esperando finalizacion" === paseo.Estado) {
+              await sendText(celularPawwer, "Tienes actualmente un paseo en curso. Por favor, si deseas comentar alguna novedad o crees que es un error, contacta al numero de soporte +57 3332885462");
+            }
+            else if (paseo.Estado === "Esperando finalizacion Pawwer") {
+              console.log(`Payload recibido: ${payload}`);
+              
+              if (payload !== "Finalizar paseo") {
+                await TEMPLATE_finalizar_paseo_pawwer(celularPawwer, {
+                  nombrePawwer: pawwer.Nombre,
+                  nombrePerrito: paseo.Perro
+                });
+                //return endFlow();
+                }
+                else {
+                await sendText(celularPawwer, "Gracias por finalizar el paseo. En breve el dueño recogera a su mascota");
+                await TEMPLATE_paseo_finalizado_cliente(paseo.Celular, {
+                  nombreCliente: paseo.Nombre,
+                  nombrePerrito: paseo.Perro,
+                });
+                await TEMPLATE_recordatorio_pago_cliente(paseo.Celular, {
+                  nombreCliente: paseo.Nombre,
+                  nombrePerrito: paseo.Perro,
+                  valorPaseo: paseo.Precio?.toString() || "No definido"
+                });
+
+                completarPaseoYActualizarPawwer(parseInt(celularPawwer));
+              }
+            }
+            
           })();
 
           
@@ -1329,8 +1382,128 @@ setTimeout(() => {
 }, 5000);
 
 
+/*
+(async () => {
+            const celularPawwer = "573023835142"; //cambiar a ctx.from
+            const payload: string = "Finalizar paseo"; //cambiar a ctx.payload
 
+            // Revisar paseos en Mongo
+            const paseosMongo = await getPaseosPorPawwer(parseInt(celularPawwer));
+            console.log("Paseos en Mongo:", paseosMongo.length);
+            console.log(paseosMongo[0]);
+            
 
+            if (paseosMongo.length === 0) {
+              const campo = "Ganancia Pawwer";
+              const gananciasPawwer = await sumarCampoPorCelular(celularPawwer, campo);
 
+              await sendText(
+                celularPawwer,
+                `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias. 
+          Si crees que es un error, por favor contacta al soporte. +57 3332885462`
+              );
+
+              console.log("❌ No se encontró ningún paseo para este Pawwer en Mongo ni en Airtable");
+              return;
+            }
+
+            const paseo = paseosMongo[0];
+
+            const pawwer = await getPawwerById(paseo.IdPawwer.toString());
+            console.log(pawwer);
+            
+
+            if (paseo.Estado == "Esperando Pawwer") {
+              if (payload !== "confirmar_llegada") {
+                await TEMPLATE_llegada_pawwer(celularPawwer, { nombrePawwer:pawwer.Nombre, nombrePerrito:paseo.Perro });
+                //return endFlow();
+              }
+              
+
+              const cambios = { Estado: "Esperando perro" };
+              const result = await updatePaseoMongo(paseo._id.toString(), cambios);
+
+              if (result.modifiedCount > 0) { console.log(`✅ Paseo ${paseo._id.toString()} actualizado correctamente`);} 
+              else {console.log(`⚠️ No se encontró el paseo con id ${paseo._id.toString()} o no hubo cambios`);}
+
+              await TEMPLATE_pawwer_llego_cliente(paseo.Celular, {
+                nombreCliente: paseo.Nombre,
+                nombrePawwer: pawwer.Nombre,
+                nombrePerrito: paseo.Perro,
+                calle: paseo.Direccion,
+                colonia: "Bogota",
+                fecha: paseo.Fecha,
+                hora: paseo.Hora,
+                duracion: paseo.TiempoServicio,
+              });
+
+              //Mensaje de dale click al boton cuando recibas al perro
+              await TEMPLATE_recibir_perro_pawwer(pawwer.NumeroTelefono, { nombrePerrito: paseo.Perro });
+              //return endFlow();
+            }
+            else if (paseo.Estado === "Esperando perro") {
+              if (payload !== "INICIAR_PASEO") {
+                await TEMPLATE_recibir_perro_pawwer(celularPawwer, { nombrePerrito: paseo.Perro });
+                //return endFlow();
+              }
+              //actualuizar horaInicio y estado a esperando strava
+              const horaInicio = DateTime.now().setZone("America/Bogota").toFormat("yyyy-MM-dd HH:mm:ss");
+
+              const cambios = { Estado: "Esperando Strava", HoraInicio: horaInicio };
+              const result = await updatePaseoMongo(paseo._id.toString(), cambios);
+
+              if (result.modifiedCount > 0) { console.log(`✅ Paseo ${paseo._id.toString()} actualizado correctamente`);} 
+              else {console.log(`⚠️ No se encontró el paseo con id ${paseo._id.toString()} o no hubo cambios`);}
+
+              await TEMPLATE_strava_recordatorio_pawwer(celularPawwer, {
+                nombrePawwer: pawwer.Nombre,
+                nombrePerrito: paseo.Perro,
+              });
+            }
+            else if (paseo.Estado === "Esperando Strava") {
+              const linkRecibido = "https://www.strava.com/beacon/oH0qqnaCRNM"; //cambiar a ctx.body.trim();  
+
+              if (actualizarStravaPaseo(parseInt(celularPawwer), linkRecibido)) {
+                await TEMPLATE_link_strava_cliente(paseo.Celular, {
+                  nombreCliente : paseo.Nombre,
+                  nombrePerrito: paseo.Perro || "tu perrito",
+                  linkStrava: linkRecibido,
+                });
+              } else {
+                console.log("No coincide");
+                await sendText(celularPawwer, "El link de Strava que has enviado no es valido, tu link debe ser por ejemplo como el siguiente: https://www.strava.com/beacon/oH0qqnaCRNM");
+              }
+            }
+            else if("Esperando finalizacion" === paseo.Estado) {
+              await sendText(celularPawwer, "Tienes actualmente un paseo en curso. Por favor, si deseas comentar alguna novedad o crees que es un error, contacta al numero de soporte +57 3332885462");
+            }
+            else if (paseo.Estado === "Esperando finalizacion Pawwer") {
+              console.log(`Payload recibido: ${payload}`);
+              
+              if (payload !== "Finalizar paseo") {
+                await TEMPLATE_finalizar_paseo_pawwer(celularPawwer, {
+                  nombrePawwer: pawwer.Nombre,
+                  nombrePerrito: paseo.Perro
+                });
+                //return endFlow();
+                }
+                else {
+                await sendText(celularPawwer, "Gracias por finalizar el paseo. En breve el dueño recogera a su mascota");
+                await TEMPLATE_paseo_finalizado_cliente(paseo.Celular, {
+                  nombreCliente: paseo.Nombre,
+                  nombrePerrito: paseo.Perro,
+                });
+                await TEMPLATE_recordatorio_pago_cliente(paseo.Celular, {
+                  nombreCliente: paseo.Nombre,
+                  nombrePerrito: paseo.Perro,
+                  valorPaseo: paseo.Precio?.toString() || "No definido"
+                });
+
+                completarPaseoYActualizarPawwer(parseInt(celularPawwer));
+              }
+            }
+            
+          })();
+*/
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
