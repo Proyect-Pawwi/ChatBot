@@ -1,5 +1,5 @@
 import { addKeyword, EVENTS } from "@builderbot/bot";
-import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito, TEMPLATE_agendar_tipo_paseo, TEMPLATE_agendar_fecha_paseo, TEMPLATE_ragendar_hora_paseo, TEMPLATE_agendar_metodo_pago, TEMPLATE_agendar_resumen_paseo, TEMPLATE_confirmacion_paseo_cliente, TEMPLATE_llegada_pawwer, TEMPLATE_pawwer_llego_cliente, TEMPLATE_strava_recordatorio_pawwer, TEMPLATE_link_strava_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer, TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_paseo_finalizado_cliente, TEMPLATE_recordatorio_pago_cliente, TEMPLATE_recibir_perro_pawwer } from "../services/send-template";
+import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito, TEMPLATE_agendar_tipo_paseo, TEMPLATE_agendar_fecha_paseo, TEMPLATE_ragendar_hora_paseo, TEMPLATE_agendar_metodo_pago, TEMPLATE_agendar_resumen_paseo, TEMPLATE_confirmacion_paseo_cliente, TEMPLATE_llegada_pawwer, TEMPLATE_pawwer_llego_cliente, TEMPLATE_strava_recordatorio_pawwer, TEMPLATE_link_strava_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer, TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_paseo_finalizado_cliente, TEMPLATE_recibir_perro_pawwer } from "../services/send-template";
 import { sendText, sendButtons } from "../services/send-text";
 import { getMongoClient } from '../services/mongo';
 import { createLead } from "../services/airtable-leads";
@@ -7,8 +7,7 @@ import { getPaseoByClienteTelefonoActive, getPaseos, updatePaseo } from "../serv
 import { getCompletados } from "../services/airtable-completados";
 import { DateTime } from "luxon";
 import { confirmarLeads, createLead_Mongo, Lead } from "~/services/mongoDB/mongo-leads";
-import { getPawwerById } from "~/services/mongoDB/mongo-pawwersActivos";
-import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosByCelular, getPaseosByCelularPawwer, getPaseosPorPawwer, revisarFinalizacionPaseos, revisarPaseosPawwer, updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
+import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosByCelular, getPaseosByCelularPawwer,  updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -85,7 +84,7 @@ const updateUsuarioDireccion = async (celular, direccion) => {
 const insertarPerro = async (celular: string, perroData: Perro) => { // Add type annotations to parameters
   const client = await getMongoClient();
   const db = client.db("pawwi_bot");
-  const usuarios = db.collection<Usuario>("usuarios"); // <--- Optional: Use a generic for collection to get better type inference
+  const usuarios = db.collection<Usuario>("usuarios");
   await usuarios.updateOne(
     { celular },
     { $push: { perros: perroData } }
@@ -272,11 +271,12 @@ const init = addKeyword(EVENTS.WELCOME)
       const horaActual = DateTime.now().setZone("America/Bogota").hour;
 
       // Si es entre 6pm (18) y 6am (6) => fuera de horario
-      
+      /*
       if (horaActual >= 18 || horaActual < 6) {
         await sendText(ctx.from, "⏰ En este momento no estamos trabajando. Nuestro horario de atención es de 6:00am a 6:00pm.");
         return;
       }
+        */
       
       usuarioData[ctx.from] = usuario;
 
@@ -737,9 +737,8 @@ const checkLeadsMongo = async () => {
   try {
     console.log("mongo checkLeadsMongo ejecutado");
     confirmarLeads()
-    
   } catch (error) {
-    console.error("❌ Error al consultar los leads en Airtable:", error);
+    console.error("❌ Error al consultar los leads en Mongo:", error);
   }
 };
 
@@ -749,10 +748,6 @@ setTimeout(() => {
 
 setTimeout(() => {
   setInterval(actualizarEstadoPaseosProximos, 25 * 1000);
-}, 5000);
-
-setTimeout(() => {
-  setInterval(revisarFinalizacionPaseos, 30 * 1000);
 }, 5000);
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};

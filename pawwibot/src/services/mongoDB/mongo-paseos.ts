@@ -129,7 +129,27 @@ export async function actualizarEstadoPaseosProximos() {
   const bogotaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
 
   for (const paseo of paseos) {
-    // Paseo.fecha: "DD/MM", paseo.hora: "HH:mm"
+    if (paseo.Estado === "Esperando Strava" || paseo.Estado === "Esperando finalizacion") {
+      if (!paseo.HoraInicio || !paseo.TiempoServicio) {
+        console.log(`⚠️ Paseo ${paseo._id} no tiene HoraInicio o TiempoServicio`);
+        continue;
+      }
+
+      const horaInicio = new Date(paseo.HoraInicio);
+      const diffMs = horaInicio.getTime() + paseo.TiempoServicio * 60000 - bogotaTime.getTime();
+      const minutosRestantes = Math.ceil(diffMs / (1000 * 60));
+
+      if (minutosRestantes <= 0) {
+        await col.updateOne({ _id: paseo._id }, { $set: { Estado: "Esperando finalizacion Pawwer" } });
+        console.log(`✅ Paseo ${paseo._id} marcado como "Esperando finalizacion Pawwer"`);
+        await TEMPLATE_finalizar_paseo_pawwer(paseo.CelularPawwer, {
+          nombrePawwer: "Pawwer",
+          nombrePerrito: paseo.Perro
+        });
+      } else {
+        console.log(`⏳ Paseo ${paseo._id} le faltan ${minutosRestantes} minutos para terminar`);
+      }
+    }
     
     if (!paseo.Fecha || !paseo.Hora) continue;
 
@@ -213,7 +233,7 @@ export async function actualizarEstadoPaseosProximos() {
             calle: paseo.Direccion,
             fecha: paseo.Fecha || "No definida",
             hora: paseo.Hora || "No definida",
-            duracion: paseo.TiempoServicio || "No definido",
+            duracion: paseo.TiempoServicio + " minutos",
         });
     }
 
@@ -355,6 +375,8 @@ export async function actualizarStravaPaseo(
         linkStrava: stravaUrl.replace("https://www.strava.com/beacon/", "").trim(),
       });
 
+      sendText(celularPawwer.toString(), "Se ha enviado tu link de Strava al cliente. Recuerda finalizar el paseo cuando termines.");
+
       console.log(`✅ Paseo ${paseo._id} actualizado con Strava y estado "Esperando finalizacion"`);
       return true;
     } else {
@@ -364,35 +386,6 @@ export async function actualizarStravaPaseo(
   }
 }
 
-export async function revisarFinalizacionPaseos() {
-  const col = await connect(paseosCollection);
-  const paseos = await col.find({ Estado: { $in: ["Esperando Strava", "Esperando finalizacion"] } }).toArray();
-
-  const now = new Date();
-  const bogotaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
-
-  for (const paseo of paseos) {
-    if (!paseo.HoraInicio || !paseo.TiempoServicio) {
-      console.log(`⚠️ Paseo ${paseo._id} no tiene HoraInicio o TiempoServicio`);
-      continue;
-    }
-
-    const horaInicio = new Date(paseo.HoraInicio);
-    const diffMs = horaInicio.getTime() + paseo.TiempoServicio * 60000 - bogotaTime.getTime();
-    const minutosRestantes = Math.ceil(diffMs / (1000 * 60));
-
-    if (minutosRestantes <= 0) {
-      await col.updateOne({ _id: paseo._id }, { $set: { Estado: "Esperando finalizacion Pawwer" } });
-      console.log(`✅ Paseo ${paseo._id} marcado como "Esperando finalizacion Pawwer"`);
-      await TEMPLATE_finalizar_paseo_pawwer(paseo.CelularPawwer, {
-        nombrePawwer: "Pawwer",
-        nombrePerrito: paseo.Perro
-      });
-    } else {
-      console.log(`⏳ Paseo ${paseo._id} le faltan ${minutosRestantes} minutos para terminar`);
-    }
-  }
-}
 export async function completarPaseoYActualizarPawwer(celularPawwer: number) {
   const colPaseos = await connect(paseosCollection);
   const colCompletados = await connect("completados");
