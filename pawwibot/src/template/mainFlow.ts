@@ -634,7 +634,7 @@ const init = addKeyword(EVENTS.WELCOME)
             if (paseo.Estado == "Esperando Pawwer") {
               if (payload !== "confirmar_llegada") {
                 await TEMPLATE_llegada_pawwer(celularPawwer, { nombrePawwer:pawwer.Nombre, nombrePerrito:paseo.Perro });
-                //return endFlow();
+                return endFlow();
               }
 
               const cambios = { Estado: "Esperando perro" };
@@ -656,12 +656,12 @@ const init = addKeyword(EVENTS.WELCOME)
 
               //Mensaje de dale click al boton cuando recibas al perro
               await TEMPLATE_recibir_perro_pawwer(pawwer.NumeroTelefono, { nombrePerrito: paseo.Perro });
-              //return endFlow();
+              return endFlow();
             }
             else if (paseo.Estado === "Esperando perro") {
               if (payload !== "INICIAR_PASEO") {
                 await TEMPLATE_recibir_perro_pawwer(celularPawwer, { nombrePerrito: paseo.Perro });
-                //return endFlow();
+                return endFlow();
               }
               //actualuizar horaInicio y estado a esperando strava
               const horaInicio = DateTime.now().setZone("America/Bogota").toFormat("yyyy-MM-dd HH:mm:ss");
@@ -702,7 +702,7 @@ const init = addKeyword(EVENTS.WELCOME)
                   nombrePawwer: pawwer.Nombre,
                   nombrePerrito: paseo.Perro
                 });
-                //return endFlow();
+                return endFlow();
                 }
                 else {
                 await sendText(celularPawwer, "Gracias por finalizar el paseo. En breve el dueño recogera a su mascota");
@@ -721,7 +721,7 @@ const init = addKeyword(EVENTS.WELCOME)
             }
             
           })();
-
+          return endFlow();
           
           /*
           const paseoId = paseo.id;
