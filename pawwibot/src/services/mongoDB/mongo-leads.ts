@@ -5,6 +5,7 @@ import { crearPaseoDesdeLead } from "./mongo-paseos"; // importamos la función 
 import { sendText } from "../send-text";
 import { TEMPLATE_confirmacion_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
 import { DateTime } from "luxon";
+import { getUsuarioByCelular, getUsuarioById } from "./mongo-usuarios";
 
 dotenv.config();
 
@@ -79,38 +80,22 @@ export async function confirmarLeads() {
   const leads = await colLeads.find({ estado: { $regex: /^confirmar$/i } }).toArray() as Lead[];
   let createdCount = 0;
 
-  const pawwerActivoCol = await connect("usuarios");
-
   for (const lead of leads) {
     // ----------------- VALIDACIÓN PAWWER -----------------
-    if (!ObjectId.isValid(lead.pawwer)) {
-      await sendText(
-        "573332885462",
-        `⚠️ No se puede completar el lead ${lead._id}. Pawwer inválido: ${lead.pawwer}`
-      );
-      await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Cambiar" } });
-      continue; // saltar al siguiente lead
-    }
-
-    const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(lead.pawwer) });
+    const pawwerActivo = await getUsuarioByCelular(lead.pawwer);
     if (!pawwerActivo) {
-      await sendText(
-        "573332885462",
-        `⚠️ No se puede completar el lead ${lead._id}. No hay pawwer activo con ID: ${lead.pawwer}`
-      );
-      console.log("573332885462",`⚠️ No se puede completar el lead ${lead._id}. No hay pawwer activo con ID: ${lead.pawwer}`);
+      console.log("573332885462",`⚠️ No se puede completar el lead ${lead._id}. No hay pawwer activo con telefono: ${lead.pawwer}`);
       await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Cambiar" } });
       continue; // saltar al siguiente lead
     }
     else if (pawwerActivo.tipoUsuario != "pawwer") {
       await sendText(
         "573332885462",
-        `⚠️ No se puede completar el lead ${lead._id}. El pawwer con ID ${lead.pawwer} no está activo o no es un pawwer.`
+        `⚠️ No se puede completar el lead ${lead._id}. El pawwer con numero ${lead.pawwer} no está activo o no es un pawwer.`
       );
       console.log("573332885462",`⚠️ No se puede completar el lead ${lead._id}. El pawwer con ID ${lead.pawwer} no está activo o no es un pawwer.`);
       await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Cambiar" } });
       continue; // saltar al siguiente lead
-      
     }
 
     // ----------------- VALIDACIÓN FECHA/HORA -----------------
@@ -149,13 +134,12 @@ export async function confirmarLeads() {
     }
 
     // ----------------- PROCESAR LEAD -----------------
-    await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "confirmado" } });
-    await crearPaseoDesdeLead(lead);
+    await crearPaseoDesdeLead(lead, pawwerActivo._id!.toString(), pawwerActivo.nombre, pawwerActivo.celular);
     await colLeads.deleteOne({ _id: lead._id });
 
     // Notificar al pawwer
     await sendText(
-      pawwerActivo.NumeroTelefono,
+      pawwerActivo.celular,
       `Tienes una nueva solicitud de paseo asignada para el ${lead.fecha} a las ${lead.hora}. Por favor, revisa los detalles y prepárate para brindar un excelente servicio. ¡Gracias por ser parte de nuestro equipo! 🐾`
     );
 

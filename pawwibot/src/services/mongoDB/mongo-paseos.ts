@@ -74,28 +74,20 @@ export async function deletePaseo(id: string) {
 // ---------- FUNCIÓN: Crear Paseo desde Lead ----------
 
 
-export async function crearPaseoDesdeLead(lead: Lead) {
+export async function crearPaseoDesdeLead(lead: Lead, idPawwer: string, nombrePawwer: string, celularPawwer: number) {
   const col = await connect(paseosCollection);
 
   const now = new Date();
   const bogotaTime = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
-
-  // Obtener celular del pawwer si existe
-  let celularPawwer: number | null = null;
-  if (lead.pawwer) {
-    const pawwer = await getUsuarioById(lead.pawwer);
-    if (pawwer) {
-      celularPawwer = pawwer.NumeroTelefono || null;
-    }
-  }
 
   const tiempoServicioNum = Number(String(lead.tiempoServicio).replace(/\D/g, "")) || 0;
 
   const paseo = {
     FechaCreacion: bogotaTime,
     Celular: Number(lead.celular),
-    CelularPawwer: celularPawwer,  // <-- nuevo campo
+    CelularPawwer: celularPawwer, 
     Nombre: lead.nombre || "",
+    NombrePawwer: nombrePawwer,
     Perro: lead.perro || "",
     Anotaciones: lead.anotaciones || "",
     Direccion: lead.direccion || "",
@@ -103,12 +95,12 @@ export async function crearPaseoDesdeLead(lead: Lead) {
     TiempoServicio: tiempoServicioNum,
     Fecha: lead.fecha || "",
     Hora: lead.hora || "",
-    HoraInicio: "",       // inicializamos vacío
+    HoraInicio: "", 
     Precio: Number(lead.precio) || 0,
     Estado: "Por realizarse",
-    Strava: "",           // inicializamos vacío
+    Strava: "",
     MetodoPago: lead.metodoPago || "",
-    IdPawwer: lead.pawwer ? new ObjectId(lead.pawwer) : null,
+    IdPawwer: lead.pawwer ? new ObjectId(idPawwer) : null,
   };
 
   const result = await col.insertOne(paseo);
