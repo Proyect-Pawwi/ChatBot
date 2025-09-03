@@ -2,7 +2,7 @@ import { MongoClient, ObjectId, Collection } from "mongodb";
 import dotenv from "dotenv";
 import { Lead } from "./mongo-leads"; // importa la interfaz Lead
 import { getPawwerById } from "./mongo-pawwersActivos";
-import { TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_llegada_pawwer, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
+import { TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_llegada_pawwer, TEMPLATE_recordatorio_pago_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
 import { sendText } from "../send-text";
 import { log } from "node:console";
 import { DateTime } from "luxon";
@@ -172,6 +172,12 @@ export async function actualizarEstadoPaseosProximos() {
           idPawwer: paseo.IdPawwer ?? paseo.idPawwer ?? null,
         };
         await moverPaseoACompletados(paseoMapped);
+
+        await TEMPLATE_recordatorio_pago_cliente(paseo.Celular, {
+          nombreCliente: paseo.Nombre,
+          nombrePerrito: paseo.Perro,
+          valorPaseo: paseo.Precio?.toString() || "No definido"
+        });
 
       }
     }
@@ -447,7 +453,7 @@ export async function cancelarPaseosPorCelular(celular: number) {
     if (paseo.CelularPawwer) {
       await sendText(
         paseo.CelularPawwer,
-        `Mongo: El dueño de ${paseo.Perro} ha cancelado su paseo agendado.`
+        `El dueño de ${paseo.Perro} ha cancelado su paseo agendado.`
       );
     }
   }

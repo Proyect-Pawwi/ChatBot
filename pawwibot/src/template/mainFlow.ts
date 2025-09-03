@@ -228,7 +228,7 @@ const init = addKeyword(EVENTS.WELCOME)
                 await TEMPLATE_link_strava_cliente(paseo.Celular, {
                   nombreCliente : paseo.Nombre,
                   nombrePerrito: paseo.Perro || "tu perrito",
-                  linkStrava: linkRecibido,
+                  linkStrava: linkRecibido.replace("https://www.strava.com/beacon/", "").trim(),
                 });
               } else {
                 console.log("No coincide");
@@ -253,11 +253,6 @@ const init = addKeyword(EVENTS.WELCOME)
                 await TEMPLATE_paseo_finalizado_cliente(paseo.Celular, {
                   nombreCliente: paseo.Nombre,
                   nombrePerrito: paseo.Perro,
-                });
-                await TEMPLATE_recordatorio_pago_cliente(paseo.Celular, {
-                  nombreCliente: paseo.Nombre,
-                  nombrePerrito: paseo.Perro,
-                  valorPaseo: paseo.Precio?.toString() || "No definido"
                 });
 
                 const cambios = { Estado: "Completado (15 minutos recordatorio de pago)", horaFin: DateTime.now().setZone("America/Bogota").toFormat("yyyy-MM-dd HH:mm:ss") };

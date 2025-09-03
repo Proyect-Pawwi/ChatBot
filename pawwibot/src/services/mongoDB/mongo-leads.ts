@@ -79,7 +79,7 @@ export async function confirmarLeads() {
   const leads = await colLeads.find({ estado: { $regex: /^confirmar$/i } }).toArray() as Lead[];
   let createdCount = 0;
 
-  const pawwerActivoCol = await connect("pawwers_activos");
+  const pawwerActivoCol = await connect("usuarios");
 
   for (const lead of leads) {
     // ----------------- VALIDACIÓN PAWWER -----------------
@@ -101,6 +101,16 @@ export async function confirmarLeads() {
       console.log("573332885462",`⚠️ No se puede completar el lead ${lead._id}. No hay pawwer activo con ID: ${lead.pawwer}`);
       await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Cambiar" } });
       continue; // saltar al siguiente lead
+    }
+    else if (pawwerActivo.tipoUsuario != "pawwer") {
+      await sendText(
+        "573332885462",
+        `⚠️ No se puede completar el lead ${lead._id}. El pawwer con ID ${lead.pawwer} no está activo o no es un pawwer.`
+      );
+      console.log("573332885462",`⚠️ No se puede completar el lead ${lead._id}. El pawwer con ID ${lead.pawwer} no está activo o no es un pawwer.`);
+      await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Cambiar" } });
+      continue; // saltar al siguiente lead
+      
     }
 
     // ----------------- VALIDACIÓN FECHA/HORA -----------------
