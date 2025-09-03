@@ -5,12 +5,14 @@ import { getPawwerById } from "./mongo-pawwersActivos";
 import { TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_llegada_pawwer, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
 import { sendText } from "../send-text";
 import { log } from "node:console";
+import { DateTime } from "luxon";
 
 dotenv.config();
 
 const uri = process.env.MONGO_URI || "mongodb://localhost:27017";
 const dbName = "pawwi_bot";
 const paseosCollection = "paseos";
+const completadosCollection = "completados";
 
 const client = new MongoClient(uri);
 
@@ -33,6 +35,7 @@ export interface Paseo {
   fecha: string;
   hora: string;
   horaInicio: string;
+  horaFin: string;
   precio: number;
   Estado: string;
   metodoPago: string;
@@ -137,7 +140,41 @@ export async function actualizarEstadoPaseosProximos() {
 
     const pawwerActivoCol = await connect("pawwers_activos");
     const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(paseo.pawwer) });
-    
+
+    //Paseo ultimo mensaje si han pasado mas de 15 minutos de la hora de finalizacion
+    if (paseo.Estado === "Completado (15 minutos recordatorio de pago)" && paseo.horaFin) {
+
+      const horaFin = DateTime.fromFormat(paseo.horaFin,"yyyy-MM-dd HH:mm:ss",{ zone: "America/Bogota" });
+      const diffMinutos = DateTime.now().setZone("America/Bogota").diff(horaFin, "minutes").minutes;
+
+      if (diffMinutos > 15) {
+        console.log("⚠️ Ya pasaron más de 15 minutos desde la hora de finalización.");
+
+        // Map paseo fields from DB (camelCase) to Paseo interface (PascalCase)
+        const paseoMapped: Paseo = {
+          _id: paseo._id,
+          fechaCreacion: paseo.FechaCreacion ?? paseo.fechaCreacion ?? new Date(),
+          celular: paseo.Celular ?? paseo.celular ?? 0,
+          nombre: paseo.Nombre ?? paseo.nombre ?? "",
+          perro: paseo.Perro ?? paseo.perro ?? "",
+          anotaciones: paseo.Anotaciones ?? paseo.anotaciones ?? "",
+          direccion: paseo.Direccion ?? paseo.direccion ?? "",
+          tipoServicio: paseo.TipoServicio ?? paseo.tipoServicio ?? "",
+          tiempoServicio: paseo.TiempoServicio ?? paseo.tiempoServicio ?? "",
+          fecha: paseo.Fecha ?? paseo.fecha ?? "",
+          hora: paseo.Hora ?? paseo.hora ?? "",
+          horaInicio: paseo.HoraInicio ?? paseo.horaInicio ?? "",
+          horaFin: paseo.horaFin ?? "",
+          precio: paseo.Precio ?? paseo.precio ?? 0,
+          Estado: paseo.Estado ?? paseo.estado ?? "",
+          metodoPago: paseo.MetodoPago ?? paseo.metodoPago ?? "",
+          strava: paseo.Strava ?? paseo.strava ?? "",
+          idPawwer: paseo.IdPawwer ?? paseo.idPawwer ?? null,
+        };
+        await moverPaseoACompletados(paseoMapped);
+
+      }
+    }
 
     if(paseo.Estado === "Cancelado" || paseo.Estado === "Completado") {
       continue; // saltar paseos cancelados o completados
@@ -173,6 +210,43 @@ export async function actualizarEstadoPaseosProximos() {
     }
   }
 }
+
+// ---------- FUNCIÓN: Mover paseo a completados ----------
+export async function moverPaseoACompletados(paseo: Paseo) {
+  const completadosCol = await connect(completadosCollection);
+  const paseosCol = await connect(paseosCollection);
+
+  // Calcular ganancia del pawwer
+  const gananciaPawwer = paseo.precio * 0.6;
+
+  const completadoData = {
+    celular: paseo.celular,
+    nombre: paseo.nombre,
+    perro: paseo.perro,
+    direccion: paseo.direccion,
+    tipoServicio: paseo.tipoServicio,
+    tiempoServicio: paseo.tiempoServicio,
+    fecha: paseo.fecha,
+    hora: paseo.hora,
+    horaInicio: paseo.horaInicio || "",
+    horaFin: paseo.horaFin || "",
+    precio: paseo.precio,
+    metodoPago: paseo.metodoPago,
+    pawwer: paseo.idPawwer ? paseo.idPawwer.toString() : "",
+    estado: "Completado",
+    gananciaPawwer,
+    fechaCompletado: new Date(),
+  };
+
+  // Insertar en completados
+  await completadosCol.insertOne(completadoData);
+
+  // Eliminar de la colección de paseos
+  await paseosCol.deleteOne({ _id: paseo._id });
+
+  console.log(`✅ Paseo ${paseo._id} movido a completados`);
+}
+
 
 export async function getRegistrosPorCelular(
   celular: number,
@@ -238,9 +312,10 @@ export async function actualizarStravaPaseo(
   celularPawwer: number,
   stravaUrl: string
 ) {
+  const prefix = "https://www.strava.com/beacon/";
   // Validar que la URL comience con el prefijo requerido
-  if (!stravaUrl.startsWith("https://www.strava.com/beacon/")) {
-    console.log(`❌ La URL no es válida: debe iniciar con "https://www.strava.com/beacon/"`);
+  if (!stravaUrl.startsWith(prefix)) {
+    console.log(`❌ La URL no es válida: debe iniciar con prefixo ${prefix}`);
     return false;
   }
 
@@ -255,7 +330,7 @@ export async function actualizarStravaPaseo(
   if (paseo) {
     await col.updateOne(
       { _id: paseo._id },
-      { $set: { Strava: stravaUrl, Estado: "Esperando finalizacion" } }
+      { $set: { Strava: stravaUrl.replace(prefix, "").trim(), Estado: "Esperando finalizacion" } }
     );
 
     console.log(`✅ Paseo ${paseo._id} actualizado con Strava y estado "Esperando finalizacion"`);

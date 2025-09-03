@@ -260,7 +260,7 @@ const init = addKeyword(EVENTS.WELCOME)
                   valorPaseo: paseo.Precio?.toString() || "No definido"
                 });
 
-                const cambios = { Estado: "Completado"};
+                const cambios = { Estado: "Completado (15 minutos recordatorio de pago)", horaFin: DateTime.now().setZone("America/Bogota").toFormat("yyyy-MM-dd HH:mm:ss") };
                 const result = await updatePaseoMongo(paseo._id.toString(), cambios);
 
                 if (result.modifiedCount > 0) { console.log(`✅ Paseo ${paseo._id.toString()} actualizado correctamente`);} 
