@@ -617,8 +617,7 @@ const init = addKeyword(EVENTS.WELCOME)
 
               await sendText(
                 celularPawwer,
-                `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias. 
-          Si crees que es un error, por favor contacta al soporte. +57 3332885462`
+                `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias.\nSi crees que es un error, por favor contacta al soporte. +57 3332885462`
               );
 
               console.log("❌ No se encontró ningún paseo para este Pawwer en Mongo ni en Airtable");
