@@ -716,7 +716,11 @@ const init = addKeyword(EVENTS.WELCOME)
                   valorPaseo: paseo.Precio?.toString() || "No definido"
                 });
 
-                completarPaseoYActualizarPawwer(parseInt(celularPawwer));
+                const cambios = { Estado: "Completado"};
+                const result = await updatePaseoMongo(paseo._id.toString(), cambios);
+
+                if (result.modifiedCount > 0) { console.log(`✅ Paseo ${paseo._id.toString()} actualizado correctamente`);} 
+                else {console.log(`⚠️ No se encontró el paseo con id ${paseo._id.toString()} o no hubo cambios`);}
               }
             }
             
@@ -921,7 +925,7 @@ const init = addKeyword(EVENTS.WELCOME)
       console.log("Cancelando paseo para el usuario:", ctx.from);
 
       //APD: Cuando se active mongoDB, descomentar la siguiente linea
-      //cancelarPaseosPorCelular(parseInt(ctx.from));
+      cancelarPaseosPorCelular(parseInt(ctx.from));
 
       for (const paseo of paseoAgendado.records) {
         console.log(paseo.fields.Celular == ctx.from);

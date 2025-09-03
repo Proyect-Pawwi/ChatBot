@@ -2,7 +2,7 @@ import { MongoClient, ObjectId, Collection } from "mongodb";
 import dotenv from "dotenv";
 import { Lead } from "./mongo-leads"; // importa la interfaz Lead
 import { getPawwerById } from "./mongo-pawwersActivos";
-import { TEMPLATE_llegada_pawwer, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
+import { TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_llegada_pawwer, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
 import { sendText } from "../send-text";
 import { log } from "node:console";
 
@@ -286,6 +286,10 @@ export async function revisarFinalizacionPaseos() {
     if (minutosRestantes <= 0) {
       await col.updateOne({ _id: paseo._id }, { $set: { Estado: "Esperando finalizacion Pawwer" } });
       console.log(`✅ Paseo ${paseo._id} marcado como "Esperando finalizacion Pawwer"`);
+      await TEMPLATE_finalizar_paseo_pawwer(paseo.CelularPawwer, {
+        nombrePawwer: "Pawwer",
+        nombrePerrito: paseo.Perro
+      });
     } else {
       console.log(`⏳ Paseo ${paseo._id} le faltan ${minutosRestantes} minutos para terminar`);
     }
