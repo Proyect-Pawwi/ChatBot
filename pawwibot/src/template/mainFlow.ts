@@ -604,6 +604,16 @@ const init = addKeyword(EVENTS.WELCOME)
           //Airtable
           const paseo = await getPaseoByPawwerTelefonoActive(ctx.from);
 
+          if (!paseo) {
+            console.log("❌ No se encontró paseo activo en Airtable para este Pawwer");
+            await sendText(ctx.from, "No tienes paseos activos en este momento.");
+            return endFlow();
+          }
+
+          const paseoId = paseo.id;
+          const fields = paseo.fields;
+
+
           (async () => {
             const celularPawwer = ctx.from;
 
@@ -660,7 +670,7 @@ const init = addKeyword(EVENTS.WELCOME)
           })();
 
           
-
+          /*
           const paseoId = paseo.id;
           const fields = paseo.fields;
 
@@ -803,10 +813,12 @@ const init = addKeyword(EVENTS.WELCOME)
               await deleteLead(paseo.id);
             }
           }
+            
           else{
             console.log('Ocurrio un error');
           }
           return endFlow();
+          */
         }
         else if (usuario.tipoUsuario == "support") {
           await sendText(ctx.from, `Hola ${nombre}, si lees esto es porque eres de soporte`);
