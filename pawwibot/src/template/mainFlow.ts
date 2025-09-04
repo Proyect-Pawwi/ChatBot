@@ -258,10 +258,12 @@ const init = addKeyword(EVENTS.WELCOME)
 
       // Si es entre 6pm (18) y 6am (6) => fuera de horario
       
+      /*
       if (horaActual >= 18 || horaActual < 6) {
         await sendText(ctx.from, "⏰ En este momento no estamos trabajando. Nuestro horario de atención es de 6:00am a 6:00pm.");
         return;
       }
+        */
       
       
       usuarioData[ctx.from] = usuario;
