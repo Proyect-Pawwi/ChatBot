@@ -742,7 +742,7 @@ const checkLeadsMongo = async () => {
   }
 };
 
-/*
+
 setTimeout(() => {
   setInterval(checkLeadsMongo, 20 * 1000);
 }, 5000);
@@ -750,5 +750,5 @@ setTimeout(() => {
 setTimeout(() => {
   setInterval(actualizarEstadoPaseosProximos, 25 * 1000);
 }, 5000);
-*/
+
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
