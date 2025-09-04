@@ -2,12 +2,10 @@ import { addKeyword, EVENTS } from "@builderbot/bot";
 import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito, TEMPLATE_agendar_tipo_paseo, TEMPLATE_agendar_fecha_paseo, TEMPLATE_ragendar_hora_paseo, TEMPLATE_agendar_metodo_pago, TEMPLATE_agendar_resumen_paseo, TEMPLATE_confirmacion_paseo_cliente, TEMPLATE_llegada_pawwer, TEMPLATE_pawwer_llego_cliente, TEMPLATE_strava_recordatorio_pawwer, TEMPLATE_link_strava_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer, TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_paseo_finalizado_cliente, TEMPLATE_recibir_perro_pawwer } from "../services/send-template";
 import { sendText, sendButtons } from "../services/send-text";
 import { getMongoClient } from '../services/mongo';
-import { createLead } from "../services/airtable-leads";
 import { getPaseoByClienteTelefonoActive, getPaseos, updatePaseo } from "../services/airtable-paseos";
-import { getCompletados } from "../services/airtable-completados";
 import { DateTime } from "luxon";
-import { confirmarLeads, createLead_Mongo, Lead } from "~/services/mongoDB/mongo-leads";
-import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, completarPaseoYActualizarPawwer, getPaseosByCelular, getPaseosByCelularPawwer,  updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
+import { confirmarLeads, createLead_Mongo } from "~/services/mongoDB/mongo-leads";
+import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, getPaseosByCelularPawwer,  updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -54,24 +52,6 @@ function parseNumero(value: unknown): number {
     return isNaN(parsed) ? 0 : parsed;
   }
   return 0;
-}
-
-export async function sumarCampoPorCelular(celular: string, campo: string): Promise<number> {
-  let total = 0;
-  let offset: string | undefined = undefined;
-  const formula = `{Celular} = "${celular}"`;
-
-  do {
-    const response = await getCompletados(formula, 100, 'Grid view', offset);
-    for (const record of response.records) {
-      // Accedemos dinámicamente al campo. TS no sabe su forma exacta, así que lo tratamos como any.
-      const raw = (record.fields as any)[campo];
-      total += parseNumero(raw);
-    }
-    offset = response.offset;
-  } while (offset);
-
-  return total;
 }
 
 const updateUsuarioDireccion = async (celular, direccion) => {
@@ -151,14 +131,20 @@ const init = addKeyword(EVENTS.WELCOME)
             console.log("Paseos en Mongo:", paseosMongo.length);
             console.log(paseosMongo[0]);
             
-
             if (paseosMongo.length === 0) {
+
+              //Hacerlo pero en mongo
+              /*
               const campo = "Ganancia Pawwer";
               const gananciasPawwer = await sumarCampoPorCelular(celularPawwer, campo);
-
               await sendText(
                 celularPawwer,
                 `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias.\nSi crees que es un error, por favor contacta al soporte. +57 3332885462`
+              );
+              */
+             await sendText(
+                celularPawwer,
+                `No tienes paseos activos en este momento. Si crees que es un error, por favor contacta al soporte. +57 3332885462`
               );
 
               console.log("❌ No se encontró ningún paseo para este Pawwer en Mongo ni en Airtable");
@@ -294,13 +280,14 @@ const init = addKeyword(EVENTS.WELCOME)
       return endFlow();
     }
     else if (payloadBoton == 'Cancelar') {
+      cancelarPaseosPorCelular(parseInt(ctx.from));
+
+      //TODO revisar cancelar
       //Cobtener el primer paseo donde el celular sea igual y el estado sea agendado
       const paseoAgendado = await getPaseos();
       console.log("Cancelando paseo para el usuario:", ctx.from);
 
-      //APD: Cuando se active mongoDB, descomentar la siguiente linea
-      cancelarPaseosPorCelular(parseInt(ctx.from));
-
+      /*
       for (const paseo of paseoAgendado.records) {
         console.log(paseo.fields.Celular == ctx.from);
         
@@ -312,6 +299,7 @@ const init = addKeyword(EVENTS.WELCOME)
           console.log(`✅ Paseo cancelado para el usuario ${ctx.from}`);
         }
       }
+      */
       
       return endFlow();
     }
@@ -670,23 +658,6 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
         const data: Usuario = usuarioData[ctx.from];
         const selectedDog = data.perroSeleccionado; // Get the selected dog object
 
-        await createLead({
-          FechaCreacion: new Date().toISOString(),
-          Celular: ctx.from,
-          "Nombre cliente": ctx.pushName || 'Usuario',
-          Perro: selectedDog?.nombre ?? 'No definido',
-          Anotaciones: `Raza: ${selectedDog?.raza ?? 'No definida'}, Edad: ${selectedDog?.edad ?? 'No definida'}, Consideraciones: ${selectedDog?.consideraciones ?? 'No definidas'}, Vacunas: ${selectedDog?.vacunas !== undefined ? (selectedDog.vacunas ? 'Sí' : 'No') : 'No definida'}`,
-          Direccion: data.Direccion ?? 'No definida',
-          TipoServicio: 'paseo',
-          TiempoServicio: data.agendamientoSeleccionado ?? 'No definido',
-          Fecha: data.diaSeleccionado ?? 'No definida',
-          Hora: data.horaSeleccionada ?? 'No definida',
-          Precio: data.valor ?? 0,
-          Estado: 'Pendiente',
-          Pawwer: '',
-          "metodo Pago": data.metodoPago ?? 'No especificado'
-        });
-
         await createLead_Mongo({
           celular: parseInt(ctx.from),
           nombre: ctx.pushName || 'Usuario',
@@ -735,7 +706,7 @@ Precio: $${data.valor || 0}`);
 
 const checkLeadsMongo = async () => {
   try {
-    console.log("mongo checkLeadsMongo ejecutado");
+    //console.log("mongo checkLeadsMongo ejecutado");
     confirmarLeads()
   } catch (error) {
     console.error("❌ Error al consultar los leads en Mongo:", error);
@@ -744,11 +715,11 @@ const checkLeadsMongo = async () => {
 
 
 setTimeout(() => {
-  setInterval(checkLeadsMongo, 20 * 1000);
+  setInterval(checkLeadsMongo, 50 * 1000);
 }, 5000);
 
 setTimeout(() => {
-  setInterval(actualizarEstadoPaseosProximos, 25 * 1000);
+  setInterval(actualizarEstadoPaseosProximos, 58 * 1000);
 }, 5000);
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};

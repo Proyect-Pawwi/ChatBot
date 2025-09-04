@@ -158,6 +158,6 @@ export async function confirmarLeads() {
     createdCount++;
   }
 
-  console.log(`✅ ${createdCount} paseos creados a partir de leads confirmados.`);
+  //console.log(`✅ ${createdCount} paseos creados a partir de leads confirmados.`);
   return createdCount;
 }
