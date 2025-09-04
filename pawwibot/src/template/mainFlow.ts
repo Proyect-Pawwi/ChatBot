@@ -271,12 +271,12 @@ const init = addKeyword(EVENTS.WELCOME)
       const horaActual = DateTime.now().setZone("America/Bogota").hour;
 
       // Si es entre 6pm (18) y 6am (6) => fuera de horario
-      /*
+      
       if (horaActual >= 18 || horaActual < 6) {
         await sendText(ctx.from, "⏰ En este momento no estamos trabajando. Nuestro horario de atención es de 6:00am a 6:00pm.");
         return;
       }
-        */
+      
       
       usuarioData[ctx.from] = usuario;
 
@@ -742,6 +742,7 @@ const checkLeadsMongo = async () => {
   }
 };
 
+/*
 setTimeout(() => {
   setInterval(checkLeadsMongo, 20 * 1000);
 }, 5000);
@@ -749,5 +750,5 @@ setTimeout(() => {
 setTimeout(() => {
   setInterval(actualizarEstadoPaseosProximos, 25 * 1000);
 }, 5000);
-
+*/
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
