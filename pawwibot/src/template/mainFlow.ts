@@ -234,9 +234,11 @@ const init = addKeyword(EVENTS.WELCOME)
         }
         else if(usuario.tipoUsuario == "cliente") {
           const paseo = await getPaseosPorCliente(parseInt(ctx.from));
+          console.log(paseo);
+          
 
           if (paseo) {
-            await sendText(ctx.from, `Tienes un paseo agendado para el ${paseo.fecha} a las ${paseo.hora}. Si deseas modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
+            await sendText(ctx.from, `Tienes un paseo agendado para el ${paseo.Fecha} a las ${paseo.Hora}. Si deseas modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
             console.log('❌ No se encontró ningún paseo para este Pawwer con estado "Esperando Pawwer"');
             return;
           }
