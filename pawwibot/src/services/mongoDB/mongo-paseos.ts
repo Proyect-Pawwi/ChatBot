@@ -491,6 +491,24 @@ export async function getPaseosPorPawwer(celularPawwer: number) {
   return paseos;
 }
 
+export async function getPaseosPorCliente(celular: number) {
+  console.log("Obteniendo paseos con celular:", celular);
+  
+  const col = await connect(paseosCollection);
+
+  // Buscar todos los paseos donde CelularPawwer coincida
+  const paseos = await col.find({ Celular: celular }).toArray();
+
+  if (paseos.length === 0) {
+    console.log(`⚠️ No se encontraron paseos con celular ${celular}`);
+    return null;
+  } 
+  else {
+    console.log(`✅ Se encontraron ${paseos.length} paseo(s) para  ${celular}`);
+    return paseos[0];
+  }
+}
+
 // Supongamos que esto está dentro de un handler de mensajes
 export async function revisarPaseosPawwer(ctx: any) {
   try {

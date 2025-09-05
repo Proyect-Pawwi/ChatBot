@@ -2,10 +2,9 @@ import { addKeyword, EVENTS } from "@builderbot/bot";
 import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito, TEMPLATE_agendar_tipo_paseo, TEMPLATE_agendar_fecha_paseo, TEMPLATE_ragendar_hora_paseo, TEMPLATE_agendar_metodo_pago, TEMPLATE_agendar_resumen_paseo, TEMPLATE_confirmacion_paseo_cliente, TEMPLATE_llegada_pawwer, TEMPLATE_pawwer_llego_cliente, TEMPLATE_strava_recordatorio_pawwer, TEMPLATE_link_strava_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer, TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_paseo_finalizado_cliente, TEMPLATE_recibir_perro_pawwer } from "../services/send-template";
 import { sendText, sendButtons } from "../services/send-text";
 import { getMongoClient } from '../services/mongo';
-import { getPaseoByClienteTelefonoActive, getPaseos, updatePaseo } from "../services/airtable-paseos";
 import { DateTime } from "luxon";
 import { confirmarLeads, createLead_Mongo } from "~/services/mongoDB/mongo-leads";
-import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, getPaseosByCelularPawwer,  updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
+import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, getPaseosByCelularPawwer,  getPaseosPorCliente,  updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -42,16 +41,6 @@ interface Usuario {
   valor?: number;
   Direccion?: string;
   agendamientoSeleccionado?: string;
-}
-
-function parseNumero(value: unknown): number {
-  if (typeof value === 'number') return value;
-  if (typeof value === 'string') {
-    const cleaned = value.replace(/[,]+/g, '').trim();
-    const parsed = parseFloat(cleaned);
-    return isNaN(parsed) ? 0 : parsed;
-  }
-  return 0;
 }
 
 const updateUsuarioDireccion = async (celular, direccion) => {
@@ -244,10 +233,10 @@ const init = addKeyword(EVENTS.WELCOME)
           return endFlow();
         }
         else if(usuario.tipoUsuario == "cliente") {
-          const paseo = await getPaseoByClienteTelefonoActive(ctx.from);
+          const paseo = await getPaseosPorCliente(parseInt(ctx.from));
 
           if (paseo) {
-            await sendText(ctx.from, `Tienes un paseo agendado para el ${paseo.fields.Fecha} a las ${paseo.fields.Hora}. Si deseas modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
+            await sendText(ctx.from, `Tienes un paseo agendado para el ${paseo.fecha} a las ${paseo.hora}. Si deseas modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
             console.log('❌ No se encontró ningún paseo para este Pawwer con estado "Esperando Pawwer"');
             return;
           }
@@ -264,7 +253,6 @@ const init = addKeyword(EVENTS.WELCOME)
         return;
       }
         */
-      
       
       usuarioData[ctx.from] = usuario;
 
@@ -283,26 +271,6 @@ const init = addKeyword(EVENTS.WELCOME)
     }
     else if (payloadBoton == 'Cancelar') {
       cancelarPaseosPorCelular(parseInt(ctx.from));
-
-      //TODO revisar cancelar
-      //Cobtener el primer paseo donde el celular sea igual y el estado sea agendado
-      const paseoAgendado = await getPaseos();
-      console.log("Cancelando paseo para el usuario:", ctx.from);
-
-      /*
-      for (const paseo of paseoAgendado.records) {
-        console.log(paseo.fields.Celular == ctx.from);
-        
-        if (paseo.fields.Celular == ctx.from && paseo.fields.Estado != "Cancelado") {
-          await updatePaseo(paseo.id, { Estado: "Cancelado" });
-          await sendText('573332885462', `El usuario ${ctx.from} ha cancelado su paseo agendado.`);
-          await sendText(paseo.fields["Numero de teléfono (from Pawwer)"]?.[0] || "", `El dueño de ${paseo.fields.Perro} ha cancelado su paseo agendado.`);
-          await sendText(ctx.from, "Has cancelado el agendamiento. Si deseas agendar otro paseo, por favor inicia de nuevo.");
-          console.log(`✅ Paseo cancelado para el usuario ${ctx.from}`);
-        }
-      }
-      */
-      
       return endFlow();
     }
 
