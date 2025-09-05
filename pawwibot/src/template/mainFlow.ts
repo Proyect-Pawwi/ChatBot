@@ -676,6 +676,8 @@ Precio: $${data.valor || 0}`);
     }
   });
 
+  await sendText('573332885462', `Si llega este mensaje es porque ya tenemos leads organicos, asi que diganle a Diegod :D.`);
+
 const checkLeadsMongo = async () => {
   try {
     //console.log("mongo checkLeadsMongo ejecutado");
@@ -687,11 +689,11 @@ const checkLeadsMongo = async () => {
 
 
 setTimeout(() => {
-  setInterval(checkLeadsMongo, 50 * 1000);
+  setInterval(checkLeadsMongo, 300 * 1000);
 }, 5000);
 
 setTimeout(() => {
-  setInterval(actualizarEstadoPaseosProximos, 58 * 1000);
+  setInterval(actualizarEstadoPaseosProximos, 505 * 1000);
 }, 5000);
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
