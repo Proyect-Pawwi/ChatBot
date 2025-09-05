@@ -360,6 +360,10 @@ const RegistrarEdadPerrito = addKeyword('RegistrarEdadPerrito')
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { gotoFlow }) => {
       const edad = ctx.body.trim();
+      if (!edad) {
+        await sendText(ctx.from, `Por favor, responde solo con la edad de tu perrito.`);
+        return gotoFlow(init);
+      }
       perritoData[ctx.from].edad = edad;
       return gotoFlow(RegistrarConsideracionesPerrito);
   });
@@ -436,8 +440,13 @@ const RegistrarPerro = addKeyword('RegistrarPerro')
   })
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { gotoFlow }) => {
-    usuarioData[ctx.from].perroSeleccionado = perritoData[ctx.from];
-    return gotoFlow(agendarTiempoPaseo);
+    if (ctx.payload == "AGENDAR_PASEO_MAS_TARDE") {
+      return gotoFlow(init);
+    }
+    else {
+      usuarioData[ctx.from].perroSeleccionado = perritoData[ctx.from];
+      return gotoFlow(agendarTiempoPaseo);
+    }
   });
 
 const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
@@ -598,6 +607,16 @@ const agendarMetodoPaseo = addKeyword('agendarMetodoPaseo')
   .addAnswer('', { capture: true })
   .addAction(async (ctx, { gotoFlow }) => {
     const metodo = ctx.body.trim().toLowerCase();
+
+    if (ctx.payload == "METODO_PAGO_NEQUI" || ctx.body == "Nequi") {
+      metodo == "Nequi";
+    }
+    else if (ctx.payload == "METODO_PAGO_EFECTIVO" || ctx.body == "Efectivo") {
+      metodo == "Efectivo";
+    }
+    else {
+      return gotoFlow(agendarMetodoPaseo);
+    }
 
     usuarioData[ctx.from] ??= {};
     usuarioData[ctx.from].metodoPago = metodo;
