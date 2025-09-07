@@ -6,8 +6,6 @@ import { DateTime } from "luxon";
 import { confirmarLeads, createLead_Mongo } from "~/services/mongoDB/mongo-leads";
 import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, getPaseosByCelularPawwer,  getPaseosPorCliente,  updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
 
-//TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
-
 const regex = (text) => {
   if (!text || text.trim() === "") return false;
   return /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(text.trim());
@@ -16,7 +14,6 @@ const regex = (text) => {
 const perritoData = {};
 const usuarioData = {};
 
-// Define the interface for a single dog (Perro)
 interface Perro {
   nombre: string;
   raza: string;
@@ -25,10 +22,9 @@ interface Perro {
   vacunas: boolean;
 }
 
-// Define the interface for a user (Usuario)
 interface Usuario {
   celular: string;
-  tipoUsuario?: string; // Optional, can be 'cliente' or 'pawwer'
+  tipoUsuario?: string;
   nombre: string;
   direccion: string;
   perros: Perro[];
@@ -50,7 +46,7 @@ const updateUsuarioDireccion = async (celular, direccion) => {
   await usuarios.updateOne({ celular }, { $set: { Direccion: direccion } });
 };
 
-const insertarPerro = async (celular: string, perroData: Perro) => { // Add type annotations to parameters
+const insertarPerro = async (celular: string, perroData: Perro) => {
   const client = await getMongoClient();
   const db = client.db("pawwi_bot");
   const usuarios = db.collection<Usuario>("usuarios");
@@ -75,6 +71,9 @@ const init = addKeyword(EVENTS.WELCOME)
     const textoBoton = ctx.body;
     const payloadBoton = ctx.payload || "Sin payload";
     console.log(`[INTERACTION] Botón oprimido: ${textoBoton}, Payload: ${payloadBoton}`);
+    if (ctx.from != '573023835142' && ctx.from != '573332885462') {
+      await sendText('573332885462',`Usuario con numero ${ctx.from} ha interactuado con el bot.\nText: ${textoBoton}\nPayload: ${payloadBoton}`)
+    }
 
     if (payloadBoton == "" && textoBoton == "") {
       return endFlow();
@@ -121,17 +120,7 @@ const init = addKeyword(EVENTS.WELCOME)
             console.log(paseosMongo[0]);
             
             if (paseosMongo.length === 0) {
-
-              //Hacerlo pero en mongo
-              /*
-              const campo = "Ganancia Pawwer";
-              const gananciasPawwer = await sumarCampoPorCelular(celularPawwer, campo);
               await sendText(
-                celularPawwer,
-                `No tienes paseos activos en este momento. Has acumulado un total de $${gananciasPawwer} en ganancias.\nSi crees que es un error, por favor contacta al soporte. +57 3332885462`
-              );
-              */
-             await sendText(
                 celularPawwer,
                 `No tienes paseos activos en este momento. Si crees que es un error, por favor contacta al soporte. +57 3332885462`
               );
@@ -254,7 +243,7 @@ const init = addKeyword(EVENTS.WELCOME)
         await sendText(ctx.from, "⏰ En este momento no estamos trabajando. Nuestro horario de atención es de 6:00am a 6:00pm.");
         return;
       }
-        */
+      */
       
       usuarioData[ctx.from] = usuario;
 
@@ -480,31 +469,18 @@ const AgendarlistarPerritos = addKeyword('AgendarlistarPerritos')
     );
 
     if (perroSeleccionado) {
-      // --- ADD THIS CONSOLE.LOG HERE ---
-      console.log("------------------------------------");
-      console.log("Perro seleccionado por el usuario:");
-      console.log("Nombre:", perroSeleccionado.nombre);
-      console.log("Raza:", perroSeleccionado.raza);
-      console.log("Edad:", perroSeleccionado.edad);
-      console.log("Consideraciones:", perroSeleccionado.consideraciones);
-      console.log("Vacunas:", perroSeleccionado.vacunas);
-      console.log("------------------------------------");
-      // --- END CONSOLE.LOG ADDITION ---
-
-      // 4. Store the selected dog in usuarioData for later use
       currentUser.perroSeleccionado = perroSeleccionado;
-      usuarioData[ctx.from] = currentUser; // Update the global usuarioData
+      usuarioData[ctx.from] = currentUser;
 
       return gotoFlow(agendarTiempoPaseo);
     } else {
       await sendText(ctx.from, `Por favor, selecciona un perrito válido de la lista.`);
-      return gotoFlow(AgendarlistarPerritos); // Go back to list dogs if invalid selection
+      return gotoFlow(AgendarlistarPerritos);
     }
   });
 
 const agendarTiempoPaseo = addKeyword('agendarTiempoPaseo')
   .addAction(async (ctx) => {
-    // Usa la plantilla con el nombre del perrito seleccionado
     const nombrePerro = usuarioData[ctx.from]?.perroSeleccionado?.Nombre || "tu peludito";
     await TEMPLATE_agendar_tipo_paseo(ctx.from, nombrePerro);
   })
@@ -553,7 +529,6 @@ const agendarDiaPaseo = addKeyword('agendarDiaPaseo')
       
       const zonaColombia = "America/Bogota";
 
-      // Obtener fecha actual en hora Colombia
       let fecha = DateTime.now().setZone(zonaColombia);
 
       // Si el usuario eligió "Mañana", sumamos un día
@@ -590,7 +565,6 @@ const agendarHoraPaseo = addKeyword('agendarHoraPaseo')
     usuarioData[ctx.from].horaSeleccionada = horaSeleccionado;
 
     if (usuarioData[ctx.from].Direccion === undefined || usuarioData[ctx.from].Direccion === "") {
-        //await sendText(ctx.from, "Por favor, primero registra la dirección donde recogeremos a tu peludito.");
         return gotoFlow(RegistrarDireccion);
     }
     else {
@@ -621,22 +595,22 @@ const agendarMetodoPaseo = addKeyword('agendarMetodoPaseo')
     usuarioData[ctx.from] ??= {};
     usuarioData[ctx.from].metodoPago = metodo;
 
-    return gotoFlow(agendarResumenPaseo); // o el flujo siguiente que uses
+    return gotoFlow(agendarResumenPaseo);
   });  
 
 const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
   .addAction(async (ctx) => {
     const data: Usuario = usuarioData[ctx.from];
-    const selectedDog = data.perroSeleccionado; // Get the selected dog object for easier access
+    const selectedDog = data.perroSeleccionado; 
 
     await TEMPLATE_agendar_resumen_paseo(ctx.from, {
-      dogName: selectedDog?.nombre || 'No definido',     // {{1}}
-      calle: data.Direccion?.split(' – ')[0] || 'No definida', // {{2}}
-      fecha: data.diaSeleccionado || 'No definida',    // {{3}}
-      hora: data.horaSeleccionada || 'No definida',   // {{4}}
-      tipoPaseo: data.agendamientoSeleccionado || 'No definido', // {{5}}
-      precio: `$${data.valor || 0}`,                    // {{6}}
-      metodoPago: data.metodoPago || 'No definido'          // {{7}}
+      dogName: selectedDog?.nombre || 'No definido',  
+      calle: data.Direccion?.split(' – ')[0] || 'No definida',
+      fecha: data.diaSeleccionado || 'No definida',   
+      hora: data.horaSeleccionada || 'No definida',   
+      tipoPaseo: data.agendamientoSeleccionado || 'No definido',
+      precio: `$${data.valor || 0}`,                  
+      metodoPago: data.metodoPago || 'No definido'         
     });
 
   })
@@ -647,7 +621,7 @@ const agendarResumenPaseo = addKeyword('agendarResumenPaseo')
     if (textoBoton === 'Si' || payloadBoton === 'SI') {
       try {
         const data: Usuario = usuarioData[ctx.from];
-        const selectedDog = data.perroSeleccionado; // Get the selected dog object
+        const selectedDog = data.perroSeleccionado;
 
         await createLead_Mongo({
           celular: parseInt(ctx.from),
@@ -695,11 +669,8 @@ Precio: $${data.valor || 0}`);
     }
   });
 
-  await sendText('573332885462', `Si llega este mensaje es porque ya tenemos leads organicos, asi que diganle a Diegod :D.`);
-
 const checkLeadsMongo = async () => {
   try {
-    //console.log("mongo checkLeadsMongo ejecutado");
     confirmarLeads()
   } catch (error) {
     console.error("❌ Error al consultar los leads en Mongo:", error);
