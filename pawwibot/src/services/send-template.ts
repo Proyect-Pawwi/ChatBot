@@ -1287,29 +1287,46 @@ export async function TEMPLATE_utils_confirmacion_paseo_cliente(
   const phone_number_id = process.env.numberId;
 
   const body = {
-    messaging_product: "whatsapp",
-    to,
-    type: "template",
-    template: {
-      name: "confirmacion_paseo_cliente", // 👈 nombre EXACTO de la plantilla en Meta
-      language: { code: "es" },
-      components: [
-        {
-          type: "body",
-          parameters: [
-            { type: "text", text: nombreCliente },
-            { type: "text", text: nombrePerrito },
-            { type: "text", text: calle },
-            { type: "text", text: fecha },
-            { type: "text", text: hora },
-            { type: "text", text: duracion },
-            { type: "text", text: precio },
-            { type: "text", text: pawwer }
-          ]
-        }
-      ]
-    }
-  };
+  messaging_product: "whatsapp",
+  to,
+  type: "template",
+  template: {
+    name: "utils_confirmacion_paseo_client",
+    language: { code: "es" },
+    components: [
+      {
+        type: "body",
+        parameters: [
+          { type: "text", text: nombreCliente },
+          { type: "text", text: nombrePerrito },
+          { type: "text", text: calle },
+          { type: "text", text: fecha },
+          { type: "text", text: hora },
+          { type: "text", text: duracion },
+          { type: "text", text: precio },
+          { type: "text", text: pawwer }
+        ]
+      },
+      {
+        type: "button",
+        sub_type: "url",
+        index: "0", // Botón 1
+        parameters: [
+          { type: "text", text: "VER_DETALLES" }
+        ]
+      },
+      {
+        type: "button",
+        sub_type: "url", // o "quick_reply"
+        index: "1", // Botón 2
+        parameters: [
+          { type: "text", text: "CAMBIAR_PASEO" }
+        ]
+      }
+    ]
+  }
+};
+
 
   try {
     const res = await axios.post(
@@ -1327,6 +1344,213 @@ export async function TEMPLATE_utils_confirmacion_paseo_cliente(
   } catch (err) {
     console.error(
       "❌ Error al enviar plantilla 'confirmacion_paseo_cliente':",
+      err.response?.data || err
+    );
+  }
+}
+
+export async function TEMPLATE_utils_recordatorio_paseo_cliente(
+  to,
+  {
+    nombreCliente,
+    nombrePerrito,
+    fecha,
+    hora,
+    direccion,
+    duracion
+  }
+) {
+  const token = process.env.jwtToken;
+  const phone_number_id = process.env.numberId;
+
+  const body = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: "utils_recordatorio_paseo_cliente", // nombre EXACTO de tu plantilla
+      language: { code: "es" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: nombreCliente },
+            { type: "text", text: nombrePerrito },
+            { type: "text", text: fecha },
+            { type: "text", text: hora },
+            { type: "text", text: direccion },
+            { type: "text", text: duracion }
+          ]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: "0" // Confirmar
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: "1" // Cancelar
+        }
+      ]
+    }
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v19.0/${phone_number_id}/messages`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("✅ Plantilla 'utils_recordatorio_paseo_cliente' enviada:", res.data);
+  } catch (err) {
+    console.error(
+      "❌ Error al enviar plantilla 'utils_recordatorio_paseo_cliente':",
+      err.response?.data || err
+    );
+  }
+}
+
+export async function TEMPLATE_utils_confirmacion_paseo_pawwer(
+  to,
+  {
+    locationName,
+    address,
+    direccion,
+    fecha,
+    hora,
+    duracion,
+    precio
+  }
+) {
+  const token = process.env.jwtToken;
+  const phone_number_id = process.env.numberId;
+
+  const body = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: "utils_confirmacion_paseo_pawwer", // 👈 Nombre EXACTO en Meta
+      language: { code: "es" },
+      components: [
+        // Header con ubicación
+        {
+          type: "header",
+          parameters: [
+            {
+              type: "location",
+              location: {
+                name: locationName,
+                address: address
+              }
+            }
+          ]
+        },
+        // Body con los parámetros dinámicos
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: direccion },
+            { type: "text", text: fecha },
+            { type: "text", text: hora },
+            { type: "text", text: duracion },
+            { type: "text", text: precio }
+          ]
+        },
+        // Botón quick reply
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: "0" // "Reportar novedad"
+        }
+      ]
+    }
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v19.0/${phone_number_id}/messages`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("✅ Plantilla 'utils_confirmacion_paseo_pawwer' enviada:", res.data);
+  } catch (err) {
+    console.error(
+      "❌ Error al enviar plantilla 'utils_confirmacion_paseo_pawwer':",
+      err.response?.data || err
+    );
+  }
+}
+
+export async function TEMPLATE_utils_recordatorio_paseo_pawwer(
+  to,
+  {
+    direccion,
+    fecha,
+    hora,
+    duracion
+  }
+) {
+  const token = process.env.jwtToken;
+  const phone_number_id = process.env.numberId;
+
+  const body = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: "utils_recordatorio_paseo_pawwer", // 👈 Nombre exacto en Meta
+      language: { code: "es" },
+      components: [
+        // Body con parámetros dinámicos
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: direccion },
+            { type: "text", text: fecha },
+            { type: "text", text: hora },
+            { type: "text", text: duracion }
+          ]
+        },
+        // Botón quick reply
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: "0" // "Reportar novedad"
+        }
+      ]
+    }
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v19.0/${phone_number_id}/messages`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("✅ Plantilla 'utils_recordatorio_paseo_pawwer' enviada:", res.data);
+  } catch (err) {
+    console.error(
+      "❌ Error al enviar plantilla 'utils_recordatorio_paseo_pawwer':",
       err.response?.data || err
     );
   }

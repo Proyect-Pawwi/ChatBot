@@ -2,7 +2,7 @@ import { MongoClient, ObjectId, Collection } from "mongodb";
 import dotenv from "dotenv";
 import { Lead } from "./mongo-leads"; // importa la interfaz Lead
 import { getPawwerById } from "./mongo-pawwersActivos";
-import { TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_link_strava_cliente, TEMPLATE_llegada_pawwer, TEMPLATE_recordatorio_pago_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
+import { TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_link_strava_cliente, TEMPLATE_llegada_pawwer, TEMPLATE_recordatorio_pago_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer, TEMPLATE_utils_recordatorio_paseo_cliente, TEMPLATE_utils_recordatorio_paseo_pawwer } from "../send-template";
 import { sendText } from "../send-text";
 import { log } from "node:console";
 import { DateTime } from "luxon";
@@ -218,22 +218,20 @@ export async function actualizarEstadoPaseosProximos() {
     } 
     else if (diffMinutes <= 60 && paseo.Estado == "Por realizarse") {
         nuevoEstado = "Falta 1 hora";
-        await TEMPLATE_recordatorio_paseo_cliente(paseo.Celular, {
+        await TEMPLATE_utils_recordatorio_paseo_cliente(paseo.Celular, {
             nombreCliente: paseo.Nombre,
             nombrePerrito: paseo.Perro || "tu perrito",
             fecha: paseo.Fecha || "No definida",
             hora: paseo.Hora || "No definida",
-            calle: paseo.Direccion,
+            direccion: paseo.Direccion,
             duracion: paseo.TiempoServicio + " minutos",
         });
 
-        await TEMPLATE_recordatorio_paseo_pawwer(paseo.CelularPawwer, {
-            nombrePawwer: pawwerActivo?.Nombre || "Pawwer",
-            nombrePerrito: paseo.Perro || "tu perrito",
-            calle: paseo.Direccion,
-            fecha: paseo.Fecha || "No definida",
-            hora: paseo.Hora || "No definida",
-            duracion: paseo.TiempoServicio + " minutos",
+        await TEMPLATE_utils_recordatorio_paseo_pawwer(paseo.CelularPawwer, {
+          direccion: paseo.Direccion,
+          fecha: paseo.Fecha || "No definida",
+          hora: paseo.Hora || "No definida",
+          duracion: paseo.TiempoServicio + " minutos",
         });
     }
 

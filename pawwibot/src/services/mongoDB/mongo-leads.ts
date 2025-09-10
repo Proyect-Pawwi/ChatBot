@@ -3,7 +3,7 @@ import { MongoClient, ObjectId, Collection } from "mongodb";
 import dotenv from "dotenv";
 import { crearPaseoDesdeLead } from "./mongo-paseos"; // importamos la función para crear paseo
 import { sendText } from "../send-text";
-import { TEMPLATE_confirmacion_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer } from "../send-template";
+import { TEMPLATE_confirmacion_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer, TEMPLATE_utils_confirmacion_paseo_cliente, TEMPLATE_utils_confirmacion_paseo_pawwer } from "../send-template";
 import { DateTime } from "luxon";
 import { getUsuarioByCelular, getUsuarioById } from "./mongo-usuarios";
 
@@ -143,8 +143,30 @@ export async function confirmarLeads() {
       `Tienes una nueva solicitud de paseo asignada para el ${lead.fecha} a las ${lead.hora}. Por favor, revisa los detalles y prepárate para brindar un excelente servicio. ¡Gracias por ser parte de nuestro equipo! 🐾`
     );
 
+    await TEMPLATE_utils_confirmacion_paseo_pawwer(pawwerActivo.celular, {
+      locationName: "Direccion del cliente",
+      address: lead.direccion + ", Bogotá",
+      direccion: lead.direccion,
+      fecha: lead.fecha,
+      hora: lead.hora,
+      duracion: lead.tiempoServicio,
+      precio: "$"+ lead.precio
+    });
+
+
     // Notificar al cliente
     await TEMPLATE_confirmacion_paseo_cliente(lead.celular, {
+      nombreCliente: String(lead.nombre),
+      nombrePerrito: String(lead.perro),
+      calle: String(lead.direccion),
+      fecha: String(lead.fecha),
+      hora: String(lead.hora),
+      duracion: String(lead.tiempoServicio),
+      precio: String(lead.precio),
+      pawwer: String(pawwerActivo.Nombre),
+    });
+
+    await TEMPLATE_utils_confirmacion_paseo_cliente(lead.celular, {
       nombreCliente: String(lead.nombre),
       nombrePerrito: String(lead.perro),
       calle: String(lead.direccion),

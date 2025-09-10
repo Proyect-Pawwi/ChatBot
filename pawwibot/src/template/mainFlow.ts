@@ -686,16 +686,5 @@ setTimeout(() => {
   setInterval(actualizarEstadoPaseosProximos, 505 * 1000);
 }, 5000);
 
-await TEMPLATE_utils_confirmacion_paseo_cliente('573023835142', {
-  nombreCliente:  "Usuario",
-  nombrePerrito:  "Tu perrito",
-  calle:  "No definida",
-  fecha:  "No definida",
-  hora:  "No definida",
-  duracion:  "No definida",
-  precio: `$Nada`,
-  pawwer: "Nicolás" // o dinámico según tu asignación
-});
-
 
 export { init, RegistrarNombrePerrito, RegistrarRazaPerrito, RegistrarEdadPerrito, RegistrarConsideracionesPerrito, RegistrarVacunasPerrito, RegistrarDireccion, RegistrarPerro, AgendarlistarPerritos, agendarTiempoPaseo, agendarDiaPaseo, agendarHoraPaseo, agendarMetodoPaseo, agendarResumenPaseo};
