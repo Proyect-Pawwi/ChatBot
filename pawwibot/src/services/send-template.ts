@@ -1269,3 +1269,65 @@ export async function TEMPLATE_recibir_perro_pawwer(
     );
   }
 }
+
+export async function TEMPLATE_utils_confirmacion_paseo_cliente(
+  to,
+  {
+    nombreCliente,
+    nombrePerrito,
+    calle,
+    fecha,
+    hora,
+    duracion,
+    precio,
+    pawwer
+  }
+) {
+  const token = process.env.jwtToken;
+  const phone_number_id = process.env.numberId;
+
+  const body = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: "confirmacion_paseo_cliente", // 👈 nombre EXACTO de la plantilla en Meta
+      language: { code: "es" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: nombreCliente },
+            { type: "text", text: nombrePerrito },
+            { type: "text", text: calle },
+            { type: "text", text: fecha },
+            { type: "text", text: hora },
+            { type: "text", text: duracion },
+            { type: "text", text: precio },
+            { type: "text", text: pawwer }
+          ]
+        }
+      ]
+    }
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v19.0/${phone_number_id}/messages`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("✅ Plantilla 'confirmacion_paseo_cliente' enviada:", res.data);
+  } catch (err) {
+    console.error(
+      "❌ Error al enviar plantilla 'confirmacion_paseo_cliente':",
+      err.response?.data || err
+    );
+  }
+}
