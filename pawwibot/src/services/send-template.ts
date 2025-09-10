@@ -1274,7 +1274,7 @@ export async function TEMPLATE_utils_confirmacion_paseo_cliente(
   to,
   {
     nombreCliente,
-    nombrePerrito,
+    //nombrePerrito,
     calle,
     fecha,
     hora,
@@ -1298,7 +1298,7 @@ export async function TEMPLATE_utils_confirmacion_paseo_cliente(
         type: "body",
         parameters: [
           { type: "text", text: nombreCliente },
-          { type: "text", text: nombrePerrito },
+          //{ type: "text", text: nombrePerrito },
           { type: "text", text: calle },
           { type: "text", text: fecha },
           { type: "text", text: hora },
@@ -1343,7 +1343,7 @@ export async function TEMPLATE_utils_confirmacion_paseo_cliente(
     console.log("✅ Plantilla 'confirmacion_paseo_cliente' enviada:", res.data);
   } catch (err) {
     console.error(
-      "❌ Error al enviar plantilla 'confirmacion_paseo_cliente':",
+      "❌ Error al enviar plantilla 'utils_confirmacion_paseo_client':",
       err.response?.data || err
     );
   }
@@ -1420,8 +1420,6 @@ export async function TEMPLATE_utils_recordatorio_paseo_cliente(
 export async function TEMPLATE_utils_confirmacion_paseo_pawwer(
   to,
   {
-    locationName,
-    address,
     direccion,
     fecha,
     hora,
@@ -1437,23 +1435,9 @@ export async function TEMPLATE_utils_confirmacion_paseo_pawwer(
     to,
     type: "template",
     template: {
-      name: "utils_confirmacion_paseo_pawwer", // 👈 Nombre EXACTO en Meta
-      language: { code: "es" },
+      name: "utils_confirmacion_paseo_pawwer", // 👈 Nombre exacto en Meta
+      language: { code: "es_CO" },             // Usa es_CO porque la plantilla está en Spanish (COL)
       components: [
-        // Header con ubicación
-        {
-          type: "header",
-          parameters: [
-            {
-              type: "location",
-              location: {
-                name: locationName,
-                address: address
-              }
-            }
-          ]
-        },
-        // Body con los parámetros dinámicos
         {
           type: "body",
           parameters: [
@@ -1464,7 +1448,6 @@ export async function TEMPLATE_utils_confirmacion_paseo_pawwer(
             { type: "text", text: precio }
           ]
         },
-        // Botón quick reply
         {
           type: "button",
           sub_type: "quick_reply",
@@ -1495,9 +1478,11 @@ export async function TEMPLATE_utils_confirmacion_paseo_pawwer(
   }
 }
 
+
 export async function TEMPLATE_utils_recordatorio_paseo_pawwer(
   to,
   {
+    perro,
     direccion,
     fecha,
     hora,
@@ -1519,6 +1504,7 @@ export async function TEMPLATE_utils_recordatorio_paseo_pawwer(
         {
           type: "body",
           parameters: [
+            { type: "text", text: perro },
             { type: "text", text: direccion },
             { type: "text", text: fecha },
             { type: "text", text: hora },

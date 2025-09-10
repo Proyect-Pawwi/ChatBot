@@ -228,6 +228,7 @@ export async function actualizarEstadoPaseosProximos() {
         });
 
         await TEMPLATE_utils_recordatorio_paseo_pawwer(paseo.CelularPawwer, {
+          perro: paseo.perro,
           direccion: paseo.Direccion,
           fecha: paseo.Fecha || "No definida",
           hora: paseo.Hora || "No definida",

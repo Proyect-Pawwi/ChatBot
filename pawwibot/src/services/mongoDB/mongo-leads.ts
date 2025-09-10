@@ -144,8 +144,6 @@ export async function confirmarLeads() {
     );
 
     await TEMPLATE_utils_confirmacion_paseo_pawwer(pawwerActivo.celular, {
-      locationName: "Direccion del cliente",
-      address: lead.direccion + ", Bogotá",
       direccion: lead.direccion,
       fecha: lead.fecha,
       hora: lead.hora,
@@ -155,7 +153,7 @@ export async function confirmarLeads() {
 
     await TEMPLATE_utils_confirmacion_paseo_cliente(lead.celular, {
       nombreCliente: String(lead.nombre),
-      nombrePerrito: String(lead.perro),
+      //nombrePerrito: String(lead.perro),
       calle: String(lead.direccion),
       fecha: String(lead.fecha),
       hora: String(lead.hora),
