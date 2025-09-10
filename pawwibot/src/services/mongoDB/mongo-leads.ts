@@ -153,19 +153,6 @@ export async function confirmarLeads() {
       precio: "$"+ lead.precio
     });
 
-
-    // Notificar al cliente
-    await TEMPLATE_confirmacion_paseo_cliente(lead.celular, {
-      nombreCliente: String(lead.nombre),
-      nombrePerrito: String(lead.perro),
-      calle: String(lead.direccion),
-      fecha: String(lead.fecha),
-      hora: String(lead.hora),
-      duracion: String(lead.tiempoServicio),
-      precio: String(lead.precio),
-      pawwer: String(pawwerActivo.Nombre),
-    });
-
     await TEMPLATE_utils_confirmacion_paseo_cliente(lead.celular, {
       nombreCliente: String(lead.nombre),
       nombrePerrito: String(lead.perro),

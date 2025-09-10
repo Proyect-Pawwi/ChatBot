@@ -679,11 +679,11 @@ const checkLeadsMongo = async () => {
 
 
 setTimeout(() => {
-  setInterval(checkLeadsMongo, 300 * 1000);
+  setInterval(checkLeadsMongo, 30 * 1000);
 }, 5000);
 
 setTimeout(() => {
-  setInterval(actualizarEstadoPaseosProximos, 505 * 1000);
+  setInterval(actualizarEstadoPaseosProximos, 50 * 1000);
 }, 5000);
 
 

@@ -1291,8 +1291,8 @@ export async function TEMPLATE_utils_confirmacion_paseo_cliente(
   to,
   type: "template",
   template: {
-    name: "utils_confirmacion_paseo_client",
-    language: { code: "es" },
+    name: "utils_confirmacion_paseo_client", // 👈 Exacto como en Meta
+    language: { code: "es_CO" },              // 👈 Usa "es_CO" si la plantilla es Spanish (COL)
     components: [
       {
         type: "body",
@@ -1369,7 +1369,7 @@ export async function TEMPLATE_utils_recordatorio_paseo_cliente(
     type: "template",
     template: {
       name: "utils_recordatorio_paseo_cliente", // nombre EXACTO de tu plantilla
-      language: { code: "es" },
+      language: { code: "es_CO" },
       components: [
         {
           type: "body",
@@ -1513,7 +1513,7 @@ export async function TEMPLATE_utils_recordatorio_paseo_pawwer(
     type: "template",
     template: {
       name: "utils_recordatorio_paseo_pawwer", // 👈 Nombre exacto en Meta
-      language: { code: "es" },
+      language: { code: "es_CO" },
       components: [
         // Body con parámetros dinámicos
         {
