@@ -1309,7 +1309,7 @@ export async function TEMPLATE_utils_confirmacion_paseo_cliente(
       },
       {
         type: "button",
-        sub_type: "url",
+        sub_type: "quick_reply",
         index: "0", // Botón 1
         parameters: [
           { type: "text", text: "VER_DETALLES" }
@@ -1317,7 +1317,7 @@ export async function TEMPLATE_utils_confirmacion_paseo_cliente(
       },
       {
         type: "button",
-        sub_type: "url", // o "quick_reply"
+        sub_type: "quick_reply", // o "quick_reply"
         index: "1", // Botón 2
         parameters: [
           { type: "text", text: "CAMBIAR_PASEO" }
@@ -1478,7 +1478,6 @@ export async function TEMPLATE_utils_confirmacion_paseo_pawwer(
   }
 }
 
-
 export async function TEMPLATE_utils_recordatorio_paseo_pawwer(
   to,
   {
@@ -1500,7 +1499,6 @@ export async function TEMPLATE_utils_recordatorio_paseo_pawwer(
       name: "utils_recordatorio_paseo_pawwer", // 👈 Nombre exacto en Meta
       language: { code: "es_CO" },
       components: [
-        // Body con parámetros dinámicos
         {
           type: "body",
           parameters: [
@@ -1511,11 +1509,13 @@ export async function TEMPLATE_utils_recordatorio_paseo_pawwer(
             { type: "text", text: duracion }
           ]
         },
-        // Botón quick reply
         {
           type: "button",
           sub_type: "quick_reply",
-          index: "0" // "Reportar novedad"
+          index: "0",
+          parameters: [
+            { type: "text", text: "REPORTAR_NOVEDAD" } // 👈 texto fijo definido en la plantilla
+          ]
         }
       ]
     }
