@@ -1557,26 +1557,8 @@ export async function TEMPLATE_bienvenida_msg(to, name = "amigo") {
         {
           type: "body",
           parameters: [
-            { type: "text", text: name } // Reemplaza {{1}} con el nombre de la persona
+            { type: "text", text: name } // Reemplaza {{1}} en tu plantilla
           ]
-        },
-        {
-          type: "button",
-          sub_type: "quick_reply",
-          index: 0,
-          parameters: [{ type: "payload", payload: "Agendar un paseo" }]
-        },
-        {
-          type: "button",
-          sub_type: "quick_reply",
-          index: 1,
-          parameters: [{ type: "payload", payload: "Conviértete en Pawwer" }]
-        },
-        {
-          type: "button",
-          sub_type: "quick_reply",
-          index: 2,
-          parameters: [{ type: "payload", payload: "Hablar con el equipo" }]
         }
       ]
     }
