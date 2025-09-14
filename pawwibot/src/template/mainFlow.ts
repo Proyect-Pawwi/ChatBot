@@ -1,5 +1,5 @@
 import { addKeyword, EVENTS } from "@builderbot/bot";
-import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito, TEMPLATE_agendar_tipo_paseo, TEMPLATE_agendar_fecha_paseo, TEMPLATE_ragendar_hora_paseo, TEMPLATE_agendar_metodo_pago, TEMPLATE_agendar_resumen_paseo, TEMPLATE_llegada_pawwer, TEMPLATE_pawwer_llego_cliente, TEMPLATE_strava_recordatorio_pawwer, TEMPLATE_link_strava_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer, TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_paseo_finalizado_cliente, TEMPLATE_recibir_perro_pawwer, TEMPLATE_utils_confirmacion_paseo_cliente } from "../services/send-template";
+import { TEMPLATE_bienvenida_pawwi, TEMPLATE_registro_agendar_paseo, TEMPLATE_registro_consideraciones_perrito, TEMPLATE_registro_edad_perrito, TEMPLATE_registro_raza_perrito, TEMPLATE_registro_nombre_perrito, TEMPLATE_registro_vacunas_perrito, TEMPLATE_agendar_tipo_paseo, TEMPLATE_agendar_fecha_paseo, TEMPLATE_ragendar_hora_paseo, TEMPLATE_agendar_metodo_pago, TEMPLATE_agendar_resumen_paseo, TEMPLATE_llegada_pawwer, TEMPLATE_pawwer_llego_cliente, TEMPLATE_strava_recordatorio_pawwer, TEMPLATE_link_strava_cliente, TEMPLATE_recordatorio_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer, TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_paseo_finalizado_cliente, TEMPLATE_recibir_perro_pawwer, TEMPLATE_utils_confirmacion_paseo_cliente, TEMPLATE_bienvenida_msg } from "../services/send-template";
 import { sendText, sendButtons } from "../services/send-text";
 import { getMongoClient } from '../services/mongo';
 import { DateTime } from "luxon";
@@ -265,7 +265,7 @@ const init = addKeyword(EVENTS.WELCOME)
       return endFlow();
     }
 
-    await TEMPLATE_bienvenida_pawwi(ctx.from, nombre);
+    await TEMPLATE_bienvenida_msg(ctx.from, nombre);
   })
 
   .addAnswer(
@@ -278,21 +278,29 @@ const init = addKeyword(EVENTS.WELCOME)
       console.log(`[INTERACTION] Botón oprimido: ${textoBoton}, Payload: ${payloadBoton}`);
 
       if (payloadBoton === "Registrar a mi perrito") {
+        await sendText(ctx.from, `Para agendar un paseo dirigete a la página web y rellena el formulario para agendar tu paseo www.pawwi.co`);
+        return endFlow();
+        /*
         perritoData[ctx.from] = {};
         return gotoFlow(RegistrarNombrePerrito);
+        */
       }
 
       else if (payloadBoton === "Agendar un paseo") {
+        await sendText(ctx.from, `Para agendar un paseo dirigete a la página web y rellena el formulario para agendar tu paseo www.pawwi.co`);
+        /*
         if (!usuarioData[ctx.from] || !usuarioData[ctx.from].perros || usuarioData[ctx.from].perros.length === 0) {
           return gotoFlow(RegistrarNombrePerrito);
         } else {
           return gotoFlow(AgendarlistarPerritos);
         }
+        */
+       return endFlow();
       }
 
       else if (payloadBoton === "Hablar con el equipo") {
-        await sendText(ctx.from, `En unos instantes nuestro Pawwier de soporte se comunicara contigo. O puedes comunicarte al número +57 3332885462`);
-        await sendText('573332885462', `El usuario ${ctx.from} ha solicitado hablar con el equipo de soporte.`);
+        await sendText(ctx.from, `Para hablar con soporte escribe al siguiente numero de soporte https://wa.me/57332885462`);
+        await sendText('573332885462', `El usuario ${ctx.from} ha pulsado el boton de soporte, en unos instantes se comunicara.`);
         return endFlow();
       }
 

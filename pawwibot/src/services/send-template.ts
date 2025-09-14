@@ -1541,3 +1541,64 @@ export async function TEMPLATE_utils_recordatorio_paseo_pawwer(
     );
   }
 }
+
+export async function TEMPLATE_bienvenida_msg(to, name = "amigo") {
+  const token = process.env.jwtToken;
+  const phone_number_id = process.env.numberId;
+
+  const body = {
+    messaging_product: "whatsapp",
+    to,
+    type: "template",
+    template: {
+      name: "bienvenida_msg", // Nombre exacto de la plantilla en Meta
+      language: { code: "es" },
+      components: [
+        {
+          type: "body",
+          parameters: [
+            { type: "text", text: name } // Reemplaza {{1}} con el nombre de la persona
+          ]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: 0,
+          parameters: [{ type: "payload", payload: "Agendar un paseo" }]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: 1,
+          parameters: [{ type: "payload", payload: "Conviértete en Pawwer" }]
+        },
+        {
+          type: "button",
+          sub_type: "quick_reply",
+          index: 2,
+          parameters: [{ type: "payload", payload: "Hablar con el equipo" }]
+        }
+      ]
+    }
+  };
+
+  try {
+    const res = await axios.post(
+      `https://graph.facebook.com/v19.0/${phone_number_id}/messages`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log("✅ Plantilla 'bienvenida_msg' enviada:", res.data);
+  } catch (err) {
+    console.error(
+      "❌ Error al enviar plantilla 'bienvenida_msg':",
+      err.response?.data || err
+    );
+  }
+}
