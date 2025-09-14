@@ -76,17 +76,19 @@ export async function deleteLead(id: string) {
 // ---------- FUNCIÓN ESPECIAL ----------
 // Confirmar leads y crear paseos
 export async function confirmarLeads() {
+
   const colLeads = await connect("leads");
   const leads = await colLeads.find({ estado: { $regex: /^confirmar$/i } }).toArray() as Lead[];
   let createdCount = 0;
 
-  for (const lead of leads) {
+  const leadsWeb = await colLeads.find({ estado: { $regex: /^Pendiente web$/i } }).toArray() as Lead[];
+  for (const lead of leadsWeb) {
     console.log(lead.estado);
+    console.log("573332885462",`Ha llegado un lead desde la página web`);
+    await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Pendiente" } });
+  }
+  for (const lead of leads) {
     
-    if (lead.estado == "Pendiente web") {
-      console.log("573332885462",`Ha llegado un lead desde la página web`);
-      await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Pendiente" } });
-    }
     // ----------------- VALIDACIÓN PAWWER -----------------
     const pawwerActivo = await getUsuarioByCelular(lead.pawwer.toString());
     if (!pawwerActivo) {
