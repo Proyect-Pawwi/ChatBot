@@ -84,7 +84,16 @@ export async function confirmarLeads() {
   const leadsWeb = await colLeads.find({ estado: { $regex: /^Pendiente web$/i } }).toArray() as Lead[];
   for (const lead of leadsWeb) {
     console.log(lead.estado);
-    console.log("573332885462",`Ha llegado un lead desde la página web`);
+    await sendText("573332885462",`🔔 Lead nuevo registrado desde la web.
+          
+Nombre: ${lead.nombre || 'Usuario'} 
+Perro: ${lead.perro || 'No definido'}
+Anotaciones: ${lead.anotaciones || 'No definidas'}
+Dirección: ${lead.direccion || 'No definida'}
+Tiempo de servicio: ${lead.tiempoServicio || 'No definido'}
+Fecha: ${lead.fecha}
+Hora: ${lead.hora}
+Precio: $${lead.precio || 0}`);
     await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Pendiente" } });
   }
   for (const lead of leads) {
