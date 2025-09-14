@@ -1552,7 +1552,7 @@ export async function TEMPLATE_bienvenida_msg(to, name = "amigo") {
     type: "template",
     template: {
       name: "bienvenida_msg", // Nombre exacto de la plantilla en Meta
-      language: { code: "es" },
+      language: { code: "es_CO" },
       components: [
         {
           type: "body",
