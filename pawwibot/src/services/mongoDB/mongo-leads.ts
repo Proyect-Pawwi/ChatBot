@@ -81,6 +81,10 @@ export async function confirmarLeads() {
   let createdCount = 0;
 
   for (const lead of leads) {
+    if (lead.estado == "Pendiente web") {
+      console.log("573332885462",`Ha llegado un lead desde la página web`);
+      await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Pendiente" } });
+    }
     // ----------------- VALIDACIÓN PAWWER -----------------
     const pawwerActivo = await getUsuarioByCelular(lead.pawwer.toString());
     if (!pawwerActivo) {
@@ -137,12 +141,6 @@ export async function confirmarLeads() {
     await crearPaseoDesdeLead(lead, pawwerActivo._id!.toString(), pawwerActivo.nombre, pawwerActivo.celular);
     await colLeads.deleteOne({ _id: lead._id });
 
-    // Notificar al pawwer
-    await sendText(
-      pawwerActivo.celular,
-      `Tienes una nueva solicitud de paseo asignada para el ${lead.fecha} a las ${lead.hora}. Por favor, revisa los detalles y prepárate para brindar un excelente servicio. ¡Gracias por ser parte de nuestro equipo! 🐾`
-    );
-
     await TEMPLATE_utils_confirmacion_paseo_pawwer(pawwerActivo.celular, {
       direccion: lead.direccion,
       fecha: lead.fecha,
@@ -165,6 +163,5 @@ export async function confirmarLeads() {
     createdCount++;
   }
 
-  //console.log(`✅ ${createdCount} paseos creados a partir de leads confirmados.`);
   return createdCount;
 }
