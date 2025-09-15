@@ -299,8 +299,8 @@ const init = addKeyword(EVENTS.WELCOME)
       }
 
       else if (payloadBoton === "Hablar con el equipo") {
-        await sendText(ctx.from, `Para hablar con soporte escribe al siguiente numero de soporte https://wa.me/57332885462`);
-        await sendText('573332885462', `El usuario ${ctx.from} ha pulsado el boton de soporte, en unos instantes se comunicara.`);
+        await sendText(ctx.from, `En unos instantes el equipo de soporte se comunicará contigo, el número es 57332885462`);
+        await sendText('573332885462', `El usuario ${ctx.from} ha pulsado el boton de soporte, comunicate con la persona para resolver sus dudas.`);
         return endFlow();
       }
 
