@@ -299,7 +299,7 @@ const init = addKeyword(EVENTS.WELCOME)
       }
 
       else if (payloadBoton === "Hablar con el equipo") {
-        await sendText(ctx.from, `En unos instantes el equipo de soporte se comunicará contigo, el número es 573332885462`);
+        await sendText(ctx.from, `En unos momentos nuestro equipo de soporte te contactará. También puedes escribirnos ya mismo aquí 👉 https://wa.me/573332885462`);
         await sendText('573332885462', `El usuario ${ctx.from} ha pulsado el boton de soporte, comunicate con la persona para resolver sus dudas.`);
         return endFlow();
       }
