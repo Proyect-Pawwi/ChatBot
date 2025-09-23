@@ -6,10 +6,7 @@ import { getMongoClient } from '../services/mongo';
 import { createLead, deleteLead, getLeads, updateLead } from "~/services/airtable-leads";
 import { createPaseo, getPaseoByPawwerTelefono, getPaseoByPawwerTelefonoActive, getPaseos, updatePaseo } from "~/services/airtable-paseos";
 import { log } from "node:console";
-import { BotContext } from "@builderbot/bot/dist/types";
-import { send } from "node:process";
 import { createCompletado } from "~/services/airtable-completados";
-import { text } from "node:stream/consumers";
 
 //TODO: Reiniciar conversacion con el cliente si este no ha interactuado en 1 hora
 
@@ -259,6 +256,8 @@ async function checkPaseos() {
 }
 
 async function checkLEADS() {
+  console.log("Hola");
+  
   const filterFormula = "Estado = 'confirmado'";
     const response = await getLeads(filterFormula, 2, "Grid view");
   //LEADS
