@@ -71,7 +71,7 @@ const init = addKeyword(EVENTS.WELCOME)
     const textoBoton = ctx.body;
     const payloadBoton = ctx.payload || "Sin payload";
     console.log(`[INTERACTION] Botón oprimido: ${textoBoton}, Payload: ${payloadBoton}`);
-    if (ctx.from != '573023835142' && ctx.from != '573332885462') {
+    if (ctx.from != '573023835142' && ctx.from != '573332885460') {
       await sendText('573332885462',`Usuario con numero ${ctx.from} ha interactuado con el bot.\nText: ${textoBoton}\nPayload: ${payloadBoton}`)
     }
 
@@ -148,15 +148,19 @@ const init = addKeyword(EVENTS.WELCOME)
               if (result.modifiedCount > 0) { console.log(`✅ Paseo ${paseo._id.toString()} actualizado correctamente`);} 
               else {console.log(`⚠️ No se encontró el paseo con id ${paseo._id.toString()} o no hubo cambios`);}
 
+              let nombre = paseo.Nombre
+              if (paseo.Nombre == "Cliente") {
+                nombre = "😊"
+              }
               await TEMPLATE_pawwer_llego_cliente(paseo.Celular, {
-                nombreCliente: paseo.Nombre,
+                nombreCliente: nombre,
                 nombrePawwer: paseo.NombrePawwer,
                 nombrePerrito: paseo.Perro,
                 calle: paseo.Direccion,
                 colonia: "Bogota",
                 fecha: paseo.Fecha,
                 hora: paseo.Hora,
-                duracion: paseo.TiempoServicio,
+                duracion: paseo.TiempoServicio + " minutos",
               });
 
               //Mensaje de dale click al boton cuando recibas al perro
@@ -201,8 +205,12 @@ const init = addKeyword(EVENTS.WELCOME)
                 }
                 else {
                 await sendText(celularPawwer, "Gracias por finalizar el paseo. En breve el dueño recogera a su mascota");
+                let nombre = paseo.Nombre
+                if (paseo.Nombre == "Cliente") {
+                  nombre = "😊"
+                }
                 await TEMPLATE_paseo_finalizado_cliente(paseo.Celular, {
-                  nombreCliente: paseo.Nombre,
+                  nombreCliente: nombre,
                   nombrePerrito: paseo.Perro,
                 });
 
@@ -224,6 +232,25 @@ const init = addKeyword(EVENTS.WELCOME)
         else if(usuario.tipoUsuario == "cliente") {
           const paseo = await getPaseosPorCliente(parseInt(ctx.from));
           console.log(paseo);
+
+          if (ctx.body = "Ver detalles del paseo") {
+            await sendText(ctx.from, `🐾 Así funciona Pawwi paso a paso 💜
+
+1️⃣ Recogida:
+Tu paseador llegará a la dirección para recoger a tu peludo.
+
+2️⃣ Inicio del paseo:
+Una vez empieza el recorrido, en Pawwer iniciará su GPS para que puedas seguir el paseo en tiempo real. Así sabrás por dónde va y cuánto tiempo lleva caminando 🚶‍♀️🐶
+
+3️⃣ Durante el paseo:
+El paseador mantiene un ritmo, haciendose cargo en todo momento de tu perrito, podrás ver en todo momento donde se encuentra el paseador.
+
+4️⃣ Finalización del paseo:
+Cuando termina, el paseador lleva a tu perro de regreso a casa.
+
+5️⃣ Tu opinión cuenta:
+Finalmente, podrás dejar tu feedback sobre cómo te pareció el servicio. Nos ayuda muchísimo a seguir mejorando 🐾`);
+          }
           
 
           if (paseo) {

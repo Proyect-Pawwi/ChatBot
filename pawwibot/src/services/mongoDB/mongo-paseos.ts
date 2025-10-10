@@ -218,8 +218,12 @@ export async function actualizarEstadoPaseosProximos() {
     } 
     else if (diffMinutes <= 60 && paseo.Estado == "Por realizarse") {
         nuevoEstado = "Falta 1 hora";
+        let nombre = paseo.Nombre
+        if (paseo.Nombre == "Cliente") {
+          nombre = "😊"
+        }
         await TEMPLATE_utils_recordatorio_paseo_cliente(paseo.Celular, {
-            nombreCliente: paseo.Nombre,
+            nombreCliente: nombre,
             nombrePerrito: paseo.Perro || "tu perrito",
             fecha: paseo.Fecha || "No definida",
             hora: paseo.Hora || "No definida",
@@ -368,8 +372,13 @@ export async function actualizarStravaPaseo(
         { $set: { Strava: stravaUrl.replace(prefix, "").trim(), Estado: "Esperando finalizacion" } }
       );
 
+      let nombre = paseo.Nombre
+      if (paseo.Nombre == "Cliente") {
+        nombre = "😊"
+      } 
+
       await TEMPLATE_link_strava_cliente(paseo.Celular, {
-        nombreCliente : paseo.Nombre,
+        nombreCliente : nombre,
         nombrePerrito: paseo.Perro || "tu perrito",
         linkStrava: stravaUrl.replace("https://www.strava.com/beacon/", "").trim(),
       });

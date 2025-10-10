@@ -162,8 +162,14 @@ Precio: $${lead.precio || 0}`);
       precio: "$"+ lead.precio
     });
 
+    let nombre = String(lead.nombre);
+
+    if(nombre == "Cliente") {
+      nombre = "😊"
+    }
+
     await TEMPLATE_utils_confirmacion_paseo_cliente(lead.celular, {
-      nombreCliente: String(lead.nombre),
+      nombreCliente: nombre,
       //nombrePerrito: String(lead.perro),
       calle: String(lead.direccion),
       fecha: String(lead.fecha),
