@@ -386,7 +386,7 @@ export async function actualizarStravaPaseo(
       }
     );
 
-    let nombre = paseo.Nombre === "Cliente" ? "😊" : paseo.Nombre;
+    const nombre = paseo.Nombre === "Cliente" ? "😊" : paseo.Nombre;
 
     await TEMPLATE_link_strava_cliente(paseo.Celular, {
       nombreCliente: nombre,
