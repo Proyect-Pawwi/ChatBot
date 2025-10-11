@@ -81,19 +81,19 @@ export async function confirmarLeads() {
   const leads = await colLeads.find({ estado: { $regex: /^confirmar$/i } }).toArray() as Lead[];
   let createdCount = 0;
 
-  const leadsWeb = await colLeads.find({ estado: { $regex: /^Pendiente web$/i } }).toArray() as Lead[];
+  const leadsWeb = await colLeads.find({ estado: { $regex: /^Pendiente web$|^Pendiente desde OMS$/i } }).toArray() as Lead[];
   for (const lead of leadsWeb) {
     console.log(lead.estado);
     await sendText("573332885462",`🔔 Lead nuevo registrado desde la web.
-          
-Nombre: ${lead.nombre || 'Usuario'} 
-Perro: ${lead.perro || 'No definido'}
-Anotaciones: ${lead.anotaciones || 'No definidas'}
-Dirección: ${lead.direccion || 'No definida'}
-Tiempo de servicio: ${lead.tiempoServicio || 'No definido'}
-Fecha: ${lead.fecha}
-Hora: ${lead.hora}
-Precio: $${lead.precio || 0}`);
+      
+*Perro:* ${lead.perro || 'No definido'}
+*Anotaciones:* 
+${lead.anotaciones || 'No definidas'}
+*Dirección:* ${lead.direccion || 'No definida'}
+*Tiempo de servicio:* ${lead.tiempoServicio || 'No definido'}
+*Fecha:* ${lead.fecha}
+*Hora:* ${lead.hora}
+*Precio:* $${lead.precio || 0}`);
     await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Pendiente" } });
   }
   for (const lead of leads) {
@@ -176,7 +176,7 @@ Precio: $${lead.precio || 0}`);
       hora: String(lead.hora),
       duracion: String(lead.tiempoServicio),
       precio: String(lead.precio),
-      pawwer: String(pawwerActivo.Nombre),
+      pawwer: String(pawwerActivo.nombre),
     });
 
     createdCount++;
