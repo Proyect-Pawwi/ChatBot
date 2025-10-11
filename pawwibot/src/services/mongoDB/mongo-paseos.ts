@@ -232,12 +232,18 @@ export async function actualizarEstadoPaseosProximos() {
             duracion: paseo.TiempoServicio + " minutos",
         });
 
+        console.log(paseo.perro);
+        console.log(paseo.Direccion);
+        console.log(paseo.Fecha);
+        console.log(paseo.Hora);
+        console.log(paseo.TiempoServicio);
+
         await TEMPLATE_utils_recordatorio_paseo_pawwer(paseo.CelularPawwer, {
-          perro: paseo.perro,
+          perro: paseo.perro || "tu perrito",
           direccion: paseo.Direccion,
           fecha: paseo.Fecha || "No definida",
           hora: paseo.Hora || "No definida",
-          duracion: paseo.TiempoServicio + " minutos",
+          duracion: String(paseo.TiempoServicio + " minutos"),
         });
     }
 
