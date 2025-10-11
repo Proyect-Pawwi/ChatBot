@@ -233,7 +233,7 @@ const init = addKeyword(EVENTS.WELCOME)
           const paseo = await getPaseosPorCliente(parseInt(ctx.from));
           console.log(paseo);
 
-          if (ctx.body = "Ver detalles del paseo") {
+          if (ctx.body == "Ver detalles del paseo") {
             await sendText(ctx.from, `🐾 Así funciona Pawwi paso a paso 💜
 
 1️⃣ Recogida:
