@@ -204,12 +204,20 @@ Cuando termina, el paseador lleva a tu perro de regreso a casa.
 5️⃣ Tu opinión cuenta:
 Finalmente, podrás dejar tu feedback sobre cómo te pareció el servicio. Nos ayuda muchísimo a seguir mejorando 🐾`);
           }
+
+          
           
 
           if (paseo) {
-            await sendText(ctx.from, `Tienes un paseo agendado para el ${paseo.Fecha} a las ${paseo.Hora}. Si deseas modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
-            console.log('❌ No se encontró ningún paseo para este Pawwer con estado "Esperando Pawwer"');
-            return;
+            if (ctx.body == "Confirmar") {
+              await sendText(ctx.from, `Muchas gracias por confirmar tu paseo. Si tienes alguna duda, no dudes en contactarnos al +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
+              return;
+            }
+            else {
+              await sendText(ctx.from, `Tienes un paseo agendado para el ${paseo.Fecha} a las ${paseo.Hora}. Si deseas modificar o cancelar tu paseo, contactate al numero de soporte +57 3332885462 ¡Gracias por confiar en nosotros! 🐶`);
+              console.log('❌ No se encontró ningún paseo para este Pawwer con estado "Esperando Pawwer"');
+              return;
+            }
           }
         }
       }

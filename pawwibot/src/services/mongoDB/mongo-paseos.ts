@@ -350,50 +350,63 @@ export async function actualizarStravaPaseo(
   stravaUrl: string
 ) {
   const prefix = "https://www.strava.com/beacon/";
-  // Validar que la URL comience con el prefijo requerido
+
   console.log("Actualizando Strava para el pawwer:", celularPawwer, "con URL:", stravaUrl);
-  
-  if (!stravaUrl.startsWith(prefix)) {
-    sendText(celularPawwer.toString(), "El link de Strava que has enviado no es valido, tu link debe ser por ejemplo como el siguiente: https://www.strava.com/beacon/oH0qqnaCRNM");
-    console.log(`❌ La URL no es válida: debe iniciar con prefixo ${prefix}`);
+
+  // 🧠 Extraer solo el código, incluso si el mensaje tiene texto adicional
+  const match = stravaUrl.match(/https:\/\/www\.strava\.com\/beacon\/([A-Za-z0-9]+)/);
+  const codigoStrava = match ? match[1] : null;
+
+  if (!codigoStrava) {
+    sendText(
+      celularPawwer.toString(),
+      "El link de Strava que has enviado no es válido. Tu link debe ser como el siguiente: https://www.strava.com/beacon/oH0qqnaCRNM"
+    );
+    console.log(`❌ No se pudo extraer código válido de la URL: ${stravaUrl}`);
     return false;
   }
-  else {
-    const col = await connect(paseosCollection);
 
-    // Buscar el primer paseo que coincida con el pawwer y estado "Esperando Strava"
-    const paseo = await col.findOne({
-      CelularPawwer: celularPawwer.toString(),
-      Estado: "Esperando Strava"
+  // ✅ Si llegamos aquí, tenemos un código válido
+  const col = await connect(paseosCollection);
+
+  // Buscar el primer paseo que coincida con el pawwer y estado "Esperando Strava"
+  const paseo = await col.findOne({
+    CelularPawwer: celularPawwer.toString(),
+    Estado: "Esperando Strava",
+  });
+
+  if (paseo) {
+    await col.updateOne(
+      { _id: paseo._id },
+      {
+        $set: {
+          Strava: codigoStrava,
+          Estado: "Esperando finalizacion",
+        },
+      }
+    );
+
+    let nombre = paseo.Nombre === "Cliente" ? "😊" : paseo.Nombre;
+
+    await TEMPLATE_link_strava_cliente(paseo.Celular, {
+      nombreCliente: nombre,
+      nombrePerrito: paseo.Perro || "tu perrito",
+      linkStrava: codigoStrava,
     });
 
-    if (paseo) {
-      await col.updateOne(
-        { _id: paseo._id },
-        { $set: { Strava: stravaUrl.replace(prefix, "").trim(), Estado: "Esperando finalizacion" } }
-      );
+    sendText(
+      celularPawwer.toString(),
+      "Se ha enviado tu link de Strava al cliente. Recuerda finalizar el paseo cuando termines."
+    );
 
-      let nombre = paseo.Nombre
-      if (paseo.Nombre == "Cliente") {
-        nombre = "😊"
-      } 
-
-      await TEMPLATE_link_strava_cliente(paseo.Celular, {
-        nombreCliente : nombre,
-        nombrePerrito: paseo.Perro || "tu perrito",
-        linkStrava: stravaUrl.replace("https://www.strava.com/beacon/", "").trim(),
-      });
-
-      sendText(celularPawwer.toString(), "Se ha enviado tu link de Strava al cliente. Recuerda finalizar el paseo cuando termines.");
-
-      console.log(`✅ Paseo ${paseo._id} actualizado con Strava y estado "Esperando finalizacion"`);
-      return true;
-    } else {
-      console.log(`⚠️ No se encontró paseo para el pawwer ${celularPawwer} con estado "Esperando Strava"`);
-      return false;
-    }
+    console.log(`✅ Paseo ${paseo._id} actualizado con Strava (${codigoStrava}) y estado "Esperando finalizacion"`);
+    return true;
+  } else {
+    console.log(`⚠️ No se encontró paseo para el pawwer ${celularPawwer} con estado "Esperando Strava"`);
+    return false;
   }
 }
+
 
 export async function completarPaseoYActualizarPawwer(celularPawwer: number) {
   const colPaseos = await connect(paseosCollection);
