@@ -200,12 +200,13 @@ export async function actualizarEstadoPaseosProximos() {
         };
         await moverPaseoACompletados(paseoMapped);
 
-        await TEMPLATE_recordatorio_pago_cliente(paseo.Celular, {
-          nombreCliente: paseo.Nombre,
-          nombrePerrito: paseo.Perro,
-          valorPaseo: paseo.Precio?.toString() || "No definido"
-        });
-
+        if (paseo.MetodoPago != "Efectivo") {
+          await TEMPLATE_recordatorio_pago_cliente(paseo.Celular, {
+            nombreCliente: paseo.Nombre,
+            nombrePerrito: paseo.Perro,
+            valorPaseo: paseo.Precio?.toString() || "No definido"
+          });
+        }
       }
     }
 
