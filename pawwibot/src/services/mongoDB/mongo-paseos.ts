@@ -172,15 +172,7 @@ export async function actualizarEstadoPaseosProximos() {
       const horaFin = DateTime.fromFormat(paseo.horaFin,"yyyy-MM-dd HH:mm:ss",{ zone: "America/Bogota" });
       const diffMinutos = DateTime.now().setZone("America/Bogota").diff(horaFin, "minutes").minutes;
 
-      if (paseo.MetodoPago != "Efectivo") {
-        await TEMPLATE_recordatorio_pago_cliente(paseo.Celular, {
-          nombreCliente: paseo.Nombre,
-          nombrePerrito: paseo.Perro,
-          valorPaseo: paseo.Precio?.toString() || "No definido"
-        });
-      }
-
-      if (diffMinutos > 15) {
+      if (diffMinutos > 15 || paseo.MetodoPago === "Efectivo") {
         console.log("⚠️ Ya pasaron más de 15 minutos desde la hora de finalización.");
 
         // Map paseo fields from DB (camelCase) to Paseo interface (PascalCase)
@@ -207,6 +199,14 @@ export async function actualizarEstadoPaseosProximos() {
           idPawwer: paseo.IdPawwer ?? paseo.idPawwer ?? null,
         };
         await moverPaseoACompletados(paseoMapped);
+
+        if (paseo.MetodoPago != "Efectivo") {
+          await TEMPLATE_recordatorio_pago_cliente(paseo.Celular, {
+            nombreCliente: paseo.Nombre,
+            nombrePerrito: paseo.Perro,
+            valorPaseo: paseo.Precio?.toString() || "No definido"
+          });
+        }
       }
     }
 
