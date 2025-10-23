@@ -200,7 +200,7 @@ export async function actualizarEstadoPaseosProximos() {
         };
         await moverPaseoACompletados(paseoMapped);
 
-        if (paseo.MetodoPago != "Efectivo") {
+        if (paseo.MetodoPago != "Efectivo" && paseo.estado !== "Completado") {
           await TEMPLATE_recordatorio_pago_cliente(paseo.Celular, {
             nombreCliente: paseo.Nombre,
             nombrePerrito: paseo.Perro,
