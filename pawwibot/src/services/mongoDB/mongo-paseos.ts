@@ -167,7 +167,7 @@ export async function actualizarEstadoPaseosProximos() {
     const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(paseo.pawwer) });
 
     //Paseo ultimo mensaje si han pasado mas de 15 minutos de la hora de finalizacion
-    if (paseo.Estado === "Completado (15 minutos recordatorio de pago)" && paseo.horaFin || paseo.estado === "Completado") {
+    if ((paseo.Estado === "Completado (15 minutos recordatorio de pago)" && paseo.horaFin) || paseo.estado === "Completado") {
 
       const horaFin = DateTime.fromFormat(paseo.horaFin,"yyyy-MM-dd HH:mm:ss",{ zone: "America/Bogota" });
       const diffMinutos = DateTime.now().setZone("America/Bogota").diff(horaFin, "minutes").minutes;
