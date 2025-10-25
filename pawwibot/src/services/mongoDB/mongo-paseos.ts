@@ -166,13 +166,39 @@ export async function actualizarEstadoPaseosProximos() {
     const pawwerActivoCol = await connect("pawwers_activos");
     const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(paseo.pawwer) });
 
+    if (paseo.Estado === "Completado") {
+      const paseoMapped: Paseo = {
+          _id: paseo._id,
+          fechaCreacion: paseo.FechaCreacion ?? paseo.fechaCreacion ?? new Date(),
+          celular: paseo.Celular ?? paseo.celular ?? 0,
+          CelularPawwer: paseo.CelularPawwer ?? paseo.celularPawwer ?? "",
+          nombre: paseo.Nombre ?? paseo.nombre ?? "",
+          NombrePawwer: paseo.NombrePawwer ?? paseo.nombrePawwer ?? "",
+          perro: paseo.Perro ?? paseo.perro ?? "",
+          anotaciones: paseo.Anotaciones ?? paseo.anotaciones ?? "",
+          direccion: paseo.Direccion ?? paseo.direccion ?? "",
+          tipoServicio: paseo.TipoServicio ?? paseo.tipoServicio ?? "",
+          tiempoServicio: paseo.TiempoServicio ?? paseo.tiempoServicio ?? "",
+          fecha: paseo.Fecha ?? paseo.fecha ?? "",
+          hora: paseo.Hora ?? paseo.hora ?? "",
+          horaInicio: paseo.HoraInicio ?? paseo.horaInicio ?? "",
+          horaFin: paseo.horaFin ?? "",
+          precio: paseo.Precio ?? paseo.precio ?? 0,
+          Estado: paseo.Estado ?? paseo.estado ?? "",
+          metodoPago: paseo.MetodoPago ?? paseo.metodoPago ?? "",
+          strava: paseo.Strava ?? paseo.strava ?? "",
+          idPawwer: paseo.IdPawwer ?? paseo.idPawwer ?? null,
+        };
+        await moverPaseoACompletados(paseoMapped);
+    }
+
     //Paseo ultimo mensaje si han pasado mas de 15 minutos de la hora de finalizacion
-    if (paseo.Estado === "Completado (15 minutos recordatorio de pago)" && paseo.horaFin || paseo.estado === "Completado") {
+    if (paseo.Estado === "Completado (15 minutos recordatorio de pago)" && paseo.horaFin) {
 
       const horaFin = DateTime.fromFormat(paseo.horaFin,"yyyy-MM-dd HH:mm:ss",{ zone: "America/Bogota" });
       const diffMinutos = DateTime.now().setZone("America/Bogota").diff(horaFin, "minutes").minutes;
 
-      if (diffMinutos > 15 || paseo.MetodoPago === "Efectivo" || paseo.estado === "Completado") {
+      if (diffMinutos > 15 || paseo.MetodoPago === "Efectivo") {
         console.log("⚠️ Ya pasaron más de 15 minutos desde la hora de finalización.");
 
         // Map paseo fields from DB (camelCase) to Paseo interface (PascalCase)
