@@ -166,15 +166,13 @@ export async function actualizarEstadoPaseosProximos() {
     const pawwerActivoCol = await connect("pawwers_activos");
     const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(paseo.pawwer) });
 
-    log(`Paseo ${paseo._id} - Estado actual: ${paseo.Estado}, Minutos para el paseo: ${diffMinutes}`);
-
     //Paseo ultimo mensaje si han pasado mas de 15 minutos de la hora de finalizacion
-    if ((paseo.Estado === "Completado (15 minutos recordatorio de pago)" && paseo.horaFin) || paseo.Estado === "Completado") {
+    if (paseo.Estado === "Completado (15 minutos recordatorio de pago)" && paseo.horaFin || paseo.estado === "Completado") {
 
       const horaFin = DateTime.fromFormat(paseo.horaFin,"yyyy-MM-dd HH:mm:ss",{ zone: "America/Bogota" });
       const diffMinutos = DateTime.now().setZone("America/Bogota").diff(horaFin, "minutes").minutes;
 
-      if (diffMinutos > 15 || paseo.MetodoPago === "Efectivo" || paseo.Estado === "Completado") {
+      if (diffMinutos > 15 || paseo.MetodoPago === "Efectivo" || paseo.estado === "Completado") {
         console.log("⚠️ Ya pasaron más de 15 minutos desde la hora de finalización.");
 
         // Map paseo fields from DB (camelCase) to Paseo interface (PascalCase)
