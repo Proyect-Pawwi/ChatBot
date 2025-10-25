@@ -167,12 +167,12 @@ export async function actualizarEstadoPaseosProximos() {
     const pawwerActivo = await pawwerActivoCol.findOne({ _id: new ObjectId(paseo.pawwer) });
 
     //Paseo ultimo mensaje si han pasado mas de 15 minutos de la hora de finalizacion
-    if ((paseo.Estado === "Completado (15 minutos recordatorio de pago)" && paseo.horaFin) || (paseo.Estado === "Completado")) {
+    if (paseo.Estado === "Completado (15 minutos recordatorio de pago)" && paseo.horaFin || paseo.estado === "Completado") {
 
       const horaFin = DateTime.fromFormat(paseo.horaFin,"yyyy-MM-dd HH:mm:ss",{ zone: "America/Bogota" });
       const diffMinutos = DateTime.now().setZone("America/Bogota").diff(horaFin, "minutes").minutes;
 
-      if ((diffMinutos > 15 || paseo.MetodoPago === "Efectivo") || paseo.Estado === "Completado") {
+      if (diffMinutos > 15 || paseo.MetodoPago === "Efectivo" || paseo.estado === "Completado") {
         console.log("⚠️ Ya pasaron más de 15 minutos desde la hora de finalización.");
 
         // Map paseo fields from DB (camelCase) to Paseo interface (PascalCase)
@@ -200,7 +200,7 @@ export async function actualizarEstadoPaseosProximos() {
         };
         await moverPaseoACompletados(paseoMapped);
 
-        if ((paseo.MetodoPago == "Bre-B" || paseo.MetodoPago == "Nequi") && paseo.EStado !== "Completado") {
+        if (paseo.MetodoPago != "Efectivo" && paseo.estado !== "Completado") {
           await TEMPLATE_recordatorio_pago_cliente(paseo.Celular, {
             nombreCliente: paseo.Nombre,
             nombrePerrito: paseo.Perro,
@@ -209,6 +209,7 @@ export async function actualizarEstadoPaseosProximos() {
         }
       }
     }
+
     if(paseo.Estado === "Cancelado" || paseo.Estado === "Completado") {
       continue; // saltar paseos cancelados o completados
     }
@@ -230,6 +231,12 @@ export async function actualizarEstadoPaseosProximos() {
             direccion: paseo.Direccion,
             duracion: paseo.TiempoServicio + " minutos",
         });
+
+        console.log(paseo.perro);
+        console.log(paseo.Direccion);
+        console.log(paseo.Fecha);
+        console.log(paseo.Hora);
+        console.log(paseo.TiempoServicio);
 
         await TEMPLATE_utils_recordatorio_paseo_pawwer(paseo.CelularPawwer, {
           perro: paseo.perro || "tu perrito",
