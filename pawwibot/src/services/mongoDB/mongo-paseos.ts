@@ -529,12 +529,18 @@ export async function cancelarPaseosPorCelular(celular: number) {
 
 // ---------- FUNCIÓN: Obtener todos los paseos de un pawwer ----------
 export async function getPaseosPorPawwer(celularPawwer: number) {
-  console.log("Obteniendo paseos para el pawwer con celular:", celularPawwer);
+  //console.log("Obteniendo paseos para el pawwer con celular:", celularPawwer);
   
   const col = await connect(paseosCollection);
 
   // Buscar todos los paseos donde CelularPawwer coincida
-  const paseos = await col.find({ CelularPawwer: celularPawwer }).toArray();
+  const paseos = await col
+    .find({
+      CelularPawwer: celularPawwer,
+      Estado: { $ne: "Cancelado" } // ignora los cancelados
+    })
+    .sort({ _id: -1 }) // más reciente primero
+    .toArray();
 
   if (paseos.length === 0) {
     console.log(`⚠️ No se encontraron paseos para el pawwer con celular ${celularPawwer}`);
@@ -546,7 +552,7 @@ export async function getPaseosPorPawwer(celularPawwer: number) {
 }
 
 export async function getPaseosPorCliente(celular: number) {
-  console.log("Obteniendo paseos con celular:", celular);
+  //console.log("Obteniendo paseos con celular:", celular);
   
   const col = await connect(paseosCollection);
 
