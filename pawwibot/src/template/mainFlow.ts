@@ -1,6 +1,6 @@
 import { addKeyword, EVENTS } from "@builderbot/bot";
 import { TEMPLATE_llegada_pawwer, TEMPLATE_pawwer_llego_cliente, TEMPLATE_strava_recordatorio_pawwer, TEMPLATE_finalizar_paseo_pawwer, TEMPLATE_paseo_finalizado_cliente, TEMPLATE_recibir_perro_pawwer, TEMPLATE_bienvenida_msg } from "../services/send-template";
-import { sendText } from "../services/send-text";
+import { sendMedia, sendText } from "../services/send-text";
 import { getMongoClient } from '../services/mongo';
 import { DateTime } from "luxon";
 import { confirmarLeads } from "~/services/mongoDB/mongo-leads";
@@ -13,15 +13,15 @@ const init = addKeyword(EVENTS.WELCOME)
 
   .addAction(async (ctx, { endFlow }) => {
     if (ctx.messageType && ctx.messageType !== "text") {
-      console.log(`[MEDIA] Tipo: ${ctx.messageType}`, ctx);
+      const mediaUrl = ctx.mediaUrl || ctx.fileUrl || null;
+      const caption = ctx.body || "";
 
-      const mediaUrl = ctx.mediaUrl || ctx.fileUrl || ctx.downloadMedia || null;
-      const caption = ctx.body || "(sin mensaje)";
-
-      await sendText(
-        '573332885462',
-        `📩 Usuario ${ctx.from} envió un ${ctx.messageType}\nMensaje: ${caption}\nURL: ${mediaUrl || "(sin URL detectada)"}`
-      );
+      if (mediaUrl) {
+        await sendText('573332885462', `📩 Usuario ${ctx.from} envió un ${ctx.messageType}`);
+        await sendMedia('573332885462', mediaUrl, caption, ctx.messageType);
+      } else {
+        await sendText('573332885462', `📩 Usuario ${ctx.from} envió un ${ctx.messageType} sin URL`);
+      }
 
       return endFlow();
     }
