@@ -12,8 +12,25 @@ const usuarioData = {};
 const init = addKeyword(EVENTS.WELCOME)
 
   .addAction(async (ctx, { endFlow }) => {
-    if (!ctx.body || typeof ctx.body !== "string") {
-      console.log(`[IGNORADO] Mensaje inválido o sin texto. Tipo: ${ctx.messageType}`);
+    if (ctx.messageType && ctx.messageType !== "text") {
+      console.log(`[MEDIA] Usuario ${ctx.from} envió un archivo (${ctx.messageType})`);
+
+      // Puedes extraer la URL del medio (dependiendo del adaptador, ej: ctx.mediaUrl)
+      const mediaUrl = ctx.mediaUrl || ctx.fileUrl || null;
+      const caption = ctx.body || "(sin mensaje)";
+
+      if (mediaUrl) {
+        // Reenvía la media al soporte
+        await sendText('573332885462', 
+          `📩 Usuario ${ctx.from} envió un ${ctx.messageType}:\n${caption}\n\nURL: ${mediaUrl}`
+        );
+      } else {
+        await sendText('573332885462', 
+          `📩 Usuario ${ctx.from} envió un ${ctx.messageType} (no se pudo obtener URL automática)`
+        );
+      }
+
+      // Finaliza el flujo para no continuar con el resto de la lógica
       return endFlow();
     }
 
