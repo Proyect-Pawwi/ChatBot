@@ -13,28 +13,21 @@ const init = addKeyword(EVENTS.WELCOME)
 
   .addAction(async (ctx, { endFlow }) => {
     if (ctx.messageType && ctx.messageType !== "text") {
-      console.log(`[MEDIA] Usuario ${ctx.from} envió un archivo (${ctx.messageType})`);
+      console.log(`[MEDIA] Tipo: ${ctx.messageType}`, ctx);
 
-      // Puedes extraer la URL del medio (dependiendo del adaptador, ej: ctx.mediaUrl)
-      const mediaUrl = ctx.mediaUrl || ctx.fileUrl || null;
+      const mediaUrl = ctx.mediaUrl || ctx.fileUrl || ctx.downloadMedia || null;
       const caption = ctx.body || "(sin mensaje)";
 
-      if (mediaUrl) {
-        // Reenvía la media al soporte
-        await sendText('573332885462', 
-          `📩 Usuario ${ctx.from} envió un ${ctx.messageType}:\n${caption}\n\nURL: ${mediaUrl}`
-        );
-      } else {
-        await sendText('573332885462', 
-          `📩 Usuario ${ctx.from} envió un ${ctx.messageType} (no se pudo obtener URL automática)`
-        );
-      }
+      await sendText(
+        '573332885462',
+        `📩 Usuario ${ctx.from} envió un ${ctx.messageType}\nMensaje: ${caption}\nURL: ${mediaUrl || "(sin URL detectada)"}`
+      );
 
-      // Finaliza el flujo para no continuar con el resto de la lógica
       return endFlow();
     }
 
-    console.log(`[MENSAJE] Contenido recibido: "${ctx.body}"`);
+
+    console.log(`[MENSAJE] Contenido recibido: "${ctx.body}". Tipo de mensaje: ${ctx.messageType || "texto"}`);
     
     const nombre = ctx.pushName || "Usuario";
     console.log(`[INIT] Usuario ${nombre} ha iniciado el flujo. Número: ${ctx.from}`);
