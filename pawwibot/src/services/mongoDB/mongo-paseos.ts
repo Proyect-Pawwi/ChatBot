@@ -235,6 +235,10 @@ export async function actualizarEstadoPaseosProximos() {
         }
       }
     }
+    else if(paseo.Estado === "Completado (15 minutos recordatorio de pago)" && !paseo.horaFin) {
+      const cambios = { Estado: "Completado (15 minutos recordatorio de pago)", horaFin: DateTime.now().setZone("America/Bogota").toFormat("yyyy-MM-dd HH:mm:ss") };
+      const result = await updatePaseoMongo(paseo._id.toString(), cambios);
+    }
 
     if(paseo.Estado === "Cancelado" || paseo.Estado === "Completado") {
       continue; // saltar paseos cancelados o completados
