@@ -85,6 +85,14 @@ export async function confirmarLeads() {
   for (const lead of leadsWeb) {
     console.log(lead.estado);
     await sendText("573332885462",`🔔 Lead nuevo registrado desde la web.
+*Perro:* ${lead.perro || 'No definido'}
+*Anotaciones:* 
+${lead.anotaciones || 'No definidas'}
+*Dirección:* ${lead.direccion || 'No definida'}
+*Tiempo de servicio:* ${lead.tiempoServicio || 'No definido'}
+*Fecha:* ${lead.fecha}
+*Hora:* ${lead.hora}
+*Precio:* $${lead.precio || 0}
 
 Informacion del paseo en el siguiente link https://pawwilead.github.io/pawwi/leads`);
     await colLeads.updateOne({ _id: lead._id }, { $set: { estado: "Pendiente" } });
