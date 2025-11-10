@@ -65,12 +65,12 @@ const init = addKeyword(EVENTS.WELCOME)
         usuario = { ...nuevoUsuario, _id: res.insertedId };
         console.log("✅ Usuario nuevo creado en Mongo");
       } else {
-        console.log("✅ Usuario recuperado de Mongo:", usuario);
+        console.log("✅ Usuario recuperado de Mongo:", usuario.celular);
         console.log(`Tipo de usuario: ${usuario.tipoUsuario}`);
         
 
         if (usuario.tipoUsuario == "pawwer") {
-          console.log("Pawwer ha iniciado sesion");
+          console.log("Pawwer ha interactuado con el bot");
           console.log("Celular Pawwer:", ctx.from);
 
           (async () => {
