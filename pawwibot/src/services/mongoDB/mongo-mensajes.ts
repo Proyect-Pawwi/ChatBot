@@ -17,13 +17,18 @@ export interface Msg {
 
 // ---------- API CALLS ----------
 async function getMsgs(): Promise<Msg[]> {
-  const res = await fetch(API_BASE);
-  log("🚀 Fetching messages from:", API_BASE);
+  const url = `${API_BASE}/api/msgs`;
+
+  const res = await fetch(url);
+
+  log("🚀 Fetching messages from:", url);
   log("🚀 Response status:", res.status);
+
   if (!res.ok) throw new Error("Error al obtener mensajes del backend");
 
   return await res.json();
 }
+
 
 async function checkMsg(id: string) {
   const res = await fetch(`${API_BASE}/${id}`, {
