@@ -18,6 +18,8 @@ export interface Msg {
 // ---------- API CALLS ----------
 async function getMsgs(): Promise<Msg[]> {
   const res = await fetch(API_BASE);
+  log("🚀 Fetching messages from:", API_BASE);
+  log("🚀 Response status:", res.status);
   if (!res.ok) throw new Error("Error al obtener mensajes del backend");
 
   return await res.json();
