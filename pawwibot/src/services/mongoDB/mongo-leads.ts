@@ -38,43 +38,6 @@ export interface Lead {
   estado: string;
 }
 
-// ---------- CRUD ----------
-export async function createLead_Mongo(data: Lead) {
-  const col = await connect(leadsCollection);
-
-  const leadDataToInsert = {
-    ...data,
-    estado: "Pendiente",
-    pawwer: "Numero del pawwer", // inicializamos pawwer en 0
-    fechaCreacion: new Date() // opcional: fecha de creación
-  };
-
-  const result = await col.insertOne(leadDataToInsert);
-  return result.insertedId;
-}
-
-export async function getLeads() {
-  const col = await connect(leadsCollection);
-  return await col.find({}).toArray();
-}
-
-export async function getLeadById(id: string) {
-  const col = await connect(leadsCollection);
-  return await col.findOne({ _id: new ObjectId(id) });
-}
-
-export async function updateLead(id: string, data: Partial<Lead>) {
-  const col = await connect(leadsCollection);
-  return await col.updateOne({ _id: new ObjectId(id) }, { $set: data });
-}
-
-export async function deleteLead(id: string) {
-  const col = await connect(leadsCollection);
-  return await col.deleteOne({ _id: new ObjectId(id) });
-}
-
-// ---------- FUNCIÓN ESPECIAL ----------
-// Confirmar leads y crear paseos
 export async function confirmarLeads() {
 
   const colLeads = await connect("leads");

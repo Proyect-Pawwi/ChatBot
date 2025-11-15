@@ -45,21 +45,6 @@ export interface Paseo {
 }
 
 // ---------- CRUD ----------
-export async function createPaseo(paseoData: Paseo) {
-  const col = await connect(paseosCollection);
-  const result = await col.insertOne(paseoData);
-  return result.insertedId;
-}
-
-export async function getPaseos() {
-  const col = await connect(paseosCollection);
-  return await col.find({}).toArray();
-}
-
-export async function getPaseoById(id: string) {
-  const col = await connect(paseosCollection);
-  return await col.findOne({ _id: new ObjectId(id) });
-}
 
 export async function getPaseosByCelularPawwer(celularPawwer: string) {
   const col = await connect(paseosCollection);
@@ -75,12 +60,6 @@ export async function updatePaseoMongo(id: string, data: Partial<Paseo>) {
   const col = await connect(paseosCollection);
   return await col.updateOne({ _id: new ObjectId(id) }, { $set: data });
 }
-
-export async function deletePaseo(id: string) {
-  const col = await connect(paseosCollection);
-  return await col.deleteOne({ _id: new ObjectId(id) });
-}
-
 // ---------- FUNCIÓN: Crear Paseo desde Lead ----------
 
 
@@ -318,67 +297,6 @@ export async function moverPaseoACompletados(paseo: Paseo) {
   console.log(`✅ Paseo ${paseo._id} movido a completados`);
 }
 
-
-export async function getRegistrosPorCelular(
-  celular: number,
-  collectionName: string
-) {
-  const col: Collection = await connect(collectionName);
-  const registros = await col.find({ celular: celular }).toArray();
-  return registros;
-}
-
-export async function actualizarEstadoEsperandoPawwer(celularPawwer: number) {
-  const col = await connect(paseosCollection);
-
-  // Buscar el primer paseo que coincida con el pawwer y estado "Esperando Pawwer"
-  const paseo = await col.findOne({
-    CelularPawwer: celularPawwer,
-    Estado: "Esperando Pawwer"
-  });
-
-  if (paseo) {
-    await col.updateOne(
-      { _id: paseo._id },
-      { $set: { Estado: "Esperando perro" } }
-    );
-    console.log(`✅ Paseo ${paseo._id} actualizado a "Esperando perro"`);
-    return true;
-  } else {
-    console.log(`⚠️ No se encontró paseo para el pawwer ${celularPawwer} con estado "Esperando Pawwer"`);
-    return false;
-  }
-}
-
-export async function actualizarEstadoEsperandoPerro(celularPawwer: number) {
-  const col = await connect(paseosCollection);
-
-  // Buscar el primer paseo que coincida con el pawwer y estado "Esperando perro"
-  const paseo = await col.findOne({
-    CelularPawwer: celularPawwer,
-    Estado: "Esperando perro"
-  });
-
-  if (!paseo) {
-    console.log(`⚠️ No se encontró paseo para el pawwer ${celularPawwer} con estado "Esperando perro"`);
-    return false;
-  }
-
-  // Hora actual en Bogotá como objeto Date
-  const now = new Date();
-  const horaBogota = new Date(now.toLocaleString("en-US", { timeZone: "America/Bogota" }));
-
-  // Actualizar estado y horaInicio
-  await col.updateOne(
-    { _id: paseo._id },
-    { $set: { Estado: "Esperando Strava", HoraInicio: horaBogota } }
-  );
-
-  console.log(`✅ Paseo ${paseo._id} actualizado a "Esperando Strava" con HoraInicio ${horaBogota.toLocaleString("es-CO")}`);
-  return true;
-}
-
-
 export async function actualizarStravaPaseo(
   celularPawwer: number,
   stravaUrl: string
@@ -439,56 +357,6 @@ export async function actualizarStravaPaseo(
     console.log(`⚠️ No se encontró paseo para el pawwer ${celularPawwer} con estado "Esperando Strava"`);
     return false;
   }
-}
-
-
-export async function completarPaseoYActualizarPawwer(celularPawwer: number) {
-  const colPaseos = await connect(paseosCollection);
-  const colCompletados = await connect("completados");
-
-  // Buscar el primer paseo que coincida con el pawwer y estado "Esperando finalización Pawwer"
-  const paseo = await colPaseos.findOne({
-    CelularPawwer: celularPawwer,
-    Estado: "Esperando finalización Pawwer"
-  });
-
-  if (!paseo) {
-    console.log(`⚠️ No se encontró paseo para el pawwer ${celularPawwer} con estado "Esperando finalización Pawwer"`);
-    return false;
-  }
-
-  // Cambiar estado a "Completado" en la colección de paseos
-  await colPaseos.updateOne(
-    { _id: paseo._id },
-    { $set: { Estado: "Completado" } }
-  );
-
-  // Crear copia del registro para la colección "completados" sin el _id original
-  const precio = Number(paseo.Precio || 0);
-  const { _id, ...rest } = paseo; // ❌ eliminamos _id para evitar duplicados
-  const registroCompletado = {
-    ...rest,
-    Estado: "Completado",
-    gananciaPawwer: precio * 0.6,
-    gananciaPawwi: precio * 0.4,
-    fechaCompletado: new Date()
-  };
-
-  const result = await colCompletados.insertOne(registroCompletado);
-  const idCompletado = result.insertedId; // Mongo genera un _id nuevo automáticamente
-
-  // Actualizar el pawwer agregando el id del paseo completado
-  const pawwer = await getPawwerById(paseo.IdPawwer?.toString() || "");
-  if (pawwer) {
-    const pawwerCol = await connect("pawwers_activos"); // colección donde está el pawwer
-    await pawwerCol.updateOne(
-      { _id: pawwer._id },
-      { $push: { PaseosCompletados: idCompletado } }
-    );
-  }
-
-  console.log(`✅ Paseo ${paseo._id} completado, registrado en "completados" y actualizado en pawwer`);
-  return true;
 }
 
 // ---------- FUNCIÓN: Cancelar paseos por celular ----------
@@ -568,33 +436,5 @@ export async function getPaseosPorCliente(celular: number) {
   else {
     console.log(`✅ Se encontraron ${paseos.length} paseo(s) para  ${celular}`);
     return paseos[0];
-  }
-}
-
-// Supongamos que esto está dentro de un handler de mensajes
-export async function revisarPaseosPawwer(ctx: any) {
-  try {
-    const celularPawwer = parseInt(ctx.from);
-
-    // Obtener los paseos activos
-    const paseosMongo = await getPaseosPorPawwer(celularPawwer);
-
-    if (paseosMongo.length === 0) {
-      console.log(`⚠️ El pawwer ${celularPawwer} no tiene paseos activos.`);
-      await sendText(celularPawwer.toString(), "No tienes paseos activos por el momento.");
-      return;
-    }
-
-    console.log("Paseos en Mongo:", paseosMongo);
-
-    // Aquí puedes iterar sobre los paseos y enviar mensajes o hacer otras acciones
-    for (const paseo of paseosMongo) {
-      await sendText(
-        celularPawwer.toString(),
-        `Tienes un paseo pendiente con ${paseo.Nombre} y su perrito ${paseo.Perro} el ${paseo.Fecha} a las ${paseo.Hora}. Estado actual: ${paseo.Estado}`
-      );
-    }
-  } catch (error) {
-    console.error("Error al revisar paseos del pawwer:", error);
   }
 }

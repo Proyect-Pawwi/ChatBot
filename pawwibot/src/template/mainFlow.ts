@@ -304,11 +304,11 @@ const checkLeadsMongo = async () => {
 };
 
 setTimeout(() => {
-  setInterval(checkLeadsMongo, 20 * 1000);
+  setInterval(checkLeadsMongo, 10 * 1000);
 }, 5000);
 
 setTimeout(() => {
-  setInterval(actualizarEstadoPaseosProximos, 30 * 1000);
+  setInterval(actualizarEstadoPaseosProximos, 15 * 1000);
 }, 5000);
 
 export { init};

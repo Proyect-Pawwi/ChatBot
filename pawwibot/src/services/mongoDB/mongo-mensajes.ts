@@ -21,9 +21,6 @@ async function getMsgs(): Promise<Msg[]> {
 
   const res = await fetch(url);
 
-  log("🚀 Fetching messages from:", url);
-  log("🚀 Response status:", res.status);
-
   if (!res.ok) throw new Error("Error al obtener mensajes del backend");
 
   return await res.json();
