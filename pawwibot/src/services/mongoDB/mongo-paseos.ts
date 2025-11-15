@@ -120,7 +120,7 @@ export async function crearPaseoDesdeLead(lead: Lead, idPawwer: string, nombrePa
 }
 // ---------- FUNCIÓN: Actualizar estado de paseos próximos ----------
 export async function actualizarEstadoPaseosProximos() {
-  log("Actualizando estados de paseos próximos...");
+  //log("Actualizando estados de paseos próximos...");
   const col = await connect(paseosCollection);
 
   const paseos = await col.find({}).toArray();

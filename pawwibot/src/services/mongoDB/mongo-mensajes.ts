@@ -40,6 +40,6 @@ export async function sendMsgs() {
     for (const msg of msgs) {
         await sendText(msg.to, msg.text);
         await deleteMsg(msg);
-        log(`✅ Mensaje enviado a ${msg.to}: ${msg.text}`);
+        log(`✅ Mensaje manual enviado a ${msg.to}: ${msg.text}`);
     }
 }

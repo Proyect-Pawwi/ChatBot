@@ -28,7 +28,8 @@ export async function sendText(to: string, text: string) {
       }
     );
 
-    console.log("✅ Mensaje de texto enviado:", res.data);
+    //console.log("✅ Mensaje de texto enviado:", res.data);
+    console.log("✅ Mensaje de texto enviado:", res.data.contacts[0].wa_id);
   } catch (err) {
     console.error("❌ Error al enviar texto:", err.response?.data || err);
   }
