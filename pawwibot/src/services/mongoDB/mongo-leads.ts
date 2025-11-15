@@ -5,7 +5,7 @@ import { crearPaseoDesdeLead } from "./mongo-paseos"; // importamos la función 
 import { sendText } from "../send-text";
 import { TEMPLATE_confirmacion_paseo_cliente, TEMPLATE_recordatorio_paseo_pawwer, TEMPLATE_utils_confirmacion_paseo_cliente, TEMPLATE_utils_confirmacion_paseo_pawwer } from "../send-template";
 import { DateTime } from "luxon";
-import { getUsuarioByCelular, getUsuarioById } from "./mongo-usuarios";
+import { getUsuarioByCelular } from "./mongo-usuarios";
 
 dotenv.config();
 

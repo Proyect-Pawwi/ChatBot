@@ -38,54 +38,7 @@ export interface Usuario {
   agendamientos: Agendamiento[];
 }
 
-// ---------- CRUD ----------
-export async function createUsuario(usuario: Usuario) {
-  const col = await connect(usuariosCollection);
-  const result = await col.insertOne(usuario);
-  return result.insertedId;
-}
-
-export async function getUsuarios() {
-  const col = await connect(usuariosCollection);
-  return await col.find({}).toArray();
-}
-
-export async function getUsuarioById(id: string) {
-  const col = await connect(usuariosCollection);
-  return await col.findOne({ _id: new ObjectId(id) });
-}
-
 export async function getUsuarioByCelular(celular: string) {
   const col = await connect(usuariosCollection);
   return await col.findOne({ celular });
-}
-
-export async function updateUsuario(id: string, data: Partial<Usuario>) {
-  const col = await connect(usuariosCollection);
-  return await col.updateOne({ _id: new ObjectId(id) }, { $set: data });
-}
-
-export async function deleteUsuario(id: string) {
-  const col = await connect(usuariosCollection);
-  return await col.deleteOne({ _id: new ObjectId(id) });
-}
-
-// ---------- Funciones adicionales ----------
-
-// Agregar perro al usuario
-export async function agregarPerro(celular: string, perro: Perro) {
-  const col = await connect(usuariosCollection);
-  return await col.updateOne(
-    { celular },
-    { $push: { perros: perro } }
-  );
-}
-
-// Agregar agendamiento al usuario
-export async function agregarAgendamiento(celular: string, agendamiento: Agendamiento) {
-  const col = await connect(usuariosCollection);
-  return await col.updateOne(
-    { celular },
-    { $push: { agendamientos: agendamiento } }
-  );
 }

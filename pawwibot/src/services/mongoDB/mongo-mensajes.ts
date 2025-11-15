@@ -5,7 +5,7 @@ import { log } from "console";
 
 dotenv.config();
 
-const API_BASE = "https://backendpawwi-production.up.railway.app/api/msgs";
+const API_BASE = process.env.API_BASE;
 
 // ---------- Interfaces ----------
 export interface Msg {
