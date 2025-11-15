@@ -31,7 +31,7 @@ async function getMsgs(): Promise<Msg[]> {
 
 
 async function checkMsg(id: string) {
-  const res = await fetch(`${API_BASE}/${id}`, {
+  const res = await fetch(`${API_BASE}/api/msgs/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({})
