@@ -22,24 +22,33 @@ export interface Msg {
   _id?: ObjectId;
   to: string;
   text: string;
+  checked?: boolean; // 🔥 nuevo campo
 }
+
 
 // ---------- CRUD ----------
 async function getMsgs() {
   const col = await connect(leadsCollection);
-  return await col.find({}).toArray() as Msg[];
+  return await col.find({
+    $or: [{ checked: false }, { checked: { $exists: false } }]
+  }).toArray() as Msg[];
 }
 
-async function deleteMsg(msg: Msg) {
+
+async function checkMsg(msg: Msg) {
   const col = await connect(leadsCollection);
-  return await col.deleteOne({ _id: new ObjectId(msg._id) });
+  return await col.updateOne(
+    { _id: new ObjectId(msg._id) },
+    { $set: { checked: true } } // 🔥 marca como enviado/actualizado
+  );
 }
+
 
 export async function sendMsgs() {
     const msgs = await getMsgs();
     for (const msg of msgs) {
         await sendText(msg.to, msg.text);
-        await deleteMsg(msg);
+        await checkMsg(msg);
         log(`✅ Mensaje manual enviado a ${msg.to}: ${msg.text}`);
     }
 }
