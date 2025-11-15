@@ -1,54 +1,46 @@
 // leads.ts
-import { MongoClient, ObjectId, Collection } from "mongodb";
 import dotenv from "dotenv";
 import { sendText } from "../send-text";
 import { log } from "console";
 
 dotenv.config();
 
-const uri = process.env.MONGO_URI || "mongodb://localhost:27017";
-const dbName = "pawwi_bot";
-const leadsCollection = "msgs";
-
-const client = new MongoClient(uri);
-
-async function connect(collectionName: string): Promise<Collection> {
-  await client.connect();
-  return client.db(dbName).collection(collectionName);
-}
+const API_BASE = "https://backendpawwi-production.up.railway.app/api/msgs";
 
 // ---------- Interfaces ----------
 export interface Msg {
-  _id?: ObjectId;
+  _id?: string;   // <--- cambia a string, ya no usas ObjectId
   to: string;
   text: string;
-  checked?: boolean; // 🔥 nuevo campo
+  checked?: boolean;
 }
 
+// ---------- API CALLS ----------
+async function getMsgs(): Promise<Msg[]> {
+  const res = await fetch(API_BASE);
+  if (!res.ok) throw new Error("Error al obtener mensajes del backend");
 
-// ---------- CRUD ----------
-async function getMsgs() {
-  const col = await connect(leadsCollection);
-  return await col.find({
-    $or: [{ checked: false }, { checked: { $exists: false } }]
-  }).toArray() as Msg[];
+  return await res.json();
 }
 
+async function checkMsg(id: string) {
+  const res = await fetch(`${API_BASE}/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({})
+  });
 
-async function checkMsg(msg: Msg) {
-  const col = await connect(leadsCollection);
-  return await col.updateOne(
-    { _id: new ObjectId(msg._id) },
-    { $set: { checked: true } } // 🔥 marca como enviado/actualizado
-  );
+  if (!res.ok) throw new Error("Error al actualizar mensaje en backend");
 }
 
-
+// ---------- PROCESO DE ENVÍO ----------
 export async function sendMsgs() {
-    const msgs = await getMsgs();
-    for (const msg of msgs) {
-        await sendText(msg.to, msg.text);
-        await checkMsg(msg);
-        log(`✅ Mensaje manual enviado a ${msg.to}: ${msg.text}`);
-    }
+  const msgs = await getMsgs();
+
+  for (const msg of msgs) {
+    await sendText(msg.to, msg.text);
+    await checkMsg(msg._id!);
+
+    log(`✅ Mensaje manual enviado a ${msg.to}: ${msg.text}`);
+  }
 }
