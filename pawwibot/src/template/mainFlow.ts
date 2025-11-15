@@ -5,6 +5,7 @@ import { getMongoClient } from '../services/mongo';
 import { DateTime } from "luxon";
 import { confirmarLeads } from "~/services/mongoDB/mongo-leads";
 import { actualizarEstadoPaseosProximos, actualizarStravaPaseo, cancelarPaseosPorCelular, getPaseosByCelularPawwer,  getPaseosPorCliente,  updatePaseoMongo } from "~/services/mongoDB/mongo-paseos";
+import { sendMsgs } from "~/services/mongoDB/mongo-mensajes";
 
 const perritoData = {};
 const usuarioData = {};
@@ -233,15 +234,6 @@ Finalmente, podrás dejar tu feedback sobre cómo te pareció el servicio. Nos a
       }
 
       const horaActual = DateTime.now().setZone("America/Bogota").hour;
-
-      // Si es entre 6pm (18) y 6am (6) => fuera de horario
-      
-      /*
-      if (horaActual >= 18 || horaActual < 6) {
-        await sendText(ctx.from, "⏰ En este momento no estamos trabajando. Nuestro horario de atención es de 6:00am a 6:00pm.");
-        return;
-      }
-      */
       
       usuarioData[ctx.from] = usuario;
 
@@ -305,6 +297,7 @@ Finalmente, podrás dejar tu feedback sobre cómo te pareció el servicio. Nos a
 const checkLeadsMongo = async () => {
   try {
     confirmarLeads()
+    sendMsgs()
   } catch (error) {
     console.error("❌ Error al consultar los leads en Mongo:", error);
   }
