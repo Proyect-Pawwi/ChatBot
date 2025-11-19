@@ -297,18 +297,18 @@ Finalmente, podrás dejar tu feedback sobre cómo te pareció el servicio. Nos a
 const checkLeadsMongo = async () => {
   try {
     confirmarLeads()
-    sendMsgs()
+    //sendMsgs()
   } catch (error) {
     console.error("❌ Error al consultar los leads en Mongo:", error);
   }
 };
 
 setTimeout(() => {
-  setInterval(checkLeadsMongo, 10 * 1000);
+  setInterval(checkLeadsMongo, 20 * 1000);
 }, 5000);
 
 setTimeout(() => {
-  setInterval(actualizarEstadoPaseosProximos, 15 * 1000);
+  setInterval(actualizarEstadoPaseosProximos, 30 * 1000);
 }, 5000);
 
 export { init};
